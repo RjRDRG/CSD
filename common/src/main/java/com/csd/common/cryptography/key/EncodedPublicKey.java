@@ -7,6 +7,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.csd.common.util.Serialization.bytesToString;
+
 public class EncodedPublicKey implements Serializable {
 	private static final long serialVersionUID = -1440213254532977043L;
 	
@@ -59,7 +61,7 @@ public class EncodedPublicKey implements Serializable {
 	@Override
 	public String toString() {
 		return "EncodedPublicKey{" +
-				"enconded=" + Arrays.toString(encoded) +
+				"enconded=" + bytesToString(encoded) +
 				", alg='" + alg + '\'' +
 				'}';
 	}

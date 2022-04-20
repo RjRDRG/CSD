@@ -8,15 +8,18 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common" />
         <module name="proxy" />
+        <module name="client" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="client" target="11" />
       <module name="common" target="11" />
       <module name="proxy" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="client" options="-parameters" />
       <module name="proxy" options="-parameters" />
     </option>
   </component>

@@ -1,6 +1,5 @@
 package com.csd.common.cryptography.config;
 
-
 import com.csd.common.cryptography.key.KeyStoresInfo;
 
 import java.io.File;
@@ -21,10 +20,10 @@ public class StoredSecrets implements ISuiteSecrets {
 		this.password = new PasswordProtection(storesConfig.password);
 		
 		this.keyStore = KeyStore.getInstance(storesConfig.keystoreType);
-		this.keyStore.load(new FileInputStream( new File(storesConfig.keystorePath)), storesConfig.password);
+		this.keyStore.load(new FileInputStream(storesConfig.keystorePath), storesConfig.password);
 
 		this.trustStore = KeyStore.getInstance(storesConfig.truststoreType);
-		this.trustStore.load(new FileInputStream(new File(storesConfig.truststorePath)), storesConfig.password);
+		this.trustStore.load(new FileInputStream(storesConfig.truststorePath), storesConfig.password);
 	}
 	
 	@Override

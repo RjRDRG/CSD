@@ -19,11 +19,15 @@ public class Timestamp implements Serializable {
 		return new Timestamp(ZoneId.systemDefault().getId());
 	}
 
+	public static Timestamp zero() {
+		return new Timestamp(0,ZoneId.systemDefault().getId());
+	}
+
 	public Timestamp(String zoneId) {
 		this.timeStamp = System.currentTimeMillis();
 		this.zoneId = zoneId;
 	}
-	
+
 	public Timestamp(long timeStamp, String zoneId) {
 		this.timeStamp = timeStamp;
 		this.zoneId = zoneId;
@@ -69,7 +73,13 @@ public class Timestamp implements Serializable {
 		return Objects.hash(timeStamp, zoneId);
 	}
 
+	@Override
 	public String toString() {
 		return toDateTime().format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+	}
+
+	public static Timestamp fromString(String s) {
+		ZonedDateTime dt = ZonedDateTime.parse(s,DateTimeFormatter.ISO_ZONED_DATE_TIME);
+		return new Timestamp(dt.toInstant().toEpochMilli(),dt.getZone().getId());
 	}
 }
