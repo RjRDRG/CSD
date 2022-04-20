@@ -1,7 +1,7 @@
 package com.csd.common.cryptography.config;
 
-import com.csd.common.cryptography.generators.key.AsymmetricKeyPairGenerator;
-import com.csd.common.cryptography.generators.key.SymmetricKeyGenerator;
+import com.csd.common.cryptography.generators.AsymmetricKeyPairGenerator;
+import com.csd.common.cryptography.generators.SymmetricKeyGenerator;
 
 import javax.crypto.SecretKey;
 import java.io.File;

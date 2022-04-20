@@ -1,7 +1,7 @@
 package com.csd.common.cryptography.suites.digest;
 import com.csd.common.cryptography.config.ISuiteConfiguration;
 import com.csd.common.cryptography.config.ISuiteSpecification;
-import com.csd.common.cryptography.generators.key.AsymmetricKeyPairGenerator;
+import com.csd.common.cryptography.generators.AsymmetricKeyPairGenerator;
 import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.key.KeyInfo;
 

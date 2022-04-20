@@ -1,0 +1,11 @@
+
+install BFT-Smart: mvn install:install-file -Dfile=./BFT-SMaRt.jar -DgroupId=com.csd -DartifactId=bft-smart -Dversion=1.2.0 -Dpackaging=jar
+
+how to enable signatures? where do i put the keys? how to use ecsa signatures instead of rsa?
+how to enable ssl ??
+
+ssltls
+
+protocol_version
+
+key_store_file

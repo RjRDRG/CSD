@@ -1,4 +1,4 @@
-package com.csd.common.cryptography.generators.key;
+package com.csd.common.cryptography.generators;
 
 import com.csd.common.cryptography.config.ISuiteSpecification;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
