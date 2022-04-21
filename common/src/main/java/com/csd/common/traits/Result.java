@@ -2,6 +2,8 @@ package com.csd.common.traits;
 
 import java.io.Serializable;
 
+import static com.csd.common.util.Serialization.dataToBytes;
+
 /**
  * 
  * Represents the result of an operation, either wrapping a result of the given type,
@@ -11,7 +13,7 @@ import java.io.Serializable;
  *
  * @param <T> type of the result value associated with success
  */
-public interface Result<T> extends Serializable {
+public interface Result<T extends Serializable> extends Serializable {
 
 	enum Status{ OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, NOT_AVAILABLE };
 
@@ -42,6 +44,8 @@ public interface Result<T> extends Serializable {
 	 */
 	String message();
 
+	Result<byte[]> encode();
+
 	@Override
 	String toString();
 
@@ -50,7 +54,7 @@ public interface Result<T> extends Serializable {
 	 * @param result of value of the result
 	 * @return the value of the result
 	 */
-	static <T> Result<T> ok(T result) {
+	static <T extends Serializable> Result<T> ok(T result) {
 		return new OkResult<>(result);
 	}
 
@@ -58,7 +62,7 @@ public interface Result<T> extends Serializable {
 	 * Convenience method for returning non error results without a value
 	 * @return non-error result
 	 */
-	static <T> OkResult<T> ok() {
+	static <T extends Serializable> OkResult<T> ok() {
 		return new OkResult<>(null);	
 	}
 	
@@ -66,7 +70,7 @@ public interface Result<T> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T> ErrorResult<T> error(Status error, String message) {
+	static <T extends Serializable> ErrorResult<T> error(Status error, String message) {
 		return new ErrorResult<>(error,message);		
 	}
 	
@@ -74,13 +78,13 @@ public interface Result<T> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T> ErrorResult<T> error(Status error) {
+	static <T extends Serializable> ErrorResult<T> error(Status error) {
 		return new ErrorResult<>(error,"");		
 	}
 	
 }
 
-class OkResult<T> implements Result<T> {
+class OkResult<T extends Serializable> implements Result<T> {
 
 	final T result;
 
@@ -109,6 +113,11 @@ class OkResult<T> implements Result<T> {
 	}
 
 	@Override
+	public Result<byte[]> encode() {
+		return Result.ok(dataToBytes(result));
+	}
+
+	@Override
 	public String toString() {
 		return "OkResult{" +
 				"result=" + result +
@@ -116,7 +125,7 @@ class OkResult<T> implements Result<T> {
 	}
 }
 
-class ErrorResult<T> implements Result<T> {
+class ErrorResult<T extends Serializable> implements Result<T> {
 
 	final Status error;
 	final String message;
@@ -144,6 +153,11 @@ class ErrorResult<T> implements Result<T> {
 	@Override
 	public String message() {
 		return message;
+	}
+
+	@Override
+	public Result<byte[]> encode() {
+		return Result.error(error,message);
 	}
 
 	@Override

@@ -7,35 +7,33 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class ConsentedReply<T extends Serializable> implements Serializable {
+import static com.csd.common.util.Serialization.bytesToData;
 
-    private long requestId;
-    private Result<T> result;
+public class ConsentedReply implements Serializable {
+    private Result<byte[]> encodedResult;
     private List<Transaction> missingEntries;
 
-    public ConsentedReply(long requestId, Result<T> result, List<Transaction> missingEntries) {
-        this.requestId = requestId;
-        this.result = result;
+    public <T extends Serializable> Result<T> extractReply() {
+        if(encodedResult.isOK())
+            return Result.ok((T)bytesToData(encodedResult.value()));
+        else
+            return Result.error(encodedResult.error());
+    }
+
+    public ConsentedReply(Result<byte[]> encodedResult, List<Transaction> missingEntries) {
+        this.encodedResult = encodedResult;
         this.missingEntries = missingEntries;
     }
 
     public ConsentedReply() {
     }
 
-    public long getRequestId() {
-        return requestId;
+    public Result<byte[]> getEncodedResult() {
+        return encodedResult;
     }
 
-    public void setRequestId(long requestId) {
-        this.requestId = requestId;
-    }
-
-    public Result<T> getResult() {
-        return result;
-    }
-
-    public void setResult(Result<T> result) {
-        this.result = result;
+    public void setEncodedResult(Result<byte[]> encodedResult) {
+        this.encodedResult = encodedResult;
     }
 
     public List<Transaction> getMissingEntries() {
@@ -50,20 +48,19 @@ public class ConsentedReply<T extends Serializable> implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConsentedReply<?> that = (ConsentedReply<?>) o;
-        return requestId == that.requestId && result.equals(that.result) && missingEntries.equals(that.missingEntries);
+        ConsentedReply that = (ConsentedReply) o;
+        return encodedResult.equals(that.encodedResult) && missingEntries.equals(that.missingEntries);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, result, missingEntries);
+        return Objects.hash(encodedResult, missingEntries);
     }
 
     @Override
     public String toString() {
         return "ReplicaReply{" +
-                "requestId=" + requestId +
-                ", result=" + result +
+                ", encodedResult=" + encodedResult +
                 ", missingEntries=" + missingEntries +
                 '}';
     }

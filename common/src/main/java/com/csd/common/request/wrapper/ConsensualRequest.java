@@ -5,29 +5,27 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ConsensualRequest<T extends Serializable> implements Serializable {
+import static com.csd.common.util.Serialization.bytesToData;
 
-    private String requestId;
+public class ConsensualRequest implements Serializable {
+
     private OffsetDateTime timestamp;
-    private T request;
-    private long lastTransactionId;
+    private LedgerOperation operation;
+    private byte[] encodedRequest;
+    private long lastEntryId;
 
-    public ConsensualRequest(String requestId, T request, long lastTransactionId) {
-        this.requestId = requestId;
+    public ConsensualRequest(LedgerOperation operation, byte[] encodedRequest, long lastEntryId) {
         this.timestamp = OffsetDateTime.now();
-        this.request = request;
-        this.lastTransactionId = lastTransactionId;
+        this.operation = operation;
+        this.encodedRequest = encodedRequest;
+        this.lastEntryId = lastEntryId;
     }
 
     ConsensualRequest() {
     }
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public <T extends Serializable> T extractRequest() {
+        return bytesToData(encodedRequest);
     }
 
     public OffsetDateTime getTimestamp() {
@@ -38,42 +36,56 @@ public class ConsensualRequest<T extends Serializable> implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public T getRequest() {
-        return request;
+    public LedgerOperation getOperation() {
+        return operation;
     }
 
-    public void setRequest(T request) {
-        this.request = request;
+    public void setOperation(LedgerOperation operation) {
+        this.operation = operation;
     }
 
-    public long getLastTransactionId() {
-        return lastTransactionId;
+    public byte[] getEncodedRequest() {
+        return encodedRequest;
     }
 
-    public void setLastTransactionId(long lastTransactionId) {
-        this.lastTransactionId = lastTransactionId;
+    public void setEncodedRequest(byte[] encodedRequest) {
+        this.encodedRequest = encodedRequest;
+    }
+
+    public long getLastEntryId() {
+        return lastEntryId;
+    }
+
+    public void setLastEntryId(long lastEntryId) {
+        this.lastEntryId = lastEntryId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConsensualRequest<?> that = (ConsensualRequest<?>) o;
-        return lastTransactionId == that.lastTransactionId && requestId.equals(that.requestId) && timestamp.equals(that.timestamp) && request.equals(that.request);
+        ConsensualRequest that = (ConsensualRequest) o;
+        return lastEntryId == that.lastEntryId && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(encodedRequest, that.encodedRequest);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, timestamp, request, lastTransactionId);
+        int result = Objects.hash(timestamp, operation, lastEntryId);
+        result = 31 * result + Arrays.hashCode(encodedRequest);
+        return result;
     }
 
     @Override
     public String toString() {
-        return "ConsensualRequest{" +
-                "requestId='" + requestId + '\'' +
+        return "ReplicatedRequest{" +
                 ", timestamp=" + timestamp +
-                ", request=" + request +
-                ", lastTransactionId=" + lastTransactionId +
+                ", operation=" + operation +
+                ", encodedRequest=" + Arrays.toString(encodedRequest) +
+                ", lastEntryId=" + lastEntryId +
                 '}';
+    }
+
+    public enum LedgerOperation implements Serializable {
+        LOAD, BALANCE
     }
 }

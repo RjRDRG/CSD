@@ -6,8 +6,6 @@ import com.csd.common.request.wrapper.ConsensualRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
-
 import static com.csd.common.util.Serialization.dataToBytes;
 import static com.csd.common.util.Serialization.bytesToData;
 
@@ -24,13 +22,13 @@ public class LedgerProxy extends ServiceProxy {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Serializable, R extends Serializable> ConsentedReply<R> invokeUnordered(ConsensualRequest<T> request) {
+    public ConsentedReply invokeUnordered(ConsensualRequest request) {
         byte[] reply = super.invokeUnordered(dataToBytes(request));
         return bytesToData(reply);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Serializable, R extends Serializable> ConsentedReply<R> invokeOrdered(ConsensualRequest<T> request) {
+    public ConsentedReply invokeOrdered(ConsensualRequest request) {
         byte[] reply = super.invokeOrdered(dataToBytes(request));
         return bytesToData(reply);
     }

@@ -6,21 +6,24 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="common" />
         <module name="proxy" />
         <module name="client" />
+        <module name="common" />
+        <module name="replica" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="client" target="11" />
       <module name="common" target="11" />
       <module name="proxy" target="11" />
+      <module name="replica" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="client" options="-parameters" />
       <module name="proxy" options="-parameters" />
+      <module name="replica" options="-parameters" />
     </option>
   </component>
 </project>
