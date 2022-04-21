@@ -1,0 +1,93 @@
+services:
+  replica0:
+    environment:
+      - replica_id=0
+    build:
+      context: .
+      dockerfile: replica.dockerfile
+    ports:
+      - "8090:8090"
+      - "11000:11000"
+      - "11001:11001"
+  replica1:
+    environment:
+      - replica_id=1
+    build:
+      context: .
+      dockerfile: replica.dockerfile
+    ports:
+      - "8091:8090"
+      - "11010:11010"
+      - "11011:11011"
+  replica2:
+    environment:
+      - replica_id=2
+    build:
+      context: .
+      dockerfile: replica.dockerfile
+    ports:
+      - "8092:8090"
+      - "11020:11020"
+      - "11021:11021"
+  replica3:
+    environment:
+      - replica_id=3
+    build:
+      context: .
+      dockerfile: replica.dockerfile
+    ports:
+      - "8093:8090"
+      - "11030:11030"
+      - "11031:11031"
+  proxy0:
+    environment:
+      - proxy_id=0
+    build:
+      context: .
+      dockerfile: proxy.dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - replica0
+      - replica1
+      - replica2
+      - replica3
+  proxy1:
+    environment:
+      - proxy_id=1
+    build:
+      context: .
+      dockerfile: proxy.dockerfile
+    ports:
+      - "8081:8080"
+    depends_on:
+      - replica0
+      - replica1
+      - replica2
+      - replica3
+  proxy2:
+    environment:
+      - proxy_id=2
+    build:
+      context: .
+      dockerfile: proxy.dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - replica0
+      - replica1
+      - replica2
+      - replica3
+  proxy3:
+    environment:
+      - proxy_id=3
+    build:
+      context: .
+      dockerfile: proxy.dockerfile
+    ports:
+      - "8083:8080"
+    depends_on:
+      - replica0
+      - replica1
+      - replica2
+      - replica3
