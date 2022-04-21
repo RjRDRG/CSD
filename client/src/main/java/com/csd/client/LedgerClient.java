@@ -1,14 +1,7 @@
 package com.csd.client;
 
 import ch.qos.logback.classic.Level;
-import com.csd.common.cryptography.config.ISuiteConfiguration;
-import com.csd.common.cryptography.config.IniSpecification;
-import com.csd.common.cryptography.config.StoredSecrets;
-import com.csd.common.cryptography.config.SuiteConfiguration;
-import com.csd.common.cryptography.key.EncodedPublicKey;
-import com.csd.common.cryptography.key.KeyStoresInfo;
-import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
-import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import ch.qos.logback.classic.Logger;
 import com.csd.common.item.RequestInfo;
 import com.csd.common.request.GetBalanceRequestBody;
 import com.csd.common.request.LoadMoneyRequestBody;
@@ -38,8 +31,6 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.util.*;
 
-import static com.csd.common.util.Serialization.bytesToString;
-
 @ActiveProfiles("ssl")
 public class LedgerClient {
 
@@ -47,44 +38,9 @@ public class LedgerClient {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 
-	static final String SECURITY_CONF = "security.conf";
-
 	static String proxyIp = "localhost";
 	static String proxyPort = "8080";
-
-	static class ClientDetails {
-		public final byte[] clientId;
-		public final EncodedPublicKey clientPublicKey;
-		public final SignatureSuite signatureSuite;
-		public long requestCounter;
-
-		public ClientDetails() throws Exception {
-			ISuiteConfiguration clientIdSuiteConfiguration =
-					new SuiteConfiguration(
-							new IniSpecification("client_id_digest_suite", SECURITY_CONF),
-							new StoredSecrets(new KeyStoresInfo("stores", SECURITY_CONF))
-					);
-			FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
-
-			this.signatureSuite = new SignatureSuite(
-					new IniSpecification("client_signature_suite", SECURITY_CONF),
-					new IniSpecification("client_signature_keygen_suite", SECURITY_CONF)
-			);
-			this.clientPublicKey = signatureSuite.getPublicKey();
-
-			this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
-
-			this.requestCounter = 0;
-		}
-
-		String getUrlSafeClientId() {
-			return bytesToString(clientId);
-		}
-
-		long getRequestCounter() {
-			return ++requestCounter;
-		}
-	}
+	static Map<String, WalletDetails> wallets = new HashMap<>();
 
 	static String manualToString(){
 		return "Available operations : \n" +
@@ -97,11 +53,9 @@ public class LedgerClient {
 				"z - Exit                                              Eg: z";
 	}
 
-	static Map<String, ClientDetails> clients = new HashMap<>();
+	public static void main(String[] args) {
 
-	public static void main(String[] args) throws Exception {
-
-		ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -118,13 +72,13 @@ public class LedgerClient {
 						System.out.println(manualToString());
 						break;
 					case 'w':
-						System.out.println(clients.keySet());
+						System.out.println(wallets.keySet());
 						break;
 					case '0':
 						proxyPort = command[1];
 						break;
 					case '1':
-						clients.put(command[1], new ClientDetails());
+						wallets.put(command[1], new WalletDetails());
 						break;
 					case 'a':
 						loadMoney(command[1], Integer.parseInt(command[2]));
@@ -148,12 +102,12 @@ public class LedgerClient {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/load";
 
 		try {
-			ClientDetails clientDetails = clients.get(walletId);
+			WalletDetails wallet = wallets.get(walletId);
 
 			UniqueSeal<LoadMoneyRequestBody> requestBody = new UniqueSeal<>(
-					new LoadMoneyRequestBody(amount), clientDetails.getRequestCounter(), clientDetails.signatureSuite
+					new LoadMoneyRequestBody(amount), wallet.getRequestCounter(), wallet.signatureSuite
 			);
-			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -167,12 +121,12 @@ public class LedgerClient {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
 
 		try {
-			ClientDetails clientDetails = clients.get(walletId);
+			WalletDetails wallet = wallets.get(walletId);
 
 			Seal<GetBalanceRequestBody> requestBody = new Seal<>(
-					new GetBalanceRequestBody(""), clientDetails.signatureSuite
+					new GetBalanceRequestBody(""), wallet.signatureSuite
 			);
-			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(clientDetails.clientId, clientDetails.clientPublicKey, requestBody);
+			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);
 

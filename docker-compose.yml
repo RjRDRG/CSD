@@ -33,7 +33,7 @@ services:
       - "127.0.0.1:8093:8090"
 
   proxy0:
-    command: sh -c "sleep 10; java -jar /app.jar;"
+    command: sh -c "sleep 20; java -jar /app.jar;"
     environment:
       - proxy_id=0
     build:
@@ -42,7 +42,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
   proxy1:
-    command: sh -c "sleep 10; java -jar /app.jar;"
+    command: sh -c "sleep 20; java -jar /app.jar;"
     environment:
       - proxy_id=1
     build:
@@ -51,7 +51,7 @@ services:
     ports:
       - "127.0.0.1:8081:8080"
   proxy2:
-    command: sh -c "sleep 10; java -jar /app.jar;"
+    command: sh -c "sleep 20; java -jar /app.jar;"
     environment:
       - proxy_id=2
     build:
@@ -60,7 +60,7 @@ services:
     ports:
       - "127.0.0.1:8082:8080"
   proxy3:
-    command: sh -c "sleep 10; java -jar /app.jar;"
+    command: sh -c "sleep 20; java -jar /app.jar;"
     environment:
       - proxy_id=3
     build:
