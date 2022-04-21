@@ -14,8 +14,8 @@ public class ConsensualRequest implements IRequest {
 
     private IRequest.Type type;
     private byte[] encodedRequest;
-    private OffsetDateTime timestamp;
-    private long lastEntryId;
+    private OffsetDateTime timestamp; //quando  a op foi recebida
+    private long lastEntryId; //ultima entrada que a proxy recebeu
 
     public ConsensualRequest(IRequest request, long lastEntryId) {
         this.type = request.type();

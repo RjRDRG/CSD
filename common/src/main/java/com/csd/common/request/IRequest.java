@@ -4,8 +4,16 @@ import java.io.Serializable;
 
 public interface IRequest extends Serializable {
     enum Type implements Serializable {
-        LOAD, BALANCE
+        LOAD, BALANCE, TRANSFER, EXTRACT, TOTAL_VAL, GLOBAL_VAL, LEDGER
     }
 
     Type type();
+
+    class Void implements IRequest{
+        @Override
+        public Type type() {
+            return null;
+        }
+    }
+
 }

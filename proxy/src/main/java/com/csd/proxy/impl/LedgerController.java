@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 import static com.csd.proxy.exceptions.ResultExtractor.value;
 
 @RestController
@@ -33,6 +35,44 @@ class LedgerController {
     @PostMapping("/balance")
     public Double getBalance(@RequestBody AuthenticatedRequest<GetBalanceRequestBody> request) {
         Result<Double> result = ledgerProxy.invokeUnordered(value(validator.validate(request)));
+        value(result);
+        return result.value();
+    }
+
+    @PostMapping("/transfer")
+    public RequestInfo sendTransaction(@RequestBody ProtectedRequest<SendTransactionRequestBody> request) {
+        Result<RequestInfo> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        value(result);
+        return result.value();
+    }
+
+    @PostMapping("/extract")
+    public ArrayList<Transaction> getExtract(@RequestBody AuthenticatedRequest<GetExtractRequestBody> request) {
+        Result<ArrayList<Transaction>> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        value(result);
+        return result.value();
+    }
+
+    @PostMapping("/total")
+    public Double getTotalValue(@RequestBody GetTotalValueRequestBody request) {
+        for( AuthenticatedRequest<IRequest.Void> authenticatedRequest : request.getListOfAccounts()){
+            value(validator.validate(authenticatedRequest));
+        }
+        Result<Double> result = ledgerProxy.invokeOrdered(request);
+        value(result);
+        return result.value();
+    }
+
+    @PostMapping("/global")
+    public Double getGlobalValue(@RequestBody GetGlobalValueRequestBody request) {
+        Result<Double> result = ledgerProxy.invokeOrdered(request);
+        value(result);
+        return result.value();
+    }
+
+    @PostMapping("/ledger")
+    public ArrayList<Transaction> getLedger(@RequestBody GetLedgerRequestBody request) {
+        Result<ArrayList<Transaction>> result = ledgerProxy.invokeOrdered(request);
         value(result);
         return result.value();
     }
