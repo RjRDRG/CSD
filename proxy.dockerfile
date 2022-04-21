@@ -3,4 +3,3 @@ COPY config config
 COPY keystore keystore
 COPY security.conf security.conf
 COPY proxy/target/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]

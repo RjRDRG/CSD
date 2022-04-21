@@ -1,23 +1,26 @@
 package com.csd.common.request.wrapper;
 
+import com.csd.common.request.IRequest;
+
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
 import static com.csd.common.util.Serialization.bytesToData;
+import static com.csd.common.util.Serialization.dataToBytes;
 
-public class ConsensualRequest implements Serializable {
+public class ConsensualRequest implements IRequest {
 
-    private OffsetDateTime timestamp;
-    private LedgerOperation operation;
+    private IRequest.Type type;
     private byte[] encodedRequest;
+    private OffsetDateTime timestamp;
     private long lastEntryId;
 
-    public ConsensualRequest(LedgerOperation operation, byte[] encodedRequest, long lastEntryId) {
+    public ConsensualRequest(IRequest request, long lastEntryId) {
+        this.type = request.type();
+        this.encodedRequest = dataToBytes(request);
         this.timestamp = OffsetDateTime.now();
-        this.operation = operation;
-        this.encodedRequest = encodedRequest;
         this.lastEntryId = lastEntryId;
     }
 
@@ -28,20 +31,12 @@ public class ConsensualRequest implements Serializable {
         return bytesToData(encodedRequest);
     }
 
-    public OffsetDateTime getTimestamp() {
-        return timestamp;
+    public IRequest.Type getType() {
+        return type;
     }
 
-    public void setTimestamp(OffsetDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public LedgerOperation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(LedgerOperation operation) {
-        this.operation = operation;
+    public void setType(IRequest.Type type) {
+        this.type = type;
     }
 
     public byte[] getEncodedRequest() {
@@ -50,6 +45,14 @@ public class ConsensualRequest implements Serializable {
 
     public void setEncodedRequest(byte[] encodedRequest) {
         this.encodedRequest = encodedRequest;
+    }
+
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(OffsetDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     public long getLastEntryId() {
@@ -65,27 +68,28 @@ public class ConsensualRequest implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConsensualRequest that = (ConsensualRequest) o;
-        return lastEntryId == that.lastEntryId && timestamp.equals(that.timestamp) && operation == that.operation && Arrays.equals(encodedRequest, that.encodedRequest);
+        return lastEntryId == that.lastEntryId && timestamp.equals(that.timestamp) && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(timestamp, operation, lastEntryId);
+        int result = Objects.hash(timestamp, type, lastEntryId);
         result = 31 * result + Arrays.hashCode(encodedRequest);
         return result;
     }
 
     @Override
     public String toString() {
-        return "ReplicatedRequest{" +
-                ", timestamp=" + timestamp +
-                ", operation=" + operation +
+        return "ConsensualRequest{" +
+                "type=" + type +
                 ", encodedRequest=" + Arrays.toString(encodedRequest) +
+                ", timestamp=" + timestamp +
                 ", lastEntryId=" + lastEntryId +
                 '}';
     }
 
-    public enum LedgerOperation implements Serializable {
-        LOAD, BALANCE
+    @Override
+    public Type type() {
+        return type;
     }
 }

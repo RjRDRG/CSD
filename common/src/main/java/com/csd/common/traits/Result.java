@@ -81,6 +81,10 @@ public interface Result<T extends Serializable> extends Serializable {
 	static <T extends Serializable> ErrorResult<T> error(Status error) {
 		return new ErrorResult<>(error,"");		
 	}
+
+	static <T extends Serializable, E extends Serializable> ErrorResult<T> error(Result<E> error) {
+		return new ErrorResult<>(error.error(),error.message());
+	}
 	
 }
 

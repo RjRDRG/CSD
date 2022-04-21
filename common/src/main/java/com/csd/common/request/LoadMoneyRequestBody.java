@@ -1,8 +1,6 @@
 package com.csd.common.request;
 
-import java.io.Serializable;
-
-public class LoadMoneyRequestBody implements Serializable {
+public class LoadMoneyRequestBody implements IRequest {
     private double amount;
 
     public LoadMoneyRequestBody(double amount) {
@@ -25,5 +23,10 @@ public class LoadMoneyRequestBody implements Serializable {
         return "LoadMoneyRequestBody{" +
                 "amount=" + amount +
                 '}';
+    }
+
+    @Override
+    public IRequest.Type type() {
+        return IRequest.Type.LOAD;
     }
 }

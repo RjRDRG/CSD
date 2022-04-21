@@ -1,9 +1,8 @@
 package com.csd.common.request;
 
-import java.io.Serializable;
 import java.util.Objects;
 
-public class GetBalanceRequestBody implements Serializable {
+public class GetBalanceRequestBody implements IRequest {
     private String date;
 
     public GetBalanceRequestBody(String date) {
@@ -39,5 +38,10 @@ public class GetBalanceRequestBody implements Serializable {
         return "GetBalanceRequestBody{" +
                 "timestamp='" + date + '\'' +
                 '}';
+    }
+
+    @Override
+    public Type type() {
+        return Type.BALANCE;
     }
 }

@@ -3,13 +3,12 @@ package com.csd.common.request.wrapper;
 import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.request.IRequest;
 import com.csd.common.traits.UniqueSeal;
-
-import java.io.Serializable;
 
 import static com.csd.common.util.Serialization.bytesToString;
 
-public class ProtectedRequest<T extends Serializable> implements Serializable {
+public class ProtectedRequest<T extends IRequest> implements IRequest {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
     private UniqueSeal<T> requestBody;
@@ -63,5 +62,10 @@ public class ProtectedRequest<T extends Serializable> implements Serializable {
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +
                 '}';
+    }
+
+    @Override
+    public Type type() {
+        return requestBody.getData().type();
     }
 }

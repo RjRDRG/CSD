@@ -3,13 +3,14 @@ package com.csd.common.request.wrapper;
 import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.request.IRequest;
 import com.csd.common.traits.Seal;
 
 import java.io.Serializable;
 
 import static com.csd.common.util.Serialization.bytesToString;
 
-public class AuthenticatedRequest<T extends Serializable> implements Serializable {
+public class AuthenticatedRequest<T extends IRequest> implements IRequest {
     private byte[] clientId;
     private EncodedPublicKey clientPublicKey;
     private Seal<T> requestBody;
@@ -63,5 +64,10 @@ public class AuthenticatedRequest<T extends Serializable> implements Serializabl
                 ", clientPublicKey=" + clientPublicKey +
                 ", requestBody=" + requestBody +
                 '}';
+    }
+
+    @Override
+    public Type type() {
+        return requestBody.getData().type();
     }
 }
