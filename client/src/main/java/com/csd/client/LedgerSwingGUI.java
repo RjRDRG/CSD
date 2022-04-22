@@ -16,7 +16,7 @@ import java.util.List;
 public class LedgerSwingGUI extends JFrame{
 
     public LedgerSwingGUI() {
-        setTitle("Ultimate ECash Wallet");
+        setTitle("The Wallet");
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -30,6 +30,7 @@ public class LedgerSwingGUI extends JFrame{
         getContentPane().add(new MainPanel(), BorderLayout.CENTER);
 
         setSize(new Dimension(1000, 1000));
+        setLocationRelativeTo(null);
         setResizable(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
@@ -87,13 +88,20 @@ public class LedgerSwingGUI extends JFrame{
                 }
             });
 
+            JPanel border = new JPanel();
+            border.setLayout(new BorderLayout());
+            border.setBorder(BorderFactory.createTitledBorder("Operations"));
+            border.add(Box.createRigidArea(new Dimension(0,10)), BorderLayout.PAGE_END);
+            border.add(Box.createRigidArea(new Dimension(0,10)), BorderLayout.PAGE_START);
+            border.add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_START);
+            border.add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_END);
+
             JGridBagPanel gp1 = new JGridBagPanel();
 
-            //components of op
-            gp1.load(0,0,loadMoneyLabel).add();
+            gp1.load(0,0,loadMoneyLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             loadMoneyAmount.setToolTipText("Amount");
-            gp1.load(1,0,loadMoneyAmount).add();
-            gp1.load(3,0,loadMoneyExec).add();
+            gp1.load(2,0,loadMoneyAmount).removeScaleY().add();
+            gp1.load(3,0,loadMoneyExec).removeScaleX().removeScaleY().add();
             loadMoneyExec.addActionListener(e -> {
                 try {
                     result.append(LedgerClient.loadMoney(
@@ -105,18 +113,18 @@ public class LedgerSwingGUI extends JFrame{
                 }
             });
 
-            gp1.load(0,1,getBalanceLabel).add();
-            gp1.load(3,1,getBalanceExec).add();
+            gp1.load(0,1,getBalanceLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(3,1,getBalanceExec).removeScaleX().removeScaleY().add();
             getBalanceExec.addActionListener(e ->
                 result.append(LedgerClient.getBalance(
                         (String) wallets.getSelectedItem()
                 ).toString() + "\n\n\n")
             );
 
-            gp1.load(0,2,sendTransactionLabel).add();
-            gp1.load(1,2, sendTransactionDestination).add();
-            gp1.load(2,2,sendTransactionAmount).add();
-            gp1.load(3,2,sendTransactionExec).add();
+            gp1.load(0,2,sendTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(1,2, sendTransactionDestination).removeScaleY().add();
+            gp1.load(2,2,sendTransactionAmount).removeScaleY().add();
+            gp1.load(3,2,sendTransactionExec).removeScaleX().removeScaleY().add();
             sendTransactionExec.addActionListener(e -> {
                 try {
                     result.append(LedgerClient.sendTransaction(
@@ -129,31 +137,31 @@ public class LedgerSwingGUI extends JFrame{
                 }
             });
 
-            gp1.load(0,3,getGlobalValueLabel).add();
-            gp1.load(3,3,getGlobalValueExec).add();
+            gp1.load(0,3,getGlobalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(3,3,getGlobalValueExec).removeScaleX().removeScaleY().add();
             getGlobalValueExec.addActionListener(e -> result.append(LedgerClient.getGlobalValue().toString() + "\n\n\n"));
 
-            gp1.load(0,4,getExtractLabel).add();
-            gp1.load(3,4,getExtractExec).add();
+            gp1.load(0,4,getExtractLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(3,4,getExtractExec).removeScaleX().removeScaleY().add();
             getExtractExec.addActionListener(e -> result.append(LedgerClient.getExtract((String) wallets.getSelectedItem()).toString() + "\n\n\n" ));
 
-            gp1.load(0,5,getLedgerLabel).add();
-            gp1.load(3,5,getLedgerExec).add();
+            gp1.load(0,5,getLedgerLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(3,5,getLedgerExec).removeScaleX().removeScaleY().add();
             getLedgerExec.addActionListener(e -> result.append(LedgerClient.getLedger().toString() + "\n\n\n" ));
 
-            gp1.load(0,6,getTotalValueLabel).add();
-            gp1.load(3,6,getTotalValueExec).add();
+            gp1.load(0,6,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(3,6,getTotalValueExec).removeScaleX().removeScaleY().add();
             getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet())));
 
-            gp1.setBorder(BorderFactory.createTitledBorder("Operations"));
+            border.add(gp1, BorderLayout.CENTER);
 
-            gp0.load(0,1,gp1).setWidth(4).setTopPad(10).add();
+            gp0.load(0,1, border).setWidth(4).removeScaleY().setTopPad(10).add();
 
             gp0.load(0,2, resultLabel).setWidth(4).setTopPad(5).removeScaleY().add();
 
             result.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
             try {
-                Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
+                Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/monokai.xml"));
                 theme.apply(result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -171,14 +179,15 @@ public class LedgerSwingGUI extends JFrame{
 
             JGridBagPanel top = new JGridBagPanel();
             top.load(0,0, new JSeparator(SwingConstants.HORIZONTAL)).add();
-            top.load(0,1, Box.createRigidArea(new Dimension(0,20))).add();
+            top.load(0,1, Box.createRigidArea(new Dimension(0,10))).add();
             getContentPane().add(top, BorderLayout.PAGE_START);
-            getContentPane().add(Box.createRigidArea(new Dimension(0,20)), BorderLayout.PAGE_END);
-            getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_START);
-            getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_END);
+            getContentPane().add(Box.createRigidArea(new Dimension(0,10)), BorderLayout.PAGE_END);
+            getContentPane().add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_START);
+            getContentPane().add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_END);
             getContentPane().add(new PopUpPanel(values), BorderLayout.CENTER);
 
             setSize(new Dimension(300, 300));
+            setLocationRelativeTo(null);
             setResizable(true);
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             setVisible(true);
@@ -186,19 +195,17 @@ public class LedgerSwingGUI extends JFrame{
 
         static class PopUpPanel extends JPanel {
 
-            JList<String> values = new JList<>();
+            JList<String> options = new JList<>();
             JButton submit = new JButton("Submit");
-            JButton cancel = new JButton("Cancel");
 
             public PopUpPanel(List<String> values){
                 setLayout(new BorderLayout());
                 JGridBagPanel gp0 = new JGridBagPanel();
 
-                this.values.setListData(values.toArray(new String[0]));
+                this.options.setListData(values.toArray(new String[0]));
 
-                gp0.load(0, 0, this.values).setWidth(2).add();
-                gp0.load(0, 1, cancel).removeScaleY().removeScaleX().setAnchorLeft().add();
-                gp0.load(1, 1, submit).removeScaleX().removeScaleY().setAnchorRight().add();
+                gp0.load(0, 0, new JScrollPane(options)).setWidth(2).add();
+                gp0.load(1, 1, submit).removeScaleX().removeScaleY().setTopPad(5).setAnchorRight().add();
 
                 add(gp0, BorderLayout.CENTER);
             }
