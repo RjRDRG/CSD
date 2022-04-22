@@ -11,14 +11,12 @@ import com.csd.common.request.wrapper.AuthenticatedRequest;
 import com.csd.common.request.wrapper.ConsensualRequest;
 import com.csd.common.request.wrapper.ProtectedRequest;
 import com.csd.common.traits.Result;
-import com.csd.common.util.Serialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 
 import static com.csd.common.util.Serialization.bytesToData;
@@ -51,34 +49,34 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         switch (consensualRequest.getType()) {
             case BALANCE: {
                 Result<AuthenticatedRequest<GetBalanceRequestBody>> request = validator.validate((AuthenticatedRequest<GetBalanceRequestBody>) consensualRequest.extractRequest());
-                Result<Double> result = request.isOK() ? ledgerService.getBalance(request.value()) : Result.error(request);
+                Result<Double> result = request.valid() ? ledgerService.getBalance(request.value()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case LOAD: {
                 Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate((ProtectedRequest<LoadMoneyRequestBody>) consensualRequest.extractRequest());
-                Result<RequestInfo> result = request.isOK() ? ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
+                Result<RequestInfo> result = request.valid() ? ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case TRANSFER: {
                 Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate((ProtectedRequest<SendTransactionRequestBody>) consensualRequest.extractRequest());
-                Result<RequestInfo> result = request.isOK() ? ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
+                Result<RequestInfo> result = request.valid() ? ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case EXTRACT: {
                 Result<AuthenticatedRequest<GetExtractRequestBody>> request = validator.validate((AuthenticatedRequest<GetExtractRequestBody>) consensualRequest.extractRequest());
-                Result<Transaction[]> result = request.isOK() ? ledgerService.getExtract(request.value()) : Result.error(request);
+                Result<Transaction[]> result = request.valid() ? ledgerService.getExtract(request.value()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case TOTAL_VAL: {
                 Result<GetTotalValueRequestBody> request = Result.ok(consensualRequest.extractRequest());
                 for( AuthenticatedRequest<IRequest.Void> authenticatedRequest : ((GetTotalValueRequestBody) consensualRequest.extractRequest()).getListOfAccounts()){
                     Result<AuthenticatedRequest<IRequest.Void>> result = validator.validate(authenticatedRequest);
-                    if (! result.isOK()){
+                    if (! result.valid()){
                         request = Result.error(result);
                         break;
                     }
                 }
-                Result<Double> result = request.isOK() ? ledgerService.getTotalValue(request.value()) : Result.error(request);
+                Result<Double> result = request.valid() ? ledgerService.getTotalValue(request.value()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case GLOBAL_VAL: {

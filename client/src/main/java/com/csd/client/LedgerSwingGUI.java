@@ -2,11 +2,14 @@ package com.csd.client;
 
 import com.csd.client.ui.JGridBagPanel;
 import com.csd.client.ui.JPromptTextField;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class LedgerSwingGUI extends JFrame{
@@ -62,7 +65,7 @@ public class LedgerSwingGUI extends JFrame{
         JButton getTotalValueExec = new JButton("Execute");
 
         JLabel resultLabel = new JLabel("Result");
-        JTextArea result = new JTextArea();
+        RSyntaxTextArea result = new RSyntaxTextArea();
 
         public MainPanel() {
             setLayout(new BorderLayout());
@@ -89,43 +92,43 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(1,0,loadMoneyAmount).add();
             gp1.load(3,0,loadMoneyExec).add();
             loadMoneyExec.addActionListener(e ->
-                result.append("\n\n" + LedgerClient.loadMoney(
+                result.append(LedgerClient.loadMoney(
                     (String) wallets.getSelectedItem(),
-                    Double.parseDouble(loadMoneyAmount.getText())).toString()
-                )
+                    Double.parseDouble(loadMoneyAmount.getText())
+                ).toString() + "\n\n\n")
             );
 
             gp1.load(0,1,getBalanceLabel).add();
             gp1.load(3,1,getBalanceExec).add();
-            getBalanceExec.addActionListener(e -> {
-                result.append("\n\n" + LedgerClient.getBalance(
+            getBalanceExec.addActionListener(e ->
+                result.append(LedgerClient.getBalance(
                         (String) wallets.getSelectedItem()
-                ).toString());
-            });
+                ).toString() + "\n\n\n")
+            );
 
             gp1.load(0,2,sendTransactionLabel).add();
             gp1.load(1,2, sendTransactionDestination).add();
             gp1.load(2,2,sendTransactionAmount).add();
             gp1.load(3,2,sendTransactionExec).add();
             sendTransactionExec.addActionListener(e ->
-                result.append("\n\n" + LedgerClient.sendTransaction(
+                result.append(LedgerClient.sendTransaction(
                     (String) wallets.getSelectedItem(),
                     (String) sendTransactionDestination.getSelectedItem(),
                     Double.parseDouble(sendTransactionAmount.getText())
-                ).toString())
+                ).toString() + "\n\n\n")
             );
 
             gp1.load(0,3,getGlobalValueLabel).add();
             gp1.load(3,3,getGlobalValueExec).add();
-            getGlobalValueExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getGlobalValue().toString()));
+            getGlobalValueExec.addActionListener(e -> result.append(LedgerClient.getGlobalValue().toString() + "\n\n\n"));
 
             gp1.load(0,4,getExtractLabel).add();
             gp1.load(3,4,getExtractExec).add();
-            getExtractExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getExtract((String) wallets.getSelectedItem()).toString()));
+            getExtractExec.addActionListener(e -> result.append(LedgerClient.getExtract((String) wallets.getSelectedItem()).toString() + "\n\n\n" ));
 
             gp1.load(0,5,getLedgerLabel).add();
             gp1.load(3,5,getLedgerExec).add();
-            getLedgerExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getLedger().toString()));
+            getLedgerExec.addActionListener(e -> result.append(LedgerClient.getLedger().toString() + "\n\n\n" ));
 
             gp1.load(0,6,getTotalValueLabel).add();
             gp1.load(3,6,getTotalValueExec).add();
@@ -136,7 +139,15 @@ public class LedgerSwingGUI extends JFrame{
             gp0.load(0,1,gp1).setWidth(4).setTopPad(10).add();
 
             gp0.load(0,2, resultLabel).setWidth(4).setTopPad(5).removeScaleY().add();
-            gp0.load(0,3, new JScrollPane(result)).setWidth(4).add();
+
+            result.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+            try {
+                Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
+                theme.apply(result);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            gp0.load(0,3, new RTextScrollPane(result)).setWidth(4).add();
 
             add(gp0, BorderLayout.CENTER);
         }

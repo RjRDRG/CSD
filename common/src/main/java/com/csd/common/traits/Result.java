@@ -21,7 +21,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	/**
 	 * Tests if the result is an error.
 	 */
-	boolean isOK();
+	boolean valid();
 	
 	/**
 	 * obtains the payload value of this result
@@ -98,8 +98,12 @@ class OkResult<T extends Serializable> implements Result<T> {
 	}
 	
 	@Override
-	public boolean isOK() {
+	public boolean valid() {
 		return true;
+	}
+
+	public T getResult() {
+		return result;
 	}
 
 	@Override
@@ -124,7 +128,7 @@ class OkResult<T extends Serializable> implements Result<T> {
 
 	@Override
 	public String toString() {
-		return dataToJson(this);
+		return dataToJson(result);
 	}
 }
 
@@ -139,8 +143,16 @@ class ErrorResult<T extends Serializable> implements Result<T> {
 	}
 
 	@Override
-	public boolean isOK() {
+	public boolean valid() {
 		return false;
+	}
+
+	public Status getError() {
+		return error;
+	}
+
+	public String getMessage() {
+		return message;
 	}
 
 	@Override

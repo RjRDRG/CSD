@@ -7,7 +7,7 @@ import java.io.Serializable;
 public class ResultExtractor {
 
     public static <T extends Serializable> T value(Result<T> result) throws RuntimeException {
-        if (result.isOK()) return result.value();
+        if (result.valid()) return result.value();
 
         switch (result.error()) {
             case NOT_FOUND:

@@ -14,7 +14,7 @@ public class ConsentedReply implements Serializable {
     private List<Transaction> missingEntries;
 
     public <T extends Serializable> Result<T> extractReply() {
-        if(encodedResult.isOK())
+        if(encodedResult.valid())
             return Result.ok((T)bytesToData(encodedResult.value()));
         else
             return Result.error(encodedResult.error());
