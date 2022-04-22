@@ -39,7 +39,7 @@ public class LedgerSwingGUI extends JFrame{
     static class MainPanel extends JPanel {
         JLabel walletLabel = new JLabel("Wallet");
         JComboBox<String> wallets= new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
-        JTextField newWalletName = new JTextField();
+        JPromptTextField newWalletName = new JPromptTextField("New Wallet Name");
         JButton createWalletButton = new JButton("New Wallet");
 
         JLabel loadMoneyLabel = new JLabel("Load Money");
@@ -50,7 +50,7 @@ public class LedgerSwingGUI extends JFrame{
         JButton getBalanceExec = new JButton("Execute");
 
         JLabel sendTransactionLabel = new JLabel("Send Transaction");
-        JComboBox<String> sendTransactionDestination = new JComboBox<>();
+        JComboBox<String> sendTransactionDestination = new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
         JPromptTextField sendTransactionAmount = new JPromptTextField("Amount");
         JButton sendTransactionExec = new JButton("Execute");
 
@@ -79,10 +79,13 @@ public class LedgerSwingGUI extends JFrame{
             gp0.load(3,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
             createWalletButton.addActionListener(e -> {
                 try {
-                    LedgerClient.wallets.put(newWalletName.getText(), new WalletDetails());
-                    wallets.addItem(newWalletName.getText());
-                    wallets.setSelectedItem(newWalletName.getText());
-                    newWalletName.setText("");
+                    if(!newWalletName.isEmpty()) {
+                        LedgerClient.wallets.put(newWalletName.getText(), new WalletDetails());
+                        wallets.addItem(newWalletName.getText());
+                        wallets.setSelectedItem(newWalletName.getText());
+                        sendTransactionDestination.addItem(newWalletName.getText());
+                        newWalletName.prompt();
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
