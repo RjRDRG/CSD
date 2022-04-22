@@ -39,7 +39,7 @@ public class LedgerSwingGUI extends JFrame{
     static class MainPanel extends JPanel {
         JLabel walletLabel = new JLabel("Wallet");
         JComboBox<String> wallets= new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
-        JPromptTextField newWalletName = new JPromptTextField("New Wallet Name");
+        JPromptTextField newWalletName = new JPromptTextField("Name");
         JButton createWalletButton = new JButton("New Wallet");
 
         JLabel loadMoneyLabel = new JLabel("Load Money");
@@ -74,9 +74,10 @@ public class LedgerSwingGUI extends JFrame{
             JGridBagPanel gp0 = new JGridBagPanel();
 
             gp0.load(0,0,walletLabel).removeScaleY().removeScaleX().setAnchorLeft().setRightPad(5).add();
-            gp0.load(1,0,wallets).removeScaleY().setWeight(0.2f,1f).setAnchorLeft().add();
-            gp0.load(2,0,newWalletName).removeScaleY().setWeight(0.8f,1f).setLeftPad(100).setAnchorRight().add();
-            gp0.load(3,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
+            gp0.load(1,0,wallets).removeScaleY().setWeight(0.15f,1f).setAnchorLeft().add();
+            gp0.load(2,0,Box.createRigidArea(new Dimension(0,0))).removeScaleY().setWeight(0.55f,1f).setAnchorLeft().add();
+            gp0.load(3,0,newWalletName).removeScaleY().setWeight(0.3f,1f).setAnchorRight().add();
+            gp0.load(4,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
             createWalletButton.addActionListener(e -> {
                 try {
                     if(!newWalletName.isEmpty()) {
@@ -125,8 +126,8 @@ public class LedgerSwingGUI extends JFrame{
             );
 
             gp1.load(0,2,sendTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(1,2, sendTransactionDestination).removeScaleY().add();
-            gp1.load(2,2,sendTransactionAmount).removeScaleY().add();
+            gp1.load(1,2,sendTransactionDestination).setLeftPad(10).removeScaleY().setWeight(0.95f,1f).add();
+            gp1.load(2,2,sendTransactionAmount).removeScaleY().setWeight(0.05f,1f).add();
             gp1.load(3,2,sendTransactionExec).removeScaleX().removeScaleY().add();
             sendTransactionExec.addActionListener(e -> {
                 try {
@@ -158,9 +159,9 @@ public class LedgerSwingGUI extends JFrame{
 
             border.add(gp1, BorderLayout.CENTER);
 
-            gp0.load(0,1, border).setWidth(4).removeScaleY().setTopPad(10).add();
+            gp0.load(0,1, border).setWidth(5).removeScaleY().setTopPad(10).add();
 
-            gp0.load(0,2, resultLabel).setWidth(4).setTopPad(5).removeScaleY().add();
+            gp0.load(0,2, resultLabel).setWidth(5).setTopPad(5).removeScaleY().add();
 
             result.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
             try {
@@ -169,7 +170,7 @@ public class LedgerSwingGUI extends JFrame{
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            gp0.load(0,3, new RTextScrollPane(result)).setWidth(4).add();
+            gp0.load(0,3, new RTextScrollPane(result)).setWidth(5).add();
 
             add(gp0, BorderLayout.CENTER);
         }
