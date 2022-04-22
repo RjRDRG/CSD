@@ -74,8 +74,8 @@ public class LedgerSwingGUI extends JFrame{
             JGridBagPanel gp0 = new JGridBagPanel();
 
             gp0.load(0,0,walletLabel).removeScaleY().removeScaleX().setAnchorLeft().setRightPad(5).add();
-            gp0.load(1,0,wallets).removeScaleY().removeScaleX().setAnchorLeft().add();
-            gp0.load(2,0,newWalletName).removeScaleY().setLeftPad(200).setAnchorRight().add();
+            gp0.load(1,0,wallets).removeScaleY().setWeight(0.2f,1f).setAnchorLeft().add();
+            gp0.load(2,0,newWalletName).removeScaleY().setWeight(0.8f,1f).setLeftPad(100).setAnchorRight().add();
             gp0.load(3,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
             createWalletButton.addActionListener(e -> {
                 try {

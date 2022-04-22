@@ -104,6 +104,18 @@ public class JGridBagPanel extends JPanel {
     public JGridBagPanel setWeight(float x, float y) {
         item.weightX = x;
         item.weightY = y;
+        if(x<1 && y<1) {
+            item.component.setPreferredSize(new Dimension(0, 0));
+            return this;
+        }
+        if(x<1) {
+            item.component.setPreferredSize(new Dimension(0, item.component.getPreferredSize().height));
+            return this;
+        }
+        if(y<1) {
+            item.component.setPreferredSize(new Dimension(item.component.getPreferredSize().width,0));
+            return this;
+        }
         return this;
     }
 
