@@ -100,10 +100,10 @@ public class LedgerClient {
 			WalletDetails wallet = wallets.get(walletId);
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
-			Seal<SendTransactionRequestBody> requestBody = new Seal<>(
-					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.signatureSuite
+			UniqueSeal<SendTransactionRequestBody> requestBody = new UniqueSeal<>(
+					new SendTransactionRequestBody(walletDestination.clientId, amount), 0, wallet.signatureSuite
 			);
-			AuthenticatedRequest<SendTransactionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<RequestInfo> info = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
@@ -127,7 +127,7 @@ public class LedgerClient {
 
 	static Result<Transaction[]> getLedger() {
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
+			String uri = "https://" + proxyIp + ":" + proxyPort + "/ledger";
 
 			ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
 

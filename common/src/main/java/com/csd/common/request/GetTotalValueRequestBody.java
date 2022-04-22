@@ -14,6 +14,9 @@ public class GetTotalValueRequestBody implements IRequest {
         this.listOfAccounts = listOfAccounts;
     }
 
+    public GetTotalValueRequestBody() {
+    }
+
     public ArrayList<AuthenticatedRequest<Void>> getListOfAccounts() {
         return listOfAccounts;
     }

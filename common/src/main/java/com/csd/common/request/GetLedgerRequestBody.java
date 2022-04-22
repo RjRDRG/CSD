@@ -5,6 +5,11 @@ public class GetLedgerRequestBody implements IRequest {
     }
 
     @Override
+    public String toString() {
+        return "GetLedgerRequestBody{}";
+    }
+
+    @Override
     public Type type() {
         return Type.LEDGER;
     }

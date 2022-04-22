@@ -14,6 +14,9 @@ public class SendTransactionRequestBody implements IRequest {
         this.value = value;
     }
 
+    public SendTransactionRequestBody() {
+    }
+
     public byte[] getDestination() {
         return destination;
     }
