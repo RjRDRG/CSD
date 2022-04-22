@@ -9,7 +9,7 @@ public class SendTransactionRequestBody implements IRequest {
     private byte[] destination;
     private double value;
 
-    public SendTransactionRequestBody(byte[] destination, int value) {
+    public SendTransactionRequestBody(byte[] destination, double value) {
         this.destination = destination;
         this.value = value;
     }

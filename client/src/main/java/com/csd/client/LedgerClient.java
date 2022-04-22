@@ -3,13 +3,14 @@ package com.csd.client;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.csd.common.item.RequestInfo;
-import com.csd.common.request.GetBalanceRequestBody;
-import com.csd.common.request.LoadMoneyRequestBody;
+import com.csd.common.item.Transaction;
+import com.csd.common.request.*;
 import com.csd.common.request.wrapper.AuthenticatedRequest;
 import com.csd.common.request.wrapper.ProtectedRequest;
 import com.csd.common.traits.Seal;
 import com.csd.common.traits.UniqueSeal;
 import com.csd.common.util.Serialization;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -42,66 +43,17 @@ public class LedgerClient {
 	static String proxyPort = "8080";
 	static Map<String, WalletDetails> wallets = new HashMap<>();
 
-	static String manualToString(){
-		return "Available operations : \n" +
-				"h - Help;                                             Eg: h \n"+
-				"w - List wallets ids;                                 Eg: w \n"+
-				"O - Set the proxy port;                               Eg: 0 {8080, 8081, 8082, 8083} \n" +
-				"1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
-				"a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
-				"c - Consult balance of a certain client;              Eg: c {wallet_id}\n" +
-				"z - Exit                                              Eg: z";
-	}
-
 	public static void main(String[] args) {
-
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-
-		System.out.println(manualToString());
-
-		while(true) {
-
-			try {
-				String[] command = in.readLine().split(" ");
-				char op = command[0].charAt(0);
-				switch (op) {
-					case 'h':
-						System.out.println(manualToString());
-						break;
-					case 'w':
-						System.out.println(wallets.keySet());
-						break;
-					case '0':
-						proxyPort = command[1];
-						break;
-					case '1':
-						wallets.put(command[1], new WalletDetails());
-						break;
-					case 'a':
-						loadMoney(command[1], Integer.parseInt(command[2]));
-						break;
-					case 'c':
-						getBalance(command[1]);
-						break;
-					case 'z':
-						return;
-					default:
-						System.out.println("Chosen operation does not exist. Please try again.");
-						break;
-				}
-			} catch (Exception exception) {
-				exception.printStackTrace();
-			}
-		}
+		//new LedgerPrompt();
+		FlatDarculaLaf.setup();
+		new LedgerSwingGUI();
 	}
 
-	static void loadMoney(String walletId, int amount) {
+	static RequestInfo loadMoney(String walletId, double amount) throws Exception {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/load";
 
-		try {
 			WalletDetails wallet = wallets.get(walletId);
 
 			UniqueSeal<LoadMoneyRequestBody> requestBody = new UniqueSeal<>(
@@ -111,16 +63,12 @@ public class LedgerClient {
 
 			ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 
-			System.out.println(requestInfo.getBody());
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
+			return requestInfo.getBody();
 	}
 
-	static void getBalance(String walletId){
+	static Double getBalance(String walletId) throws Exception {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
 
-		try {
 			WalletDetails wallet = wallets.get(walletId);
 
 			Seal<GetBalanceRequestBody> requestBody = new Seal<>(
@@ -130,11 +78,78 @@ public class LedgerClient {
 
 			ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);
 
-			System.out.println(balance.getBody());
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
+			return balance.getBody();
+
 	}
+
+
+	static RequestInfo sendTransaction(String walletId, String walletDestinationId, double amount) throws Exception {
+		String uri = "https://" + proxyIp + ":" + proxyPort + "/transfer";
+
+			WalletDetails wallet = wallets.get(walletId);
+			WalletDetails walletDestination = wallets.get(walletDestinationId);
+
+			Seal<SendTransactionRequestBody> requestBody = new Seal<>(
+					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.signatureSuite
+			);
+			AuthenticatedRequest<SendTransactionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+
+			ResponseEntity<RequestInfo> info = restTemplate().postForEntity(uri, request, RequestInfo.class);
+
+			return info.getBody();
+	}
+
+	static Double getGlobalValue() {
+		String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
+
+		ResponseEntity<Double> info = restTemplate().postForEntity(uri, new GetGlobalValueRequestBody(), Double.class);
+
+		return info.getBody();
+	}
+
+	static ArrayList<Transaction> getLedger() {
+		String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
+
+		ResponseEntity<ArrayList<Transaction>> info = restTemplate().postForEntity(uri, new GetLedgerRequestBody(), ArrayList<Transaction>.class);
+
+		return info.getBody();
+	}
+
+	static ArrayList<Transaction> getExtract(String walletId) throws Exception {
+		String uri = "https://" + proxyIp + ":" + proxyPort + "/extract";
+
+		WalletDetails wallet = wallets.get(walletId);
+
+
+		Seal<GetExtractRequestBody> requestBody = new Seal<>(
+				new GetExtractRequestBody(), wallet.signatureSuite
+		);
+		AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+
+		ResponseEntity<ArrayList<Transaction>> info = restTemplate().postForEntity(uri, new GetExtractRequestBody(), ArrayList<Transaction>.class);
+
+		return info.getBody();
+	}
+
+	static RequestInfo getTotalValue(List<String> walletsIds) throws Exception {
+		String uri = "https://" + proxyIp + ":" + proxyPort + "/total";
+		ArrayList<AuthenticatedRequest<IRequest.Void>> walletList = new ArrayList<>(walletsIds.size());
+
+		for( String walletId : walletsIds ){
+			WalletDetails wallet = wallets.get(walletId);
+			Seal<IRequest.Void> requestBody = new Seal<>( //TODO IRequest.void has to have a field?
+					new IRequest.Void(), wallet.signatureSuite
+			);
+			AuthenticatedRequest<IRequest.Void> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+			walletList.add(request);
+		}
+
+		GetTotalValueRequestBody request = new GetTotalValueRequestBody(walletList);
+		ResponseEntity<RequestInfo> info = restTemplate().postForEntity(uri, request, RequestInfo.class);
+
+		return info.getBody();
+	}
+
 
 	static MappingJackson2HttpMessageConverter createMappingJacksonHttpMessageConverter() {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
