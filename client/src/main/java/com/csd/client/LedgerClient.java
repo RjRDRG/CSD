@@ -10,6 +10,7 @@ import com.csd.common.request.wrapper.ProtectedRequest;
 import com.csd.common.traits.Seal;
 import com.csd.common.traits.UniqueSeal;
 import com.csd.common.util.Serialization;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -42,60 +43,12 @@ public class LedgerClient {
 	static String proxyPort = "8080";
 	static Map<String, WalletDetails> wallets = new HashMap<>();
 
-	static String manualToString(){
-		return "Available operations : \n" +
-				"h - Help;                                             Eg: h \n"+
-				"w - List wallets ids;                                 Eg: w \n"+
-				"O - Set the proxy port;                               Eg: 0 {8080, 8081, 8082, 8083} \n" +
-				"1 - Create wallet;                                    Eg: 1 {wallet_id} \n" +
-				"a - Obtain tokens;                                    Eg: a {wallet_id} {amount}\n" +
-				"c - Consult balance of a certain client;              Eg: c {wallet_id}\n" +
-				"z - Exit                                              Eg: z";
-	}
-
 	public static void main(String[] args) {
-
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-
-		System.out.println(manualToString());
-
-		while(true) {
-
-			try {
-				String[] command = in.readLine().split(" ");
-				char op = command[0].charAt(0);
-				switch (op) {
-					case 'h':
-						System.out.println(manualToString());
-						break;
-					case 'w':
-						System.out.println(wallets.keySet());
-						break;
-					case '0':
-						proxyPort = command[1];
-						break;
-					case '1':
-						wallets.put(command[1], new WalletDetails());
-						break;
-					case 'a':
-						loadMoney(command[1], Integer.parseInt(command[2]));
-						break;
-					case 'c':
-						getBalance(command[1]);
-						break;
-					case 'z':
-						return;
-					default:
-						System.out.println("Chosen operation does not exist. Please try again.");
-						break;
-				}
-			} catch (Exception exception) {
-				exception.printStackTrace();
-			}
-		}
+		//new LedgerPrompt();
+		FlatDarculaLaf.setup();
+		new LedgerSwingGUI();
 	}
 
 	static void loadMoney(String walletId, int amount) {
