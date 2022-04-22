@@ -88,70 +88,49 @@ public class LedgerSwingGUI extends JFrame{
             loadMoneyAmount.setToolTipText("Amount");
             gp1.load(1,0,loadMoneyAmount).add();
             gp1.load(3,0,loadMoneyExec).add();
-            loadMoneyExec.addActionListener(e -> {
-                try {
-                    result.setText(LedgerClient.loadMoney(
-                        (String) wallets.getSelectedItem(),
-                        Double.parseDouble(loadMoneyAmount.getText())).toString()
-                    );
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
+            loadMoneyExec.addActionListener(e ->
+                result.append("\n\n" + LedgerClient.loadMoney(
+                    (String) wallets.getSelectedItem(),
+                    Double.parseDouble(loadMoneyAmount.getText())).toString()
+                )
+            );
 
             gp1.load(0,1,getBalanceLabel).add();
             gp1.load(3,1,getBalanceExec).add();
             getBalanceExec.addActionListener(e -> {
-                try {
-                    result.setText(LedgerClient.getBalance(
-                            (String) wallets.getSelectedItem()
-                    ).toString());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                result.append("\n\n" + LedgerClient.getBalance(
+                        (String) wallets.getSelectedItem()
+                ).toString());
             });
 
             gp1.load(0,2,sendTransactionLabel).add();
             gp1.load(1,2, sendTransactionDestination).add();
             gp1.load(2,2,sendTransactionAmount).add();
             gp1.load(3,2,sendTransactionExec).add();
-            sendTransactionExec.addActionListener(e -> {
-                try {
-                    result.setText(LedgerClient.sendTransaction(
-                        (String) wallets.getSelectedItem(),
-                        (String) sendTransactionDestination.getSelectedItem(),
-                        Double.parseDouble(sendTransactionAmount.getText())
-                    ).toString());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
+            sendTransactionExec.addActionListener(e ->
+                result.append("\n\n" + LedgerClient.sendTransaction(
+                    (String) wallets.getSelectedItem(),
+                    (String) sendTransactionDestination.getSelectedItem(),
+                    Double.parseDouble(sendTransactionAmount.getText())
+                ).toString())
+            );
 
             gp1.load(0,3,getGlobalValueLabel).add();
             gp1.load(3,3,getGlobalValueExec).add();
-            getGlobalValueExec.addActionListener(e ->
-                    result.setText(LedgerClient.getGlobalValue().toString()));
+            getGlobalValueExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getGlobalValue().toString()));
 
             gp1.load(0,4,getExtractLabel).add();
             gp1.load(3,4,getExtractExec).add();
-            getExtractExec.addActionListener(e -> {
-                try {
-                    result.setText(
-                            Arrays.toString(LedgerClient.getExtract((String) wallets.getSelectedItem()))
-                    );
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
+            getExtractExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getExtract((String) wallets.getSelectedItem()).toString()));
 
             gp1.load(0,5,getLedgerLabel).add();
             gp1.load(3,5,getLedgerExec).add();
-            getLedgerExec.addActionListener(e -> result.setText(Arrays.toString(LedgerClient.getLedger())));
+            getLedgerExec.addActionListener(e -> result.append("\n\n" + LedgerClient.getLedger().toString()));
 
             gp1.load(0,6,getTotalValueLabel).add();
             gp1.load(3,6,getTotalValueExec).add();
-
             getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet())));
+
             gp1.setBorder(BorderFactory.createTitledBorder("Operations"));
 
             gp0.load(0,1,gp1).setWidth(4).setTopPad(10).add();

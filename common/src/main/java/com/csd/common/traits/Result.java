@@ -3,6 +3,7 @@ package com.csd.common.traits;
 import java.io.Serializable;
 
 import static com.csd.common.util.Serialization.dataToBytes;
+import static com.csd.common.util.Serialization.dataToJson;
 
 /**
  * 
@@ -123,9 +124,7 @@ class OkResult<T extends Serializable> implements Result<T> {
 
 	@Override
 	public String toString() {
-		return "OkResult{" +
-				"result=" + result +
-				'}';
+		return dataToJson(this);
 	}
 }
 
@@ -166,9 +165,6 @@ class ErrorResult<T extends Serializable> implements Result<T> {
 
 	@Override
 	public String toString() {
-		return "ErrorResult{" +
-				"error=" + error +
-				", message='" + message + '\'' +
-				'}';
+		return dataToJson(this);
 	}
 }

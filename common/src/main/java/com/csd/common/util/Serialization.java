@@ -54,6 +54,7 @@ public class Serialization {
 
 	private static ObjectMapper createObjectMapper() {
 		ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+		om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		om.registerModule(new JavaTimeModule());
 		SimpleModule module = new SimpleModule();
 		module.addSerializer(byte[].class, new ByteSerializer());
