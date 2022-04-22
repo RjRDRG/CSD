@@ -33,7 +33,7 @@ public class LedgerSwingGUI extends JFrame{
 
     static class MainPanel extends JPanel {
         JLabel walletLabel = new JLabel("Wallet");
-        JComboBox<String> wallets= new JComboBox<>();
+        JComboBox<String> wallets= new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
         JTextField newWalletName = new JTextField();
         JButton createWalletButton = new JButton("New Wallet");
 
@@ -72,10 +72,10 @@ public class LedgerSwingGUI extends JFrame{
             gp0.load(1,0,wallets).removeScaleY().removeScaleX().setAnchorLeft().add();
             gp0.load(2,0,newWalletName).removeScaleY().setLeftPad(200).setAnchorRight().add();
             gp0.load(3,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
-
             createWalletButton.addActionListener(e -> {
                 try {
-                    LedgerClient.wallets.put(newWalletName.getName(), new WalletDetails());
+                    LedgerClient.wallets.put(newWalletName.getText(), new WalletDetails());
+                    wallets.addItem(newWalletName.getText());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
