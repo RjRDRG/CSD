@@ -66,7 +66,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             }
             case EXTRACT: {
                 Result<AuthenticatedRequest<GetExtractRequestBody>> request = validator.validate((AuthenticatedRequest<GetExtractRequestBody>) consensualRequest.extractRequest());
-                Result<ArrayList<Transaction>> result = request.isOK() ? ledgerService.getExtract(request.value()) : Result.error(request);
+                Result<Transaction[]> result = request.isOK() ? ledgerService.getExtract(request.value()) : Result.error(request);
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case TOTAL_VAL: {
@@ -86,7 +86,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case LEDGER: {
-                Result<ArrayList<Transaction>> result = ledgerService.getLedger(consensualRequest.extractRequest());
+                Result<Transaction[]> result = ledgerService.getLedger(consensualRequest.extractRequest());
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             default: {

@@ -1,12 +1,13 @@
 package com.csd.client;
 
 import com.csd.client.ui.JGridBagPanel;
+import com.csd.client.ui.JPromptTextField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LedgerSwingGUI extends JFrame{
 
@@ -37,36 +38,37 @@ public class LedgerSwingGUI extends JFrame{
         JButton createWalletButton = new JButton("New Wallet");
 
         JLabel loadMoneyLabel = new JLabel("Load Money");
-        JTextField loadMoneyAmount = new JTextField();
-        JButton loadMoneyExec = new JButton("Exec");
+        JPromptTextField loadMoneyAmount = new JPromptTextField("Amount");
+        JButton loadMoneyExec = new JButton("Execute");
 
         JLabel getBalanceLabel = new JLabel("Get Balance");
-        JButton getBalanceExec = new JButton("Exec");
+        JButton getBalanceExec = new JButton("Execute");
 
         JLabel sendTransactionLabel = new JLabel("Send Transaction");
-        JComboBox<String> destination= new JComboBox<>();
-        JTextField sendTransactionAmount = new JTextField();
-        JButton sendTransactionExec = new JButton("Exec");
+        JComboBox<String> sendTransactionDestination = new JComboBox<>();
+        JPromptTextField sendTransactionAmount = new JPromptTextField("Amount");
+        JButton sendTransactionExec = new JButton("Execute");
 
         JLabel getGlobalValueLabel = new JLabel("Get Global Value");
-        JButton getGlobalValueExec = new JButton("Exec");
+        JButton getGlobalValueExec = new JButton("Execute");
 
         JLabel getExtractLabel = new JLabel("Get Extract");
-        JButton getExtractExec = new JButton("Exec");
+        JButton getExtractExec = new JButton("Execute");
 
         JLabel getLedgerLabel = new JLabel("Get Ledger");
-        JButton getLedgerExec = new JButton("Exec");
+        JButton getLedgerExec = new JButton("Execute");
 
         JLabel getTotalValueLabel = new JLabel("Get Total Value");
-        JButton getTotalValueExec = new JButton("Exec");
+        JButton getTotalValueExec = new JButton("Execute");
 
+        JLabel resultLabel = new JLabel("Result");
         JTextArea result = new JTextArea();
 
         public MainPanel() {
             setLayout(new BorderLayout());
             JGridBagPanel gp0 = new JGridBagPanel();
 
-            gp0.load(0,0,walletLabel).removeScaleY().removeScaleX().setAnchorLeft().add();
+            gp0.load(0,0,walletLabel).removeScaleY().removeScaleX().setAnchorLeft().setRightPad(5).add();
             gp0.load(1,0,wallets).removeScaleY().removeScaleX().setAnchorLeft().add();
             gp0.load(2,0,newWalletName).removeScaleY().setLeftPad(200).setAnchorRight().add();
             gp0.load(3,0,createWalletButton).removeScaleY().removeScaleX().setAnchorRight().add();
@@ -82,22 +84,23 @@ public class LedgerSwingGUI extends JFrame{
             JGridBagPanel gp1 = new JGridBagPanel();
 
             //components of op
-            gp1.load(0,0,loadMoneyLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,0,loadMoneyAmount).removeScaleY().removeScaleX().add();
-            gp1.load(2,0,loadMoneyExec).removeScaleY().removeScaleX().add();
+            gp1.load(0,0,loadMoneyLabel).add();
+            loadMoneyAmount.setToolTipText("Amount");
+            gp1.load(1,0,loadMoneyAmount).add();
+            gp1.load(3,0,loadMoneyExec).add();
             loadMoneyExec.addActionListener(e -> {
                 try {
                     result.setText(LedgerClient.loadMoney(
-                            (String) wallets.getSelectedItem(),
-                            Double.parseDouble(loadMoneyAmount.getText())).toString()
+                        (String) wallets.getSelectedItem(),
+                        Double.parseDouble(loadMoneyAmount.getText())).toString()
                     );
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             });
 
-            gp1.load(0,1,getBalanceLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,1,getBalanceExec).setWidth(2).removeScaleY().removeScaleX().add();
+            gp1.load(0,1,getBalanceLabel).add();
+            gp1.load(3,1,getBalanceExec).add();
             getBalanceExec.addActionListener(e -> {
                 try {
                     result.setText(LedgerClient.getBalance(
@@ -108,52 +111,53 @@ public class LedgerSwingGUI extends JFrame{
                 }
             });
 
-            gp1.load(0,2,sendTransactionLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,2,destination).removeScaleY().removeScaleX().add();
-            gp1.load(2,2,sendTransactionAmount).removeScaleY().removeScaleX().add();
-            gp1.load(3,2,sendTransactionExec).removeScaleY().removeScaleX().add();
+            gp1.load(0,2,sendTransactionLabel).add();
+            gp1.load(1,2, sendTransactionDestination).add();
+            gp1.load(2,2,sendTransactionAmount).add();
+            gp1.load(3,2,sendTransactionExec).add();
             sendTransactionExec.addActionListener(e -> {
                 try {
                     result.setText(LedgerClient.sendTransaction(
-                            (String) wallets.getSelectedItem(),
-                            (String) destination.getSelectedItem(),
-                            Double.parseDouble(sendTransactionAmount.getText())
+                        (String) wallets.getSelectedItem(),
+                        (String) sendTransactionDestination.getSelectedItem(),
+                        Double.parseDouble(sendTransactionAmount.getText())
                     ).toString());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             });
 
-            gp1.load(0,3,getGlobalValueLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,3,getGlobalValueExec).setWidth(2).removeScaleY().removeScaleX().add();
+            gp1.load(0,3,getGlobalValueLabel).add();
+            gp1.load(3,3,getGlobalValueExec).add();
             getGlobalValueExec.addActionListener(e ->
                     result.setText(LedgerClient.getGlobalValue().toString()));
 
-            gp1.load(0,4,getExtractLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,4,getExtractExec).setWidth(2).removeScaleY().removeScaleX().add();
+            gp1.load(0,4,getExtractLabel).add();
+            gp1.load(3,4,getExtractExec).add();
             getExtractExec.addActionListener(e -> {
                 try {
-                    result.setText(LedgerClient.getExtract(
-                            (String) wallets.getSelectedItem()).toString());
+                    result.setText(
+                            Arrays.toString(LedgerClient.getExtract((String) wallets.getSelectedItem()))
+                    );
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             });
 
-            gp1.load(0,5,getLedgerLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,5,getLedgerExec).setWidth(2).removeScaleY().removeScaleX().add();
-            getLedgerExec.addActionListener(e ->
-                    result.setText(LedgerClient.getLedger().toString()));
+            gp1.load(0,5,getLedgerLabel).add();
+            gp1.load(3,5,getLedgerExec).add();
+            getLedgerExec.addActionListener(e -> result.setText(Arrays.toString(LedgerClient.getLedger())));
 
-            gp1.load(0,6,getTotalValueLabel).removeScaleY().removeScaleX().add();
-            gp1.load(1,6,getTotalValueExec).setWidth(2).removeScaleY().removeScaleX().add();
+            gp1.load(0,6,getTotalValueLabel).add();
+            gp1.load(3,6,getTotalValueExec).add();
 
             getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet())));
             gp1.setBorder(BorderFactory.createTitledBorder("Operations"));
 
-            gp0.load(0,1,gp1).setWidth(4).add();
+            gp0.load(0,1,gp1).setWidth(4).setTopPad(10).add();
 
-            gp0.load(0,2, result).setWidth(4).add();
+            gp0.load(0,2, resultLabel).setWidth(4).setTopPad(5).removeScaleY().add();
+            gp0.load(0,3, new JScrollPane(result)).setWidth(4).add();
 
             add(gp0, BorderLayout.CENTER);
         }

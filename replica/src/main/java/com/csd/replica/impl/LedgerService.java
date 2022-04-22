@@ -30,16 +30,16 @@ public class LedgerService {
         return Result.ok(new RequestInfo(timestamp));
     }
 
-    public Result<ArrayList<Transaction>> getExtract(AuthenticatedRequest<GetExtractRequestBody> request) {
-        return Result.ok(new ArrayList<>());
+    public Result<Transaction[]> getExtract(AuthenticatedRequest<GetExtractRequestBody> request) {
+        return Result.ok(new Transaction[0]);
     }
 
     public Result<Double> getTotalValue(GetTotalValueRequestBody request) {
         return Result.ok(10.0);
     }
 
-    public Result<ArrayList<Transaction>> getLedger(GetLedgerRequestBody request) {
-        return Result.ok(new ArrayList<>());
+    public Result<Transaction[]> getLedger(GetLedgerRequestBody request) {
+        return Result.ok(new Transaction[0]);
     }
 
     public Result<Double> getGlobalValue(GetGlobalValueRequestBody request) {

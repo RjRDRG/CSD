@@ -107,15 +107,15 @@ public class LedgerClient {
 		return info.getBody();
 	}
 
-	static ArrayList<Transaction> getLedger() {
+	static Transaction[] getLedger() {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
 
-		ResponseEntity<ArrayList<Transaction>> info = restTemplate().postForEntity(uri, new GetLedgerRequestBody(), ArrayList<Transaction>.class);
+		ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
 
 		return info.getBody();
 	}
 
-	static ArrayList<Transaction> getExtract(String walletId) throws Exception {
+	static Transaction[] getExtract(String walletId) throws Exception {
 		String uri = "https://" + proxyIp + ":" + proxyPort + "/extract";
 
 		WalletDetails wallet = wallets.get(walletId);
@@ -126,7 +126,7 @@ public class LedgerClient {
 		);
 		AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-		ResponseEntity<ArrayList<Transaction>> info = restTemplate().postForEntity(uri, new GetExtractRequestBody(), ArrayList<Transaction>.class);
+		ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, new GetExtractRequestBody(), Transaction[].class);
 
 		return info.getBody();
 	}

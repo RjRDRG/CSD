@@ -47,8 +47,8 @@ class LedgerController {
     }
 
     @PostMapping("/extract")
-    public ArrayList<Transaction> getExtract(@RequestBody AuthenticatedRequest<GetExtractRequestBody> request) {
-        Result<ArrayList<Transaction>> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+    public Transaction[] getExtract(@RequestBody AuthenticatedRequest<GetExtractRequestBody> request) {
+        Result<Transaction[]> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
         value(result);
         return result.value();
     }
@@ -71,8 +71,8 @@ class LedgerController {
     }
 
     @PostMapping("/ledger")
-    public ArrayList<Transaction> getLedger(@RequestBody GetLedgerRequestBody request) {
-        Result<ArrayList<Transaction>> result = ledgerProxy.invokeOrdered(request);
+    public Transaction[] getLedger(@RequestBody GetLedgerRequestBody request) {
+        Result<Transaction[]> result = ledgerProxy.invokeOrdered(request);
         value(result);
         return result.value();
     }
