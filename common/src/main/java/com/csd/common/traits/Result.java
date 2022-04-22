@@ -63,7 +63,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method for returning non error results without a value
 	 * @return non-error result
 	 */
-	static <T extends Serializable> OkResult<T> ok() {
+	static <T extends Serializable> Result<T> ok() {
 		return new OkResult<>(null);	
 	}
 	
@@ -71,7 +71,7 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T extends Serializable> ErrorResult<T> error(Status error, String message) {
+	static <T extends Serializable> Result<T> error(Status error, String message) {
 		return new ErrorResult<>(error,message);		
 	}
 	
@@ -79,11 +79,11 @@ public interface Result<T extends Serializable> extends Serializable {
 	 * Convenience method used to return an error 
 	 * @return
 	 */
-	static <T extends Serializable> ErrorResult<T> error(Status error) {
+	static <T extends Serializable> Result<T> error(Status error) {
 		return new ErrorResult<>(error,"");		
 	}
 
-	static <T extends Serializable, E extends Serializable> ErrorResult<T> error(Result<E> error) {
+	static <T extends Serializable, E extends Serializable> Result<T> error(Result<E> error) {
 		return new ErrorResult<>(error.error(),error.message());
 	}
 	

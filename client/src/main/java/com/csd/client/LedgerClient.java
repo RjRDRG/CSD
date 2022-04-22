@@ -69,7 +69,7 @@ public class LedgerClient {
 			ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
 			return Result.ok(requestInfo.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -88,7 +88,7 @@ public class LedgerClient {
 
 			return Result.ok(balance.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -109,7 +109,7 @@ public class LedgerClient {
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -121,7 +121,7 @@ public class LedgerClient {
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -133,7 +133,7 @@ public class LedgerClient {
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -153,7 +153,7 @@ public class LedgerClient {
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 
@@ -176,7 +176,7 @@ public class LedgerClient {
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getMessage());
+			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 	}
 

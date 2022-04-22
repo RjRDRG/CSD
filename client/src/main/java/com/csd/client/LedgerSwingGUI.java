@@ -2,6 +2,7 @@ package com.csd.client;
 
 import com.csd.client.ui.JGridBagPanel;
 import com.csd.client.ui.JPromptTextField;
+import com.csd.common.traits.Result;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
@@ -15,7 +16,7 @@ import java.util.List;
 public class LedgerSwingGUI extends JFrame{
 
     public LedgerSwingGUI() {
-        setTitle("Wallet");
+        setTitle("Ultimate ECash Wallet");
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -79,6 +80,8 @@ public class LedgerSwingGUI extends JFrame{
                 try {
                     LedgerClient.wallets.put(newWalletName.getText(), new WalletDetails());
                     wallets.addItem(newWalletName.getText());
+                    wallets.setSelectedItem(newWalletName.getText());
+                    newWalletName.setText("");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -91,12 +94,16 @@ public class LedgerSwingGUI extends JFrame{
             loadMoneyAmount.setToolTipText("Amount");
             gp1.load(1,0,loadMoneyAmount).add();
             gp1.load(3,0,loadMoneyExec).add();
-            loadMoneyExec.addActionListener(e ->
-                result.append(LedgerClient.loadMoney(
-                    (String) wallets.getSelectedItem(),
-                    Double.parseDouble(loadMoneyAmount.getText())
-                ).toString() + "\n\n\n")
-            );
+            loadMoneyExec.addActionListener(e -> {
+                try {
+                    result.append(LedgerClient.loadMoney(
+                            (String) wallets.getSelectedItem(),
+                            Double.parseDouble(loadMoneyAmount.getText())
+                    ).toString() + "\n\n\n");
+                } catch (Exception exception) {
+                    result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                }
+            });
 
             gp1.load(0,1,getBalanceLabel).add();
             gp1.load(3,1,getBalanceExec).add();
@@ -110,13 +117,17 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(1,2, sendTransactionDestination).add();
             gp1.load(2,2,sendTransactionAmount).add();
             gp1.load(3,2,sendTransactionExec).add();
-            sendTransactionExec.addActionListener(e ->
-                result.append(LedgerClient.sendTransaction(
-                    (String) wallets.getSelectedItem(),
-                    (String) sendTransactionDestination.getSelectedItem(),
-                    Double.parseDouble(sendTransactionAmount.getText())
-                ).toString() + "\n\n\n")
-            );
+            sendTransactionExec.addActionListener(e -> {
+                try {
+                    result.append(LedgerClient.sendTransaction(
+                            (String) wallets.getSelectedItem(),
+                            (String) sendTransactionDestination.getSelectedItem(),
+                            Double.parseDouble(sendTransactionAmount.getText())
+                    ).toString() + "\n\n\n");
+                } catch (Exception exception) {
+                    result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                }
+            });
 
             gp1.load(0,3,getGlobalValueLabel).add();
             gp1.load(3,3,getGlobalValueExec).add();
