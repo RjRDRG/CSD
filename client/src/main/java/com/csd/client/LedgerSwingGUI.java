@@ -1,6 +1,7 @@
 package com.csd.client;
 
 import com.csd.client.ui.JGridBagPanel;
+import com.csd.client.ui.JImageLabel;
 import com.csd.client.ui.JPromptTextField;
 import com.csd.common.traits.Result;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -27,7 +28,12 @@ public class LedgerSwingGUI extends JFrame{
         getContentPane().add(Box.createRigidArea(new Dimension(0,20)), BorderLayout.PAGE_END);
         getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_START);
         getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_END);
+
+        ImageIcon icon = new ImageIcon("client/src/main/resources/images/rick-roll.gif");
+        JImageLabel label = new JImageLabel();
+
         getContentPane().add(new MainPanel(), BorderLayout.CENTER);
+        label.setIcon(icon);
 
         setSize(new Dimension(1000, 1000));
         setLocationRelativeTo(null);
