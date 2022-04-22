@@ -12,7 +12,7 @@ public class JPromptTextField extends JTextField {
         setText(promptText);
         setForeground(new Color(255, 255, 255, 76));
         setHorizontalAlignment(JTextField.CENTER);
-        
+
         addFocusListener(new FocusListener() {
 
             @Override
