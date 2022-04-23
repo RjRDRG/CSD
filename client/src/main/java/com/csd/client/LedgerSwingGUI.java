@@ -1,7 +1,6 @@
 package com.csd.client;
 
 import com.csd.client.ui.JGridBagPanel;
-import com.csd.client.ui.JImageLabel;
 import com.csd.client.ui.JPromptTextField;
 import com.csd.common.traits.Result;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -10,16 +9,31 @@ import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LedgerSwingGUI extends JFrame{
 
-    public LedgerSwingGUI() {
+    public LedgerSwingGUI() throws InterruptedException {
+        JPanel mainPanel = new MainPanel();
+
         setTitle("The Wallet");
 
         getContentPane().setLayout(new BorderLayout());
+
+        JLabel loading = new JLabel(new ImageIcon("client/src/main/resources/images/load.gif"));
+        loading.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        getContentPane().add(loading, BorderLayout.CENTER);
+
+        setSize(new Dimension(1000, 1000));
+        setResizable(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
+
+        Thread.sleep(30000);
+        getContentPane().remove(loading);
 
         JGridBagPanel top = new JGridBagPanel();
         top.load(0,0, new JSeparator(SwingConstants.HORIZONTAL)).add();
@@ -28,18 +42,9 @@ public class LedgerSwingGUI extends JFrame{
         getContentPane().add(Box.createRigidArea(new Dimension(0,20)), BorderLayout.PAGE_END);
         getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_START);
         getContentPane().add(Box.createRigidArea(new Dimension(20,0)), BorderLayout.LINE_END);
-
-        ImageIcon icon = new ImageIcon("client/src/main/resources/images/rick-roll.gif");
-        JImageLabel label = new JImageLabel();
-
-        getContentPane().add(new MainPanel(), BorderLayout.CENTER);
-        label.setIcon(icon);
-
-        setSize(new Dimension(1000, 1000));
-        setLocationRelativeTo(null);
-        setResizable(true);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
+        getContentPane().add(mainPanel, BorderLayout.CENTER);
+        getContentPane().revalidate();
+        getContentPane().repaint();
     }
 
     static class MainPanel extends JPanel {
