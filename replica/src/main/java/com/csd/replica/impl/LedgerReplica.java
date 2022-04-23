@@ -80,7 +80,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case GLOBAL_VAL: {
-                Result<Double> result = ledgerService.getTotalValue(consensualRequest.extractRequest());
+                Result<Double> result = ledgerService.getGlobalValue(consensualRequest.extractRequest());
                 return new ConsentedReply(result.encode(), Collections.emptyList());
             }
             case LEDGER: {

@@ -167,6 +167,7 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(0,6,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,6,getTotalValueExec).removeScaleX().removeScaleY().add();
             getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet())));
+            //TODO
 
             border.add(gp1, BorderLayout.CENTER);
 

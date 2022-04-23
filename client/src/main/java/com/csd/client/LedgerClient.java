@@ -149,7 +149,7 @@ public class LedgerClient {
 			);
 			AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-			ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, new GetExtractRequestBody(), Transaction[].class);
+			ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, request, Transaction[].class);
 
 			return Result.ok(info.getBody());
 		} catch (Exception e) {
