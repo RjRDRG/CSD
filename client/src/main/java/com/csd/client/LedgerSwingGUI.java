@@ -32,7 +32,7 @@ public class LedgerSwingGUI extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
-        //Thread.sleep(30000);
+        Thread.sleep(30000);
         getContentPane().remove(loading);
 
         JGridBagPanel top = new JGridBagPanel();

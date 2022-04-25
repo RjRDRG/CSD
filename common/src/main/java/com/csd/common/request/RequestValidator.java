@@ -35,8 +35,28 @@ public class RequestValidator { //TODO validate nonce
 
     public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request, long nonce) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite) && request.verifyNonce(nonce);
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+            if (!request.verifyClientId(clientIdDigestSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Id");
+
+            if (!request.verifySignature(clientSignatureSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+
+            if (!request.verifyNonce(nonce))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Nonce: " + nonce + " " + request.getRequestBody().getNonce());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
+        return Result.ok(request);
+    }
+
+    public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request) {
+        try {
+            if (!request.verifyClientId(clientIdDigestSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Id");
+
+            if (!request.verifySignature(clientSignatureSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
         } catch (Exception e) {
             log.error(e.getMessage());
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
@@ -46,8 +66,11 @@ public class RequestValidator { //TODO validate nonce
 
     public <R extends IRequest> Result<AuthenticatedRequest<R>> validate(AuthenticatedRequest<R> request) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
-            if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+            if (!request.verifyClientId(clientIdDigestSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
+
+            if (!request.verifySignature(clientSignatureSuite))
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
         } catch (Exception e) {
             log.error(e.getMessage());
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

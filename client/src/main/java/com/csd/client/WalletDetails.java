@@ -17,7 +17,7 @@ public class WalletDetails {
     public final byte[] clientId;
     public final EncodedPublicKey clientPublicKey;
     public final SignatureSuite signatureSuite;
-    public long requestCounter;
+    public Long requestCounter;
 
     public WalletDetails() throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -35,11 +35,7 @@ public class WalletDetails {
 
         this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
 
-        this.requestCounter = 0;
-    }
-
-    String getUrlSafeClientId() {
-        return bytesToString(clientId);
+        this.requestCounter = null;
     }
 
     long getRequestCounter() {

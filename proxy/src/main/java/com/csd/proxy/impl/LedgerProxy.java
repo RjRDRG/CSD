@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.*;
@@ -62,15 +63,6 @@ public class LedgerProxy extends ServiceProxy {
         } catch (Exception e) {
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
-    }
-
-    public long getLastTransactionId(byte[] ownerId) {
-        String owner = bytesToString(ownerId);
-        TransactionEntity entity = transactionsRepository.findByOwnerAndTopByOrderByIdDesc(owner);
-        if (entity==null)
-            return -1;
-        else
-            return entity.getId();
     }
 
 }

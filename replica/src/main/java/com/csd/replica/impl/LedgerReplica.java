@@ -17,10 +17,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.time.OffsetDateTime;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static com.csd.common.util.Serialization.bytesToData;
-import static com.csd.common.util.Serialization.dataToBytes;
+import static com.csd.common.util.Serialization.*;
 
 @Component
 public class LedgerReplica extends DefaultSingleRecoverable {
@@ -32,11 +32,13 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     private final Environment environment;
 
     private final RequestValidator validator;
+    private final SessionRegistry sessions;
 
     public LedgerReplica(LedgerService ledgerService, Environment environment) throws Exception {
         this.ledgerService = ledgerService;
         this.environment = environment;
         this.validator = new RequestValidator();
+        this.sessions = new SessionRegistry();
     }
 
     public void start(String[] args) {
@@ -47,6 +49,27 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     public ConsentedReply execute(ConsensualRequest consensualRequest) {
         switch (consensualRequest.getType()) {
+            case SESSION: {
+                Result<AuthenticatedRequest<StartSessionRequestBody>> request = validator.validate((AuthenticatedRequest<StartSessionRequestBody>) consensualRequest.extractRequest());
+                Result<Long> result;
+                String clientId = bytesToString(request.value().getClientId());
+                OffsetDateTime timestamp = request.value().getRequestBody().getData().getTimestamp();
+                if(!request.valid()) {
+                    result = Result.error(request);
+                }
+                else if(timestamp.isBefore(OffsetDateTime.now().minusMinutes(10))) {
+                    result = Result.error(Result.Status.BAD_REQUEST, "Session Timestamp is to old");
+                }
+                else if(sessions.contains(clientId)) {
+                    result = Result.error(Result.Status.BAD_REQUEST, "Session already active");
+                }
+                else {
+                    long nonce = timestamp.toInstant().toEpochMilli();
+                    sessions.putSession(clientId, nonce);
+                    result = Result.ok(nonce);
+                }
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
+            }
             case BALANCE: {
                 Result<AuthenticatedRequest<GetBalanceRequestBody>> request = validator.validate((AuthenticatedRequest<GetBalanceRequestBody>) consensualRequest.extractRequest());
                 Result<Double> result = request.valid() ? ledgerService.getBalance(request.value()) : Result.error(request);
@@ -54,14 +77,27 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             }
             case LOAD: {
                 ProtectedRequest<LoadMoneyRequestBody> extractRequest = consensualRequest.extractRequest();
-                Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, ledgerService.getLastTransactionId(extractRequest.getClientId()));
-                Result<RequestInfo> result = request.valid() ? ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
+                String clientId = bytesToString(extractRequest.getClientId());
+                Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
+                Result<RequestInfo> result;
+                if (request.valid()) {
+                    result = ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp());
+                    sessions.increment(clientId);
+                }
+                else result = Result.error(request);
                 return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case TRANSFER: {
                 ProtectedRequest<SendTransactionRequestBody> extractRequest = consensualRequest.extractRequest();
-                Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, ledgerService.getLastTransactionId(extractRequest.getClientId()));
-                Result<RequestInfo> result = request.valid() ? ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
+                String clientId = bytesToString(extractRequest.getClientId());
+                Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
+                Result<RequestInfo> result;
+                if (request.valid()) {
+                    result = ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp());
+                    sessions.increment(clientId);
+                }
+                else result = Result.error(request);
+
                 return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case EXTRACT: {

@@ -9,7 +9,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     TransactionEntity findTopByOrderByIdDesc();
     List<TransactionEntity> findByIdGreaterThan(long id);
     List<TransactionEntity> findByOwner(String owner);
-    TransactionEntity findByOwnerAndTopByOrderByIdDesc(String owner);
     List<TransactionEntity> findByTimestampIsBetween(OffsetDateTime start, OffsetDateTime end);
     List<TransactionEntity> findByOwnerEqualsAndTimestampIsBetween(String owner, OffsetDateTime start, OffsetDateTime end);
 }
