@@ -26,6 +26,6 @@ public class RequestInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "\nRequestInfo " + dataToJson(this);
+        return dataToJson(this);
     }
 }

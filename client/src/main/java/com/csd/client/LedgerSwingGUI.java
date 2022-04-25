@@ -11,6 +11,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -162,8 +163,7 @@ public class LedgerSwingGUI extends JFrame{
 
             gp1.load(0,6,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,6,getTotalValueExec).removeScaleX().removeScaleY().add();
-            getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet())));
-            //TODO
+            getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet()), result));
 
             border.add(gp1, BorderLayout.CENTER);
 
@@ -184,7 +184,7 @@ public class LedgerSwingGUI extends JFrame{
         }
     }
     static class SelectorPopUp extends JFrame {
-        public SelectorPopUp(String title, List<String> values) {
+        public SelectorPopUp(String title, List<String> values, IConsole console) {
             setTitle(title);
 
             getContentPane().setLayout(new BorderLayout());
@@ -196,7 +196,7 @@ public class LedgerSwingGUI extends JFrame{
             getContentPane().add(Box.createRigidArea(new Dimension(0,10)), BorderLayout.PAGE_END);
             getContentPane().add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_START);
             getContentPane().add(Box.createRigidArea(new Dimension(10,0)), BorderLayout.LINE_END);
-            getContentPane().add(new PopUpPanel(values), BorderLayout.CENTER);
+            getContentPane().add(new PopUpPanel(values, console), BorderLayout.CENTER);
 
             setSize(new Dimension(300, 300));
             setLocationRelativeTo(null);
@@ -205,18 +205,25 @@ public class LedgerSwingGUI extends JFrame{
             setVisible(true);
         }
 
-        static class PopUpPanel extends JPanel {
+        class PopUpPanel extends JPanel {
 
             JList<String> options = new JList<>();
             JButton submit = new JButton("Submit");
 
-            public PopUpPanel(List<String> values){
+            public PopUpPanel(List<String> values, IConsole console){
                 setLayout(new BorderLayout());
                 JGridBagPanel gp0 = new JGridBagPanel();
 
                 this.options.setListData(values.toArray(new String[0]));
 
                 gp0.load(0, 0, new JScrollPane(options)).setWidth(2).add();
+
+                submit.addActionListener(e -> {
+                    JList<String> optionsRef = options;
+                    SelectorPopUp.this.dispose();
+                    LedgerClient.getTotalValue(optionsRef.getSelectedValuesList(), console);
+                });
+
                 gp0.load(1, 1, submit).removeScaleX().removeScaleY().setTopPad(5).setAnchorRight().add();
 
                 add(gp0, BorderLayout.CENTER);

@@ -57,7 +57,7 @@ public class LedgerClient {
 	}
 
 	static void loadMoney(String walletId, double amount, IConsole console) {
-		String requestString = "loadMoney: " + walletId + " " + amount;
+		String requestString = "-----> loadMoney: " + walletId + " " + amount;
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/load";
@@ -79,7 +79,7 @@ public class LedgerClient {
 	}
 
 	static void getBalance(String walletId, IConsole console) {
-		String requestString = "getBalance: " + walletId;
+		String requestString = "-----> Get Balance: " + walletId;
 		String resultString;
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
@@ -102,7 +102,7 @@ public class LedgerClient {
 
 
 	static void sendTransaction(String walletId, String walletDestinationId, double amount, IConsole console) {
-		String requestString = "sendTransaction: " + walletId + " " + walletDestinationId + " " + amount;
+		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/transfer";
@@ -125,7 +125,7 @@ public class LedgerClient {
 	}
 
 	static void getGlobalValue(IConsole console) {
-		String requestString = "getGlobalValue: ";
+		String requestString = "-----> Get Global Value";
 		String resultString;
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
@@ -140,7 +140,7 @@ public class LedgerClient {
 	}
 
 	static void getLedger(IConsole console) {
-		String requestString = "getLedger: ";
+		String requestString = "-----> Get Ledger";
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/ledger";
@@ -155,7 +155,7 @@ public class LedgerClient {
 	}
 
 	static void getExtract(String walletId, IConsole console) {
-		String requestString = "getExtract: " + walletId;
+		String requestString = "-----> Get Extract: " + walletId;
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/extract";
@@ -178,7 +178,7 @@ public class LedgerClient {
 	}
 
 	static void getTotalValue(List<String> walletsIds, IConsole console) {
-		String requestString = "getTotalValue: " + walletsIds;
+		String requestString = "-----> Get Total Value: " + walletsIds;
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/total";
@@ -194,7 +194,7 @@ public class LedgerClient {
 			}
 
 			GetTotalValueRequestBody request = new GetTotalValueRequestBody(walletList);
-			ResponseEntity<RequestInfo> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
+			ResponseEntity<Double> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Double.class);
 
 			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
