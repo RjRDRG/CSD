@@ -148,6 +148,10 @@ public class LedgerService {
         }
     }
 
+    public Transaction[] getTransactionsAfterId(long id) {
+        return transactionsRepository.findByIdGreaterThan(id).stream().map(TransactionEntity::toItem).toArray(Transaction[]::new);
+    }
+
     private String getLastTransactionHash() throws Exception {
         TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
         if (entity==null)

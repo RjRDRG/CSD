@@ -5,10 +5,14 @@ import com.csd.common.reply.ConsentedReply;
 import com.csd.common.request.IRequest;
 import com.csd.common.request.wrapper.ConsensualRequest;
 import com.csd.common.traits.Result;
+import com.csd.proxy.db.TransactionEntity;
+import com.csd.proxy.db.TransactionRepository;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.dataToBytes;
 import static com.csd.common.util.Serialization.bytesToData;
@@ -16,8 +20,11 @@ import static com.csd.common.util.Serialization.bytesToData;
 @Component
 public class LedgerProxy extends ServiceProxy {
 
-    public LedgerProxy(Environment environment) {
+    private final TransactionRepository transactionsRepository;
+
+    public LedgerProxy(Environment environment, TransactionRepository transactionsRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
+        this.transactionsRepository = transactionsRepository;
     }
 
     @SuppressWarnings("unchecked")
@@ -30,6 +37,9 @@ public class LedgerProxy extends ServiceProxy {
                 return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
 
             ConsentedReply consentedReply = bytesToData(reply);
+
+            transactionsRepository.saveAll(Arrays.stream(consentedReply.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
+
             return consentedReply.extractReply();
         } catch (Exception e) {
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
@@ -46,6 +56,9 @@ public class LedgerProxy extends ServiceProxy {
                 return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
 
             ConsentedReply consentedReply = bytesToData(reply);
+
+            transactionsRepository.saveAll(Arrays.stream(consentedReply.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
+
             return consentedReply.extractReply();
         } catch (Exception e) {
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());

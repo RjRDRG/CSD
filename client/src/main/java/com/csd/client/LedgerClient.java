@@ -12,6 +12,7 @@ import com.csd.common.traits.Seal;
 import com.csd.common.traits.UniqueSeal;
 import com.csd.common.util.Serialization;
 import com.formdev.flatlaf.FlatDarculaLaf;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
@@ -41,7 +42,8 @@ public class LedgerClient {
 	}
 
 	static String proxyIp = "localhost";
-	static String proxyPort = "8080";
+	public static String proxyPorts[] = {"8080","8081","8082","8083"};
+	static int port = 0;
 
 	static Map<String, WalletDetails> wallets = new HashMap<>();
 
@@ -56,11 +58,15 @@ public class LedgerClient {
 		new LedgerSwingGUI();
 	}
 
+	static void changeProxy(String proxy) {
+		port = ArrayUtils.indexOf(proxyPorts, proxy);
+	}
+
 	static void loadMoney(String walletId, double amount, IConsole console) {
 		String requestString = "-----> loadMoney: " + walletId + " " + amount;
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/load";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/load";
 
 			WalletDetails wallet = wallets.get(walletId);
 
@@ -82,7 +88,7 @@ public class LedgerClient {
 		String requestString = "-----> Get Balance: " + walletId;
 		String resultString;
 		try{
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/balance";
 
 			WalletDetails wallet = wallets.get(walletId);
 
@@ -105,7 +111,7 @@ public class LedgerClient {
 		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/transfer";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/transfer";
 
 			WalletDetails wallet = wallets.get(walletId);
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
@@ -128,7 +134,7 @@ public class LedgerClient {
 		String requestString = "-----> Get Global Value";
 		String resultString;
 		try{
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/global";
 
 			ResponseEntity<Double> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetGlobalValueRequestBody(), Double.class);
 
@@ -143,7 +149,7 @@ public class LedgerClient {
 		String requestString = "-----> Get Ledger";
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/ledger";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/ledger";
 
 			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
 
@@ -158,7 +164,7 @@ public class LedgerClient {
 		String requestString = "-----> Get Extract: " + walletId;
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/extract";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/extract";
 
 			WalletDetails wallet = wallets.get(walletId);
 
@@ -181,7 +187,7 @@ public class LedgerClient {
 		String requestString = "-----> Get Total Value: " + walletsIds;
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPort + "/total";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/total";
 			ArrayList<AuthenticatedRequest<IRequest.Void>> walletList = new ArrayList<>(walletsIds.size());
 
 			for( String walletId : walletsIds ){

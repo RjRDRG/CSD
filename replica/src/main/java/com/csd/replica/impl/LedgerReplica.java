@@ -50,22 +50,22 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             case BALANCE: {
                 Result<AuthenticatedRequest<GetBalanceRequestBody>> request = validator.validate((AuthenticatedRequest<GetBalanceRequestBody>) consensualRequest.extractRequest());
                 Result<Double> result = request.valid() ? ledgerService.getBalance(request.value()) : Result.error(request);
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case LOAD: {
                 Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate((ProtectedRequest<LoadMoneyRequestBody>) consensualRequest.extractRequest());
                 Result<RequestInfo> result = request.valid() ? ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case TRANSFER: {
                 Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate((ProtectedRequest<SendTransactionRequestBody>) consensualRequest.extractRequest());
                 Result<RequestInfo> result = request.valid() ? ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case EXTRACT: {
                 Result<AuthenticatedRequest<GetExtractRequestBody>> request = validator.validate((AuthenticatedRequest<GetExtractRequestBody>) consensualRequest.extractRequest());
                 Result<Transaction[]> result = request.valid() ? ledgerService.getExtract(request.value()) : Result.error(request);
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case TOTAL_VAL: {
                 Result<GetTotalValueRequestBody> request = Result.ok(consensualRequest.extractRequest());
@@ -77,19 +77,19 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                     }
                 }
                 Result<Double> result = request.valid() ? ledgerService.getTotalValue(request.value()) : Result.error(request);
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case GLOBAL_VAL: {
                 Result<Double> result = ledgerService.getGlobalValue(consensualRequest.extractRequest());
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case LEDGER: {
                 Result<Transaction[]> result = ledgerService.getLedger(consensualRequest.extractRequest());
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             default: {
                 Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, consensualRequest.getType().name());
-                return new ConsentedReply(result.encode(), Collections.emptyList());
+                return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
         }
     }
@@ -101,7 +101,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         } catch (Exception e) {
             log.error(e.getMessage());
             Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
-            return dataToBytes(new ConsentedReply(result.encode(), Collections.emptyList()));
+            return dataToBytes(new ConsentedReply(result.encode(), new Transaction[0]));
         }
     }
 
@@ -112,7 +112,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         } catch (Exception e) {
             log.error(e.getMessage());
             Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
-            return dataToBytes(new ConsentedReply(result.encode(), Collections.emptyList()));
+            return dataToBytes(new ConsentedReply(result.encode(), new Transaction[0]));
         }
     }
 

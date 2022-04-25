@@ -11,7 +11,7 @@ import static com.csd.common.util.Serialization.bytesToData;
 
 public class ConsentedReply implements Serializable {
     private Result<byte[]> encodedResult;
-    private List<Transaction> missingEntries;
+    private Transaction[] missingEntries;
 
     public <T extends Serializable> Result<T> extractReply() {
         if(encodedResult.valid())
@@ -20,7 +20,7 @@ public class ConsentedReply implements Serializable {
             return Result.error(encodedResult.error());
     }
 
-    public ConsentedReply(Result<byte[]> encodedResult, List<Transaction> missingEntries) {
+    public ConsentedReply(Result<byte[]> encodedResult, Transaction[] missingEntries) {
         this.encodedResult = encodedResult;
         this.missingEntries = missingEntries;
     }
@@ -36,11 +36,11 @@ public class ConsentedReply implements Serializable {
         this.encodedResult = encodedResult;
     }
 
-    public List<Transaction> getMissingEntries() {
+    public Transaction[] getMissingEntries() {
         return missingEntries;
     }
 
-    public void setMissingEntries(List<Transaction> missingEntries) {
+    public void setMissingEntries(Transaction[] missingEntries) {
         this.missingEntries = missingEntries;
     }
 
