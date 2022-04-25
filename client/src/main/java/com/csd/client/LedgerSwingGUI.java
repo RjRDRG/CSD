@@ -78,7 +78,7 @@ public class LedgerSwingGUI extends JFrame{
         JButton getTotalValueExec = new JButton("Execute");
 
         JLabel resultLabel = new JLabel("Result");
-        RSyntaxTextArea result = new RSyntaxTextArea();
+        RSyntaxConsole result = new RSyntaxConsole();
 
         public MainPanel() {
             setLayout(new BorderLayout());
