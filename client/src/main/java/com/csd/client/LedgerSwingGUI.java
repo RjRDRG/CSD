@@ -119,10 +119,7 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(3,0,loadMoneyExec).removeScaleX().removeScaleY().add();
             loadMoneyExec.addActionListener(e -> {
                 try {
-                    result.append(LedgerClient.loadMoney(
-                            (String) wallets.getSelectedItem(),
-                            Double.parseDouble(loadMoneyAmount.getText())
-                    ).toString() + "\n\n\n");
+                    LedgerClient.loadMoney((String) wallets.getSelectedItem(), Double.parseDouble(loadMoneyAmount.getText()), result);
                 } catch (Exception exception) {
                     result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
                 }
@@ -131,9 +128,7 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(0,1,getBalanceLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,1,getBalanceExec).removeScaleX().removeScaleY().add();
             getBalanceExec.addActionListener(e ->
-                result.append(LedgerClient.getBalance(
-                        (String) wallets.getSelectedItem()
-                ).toString() + "\n\n\n")
+                LedgerClient.getBalance((String) wallets.getSelectedItem(), result)
             );
 
             gp1.load(0,2,sendTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
@@ -142,11 +137,12 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(3,2,sendTransactionExec).removeScaleX().removeScaleY().add();
             sendTransactionExec.addActionListener(e -> {
                 try {
-                    result.append(LedgerClient.sendTransaction(
+                    LedgerClient.sendTransaction(
                             (String) wallets.getSelectedItem(),
                             (String) sendTransactionDestination.getSelectedItem(),
-                            Double.parseDouble(sendTransactionAmount.getText())
-                    ).toString() + "\n\n\n");
+                            Double.parseDouble(sendTransactionAmount.getText()),
+                            result
+                    );
                 } catch (Exception exception) {
                     result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
                 }
@@ -154,15 +150,15 @@ public class LedgerSwingGUI extends JFrame{
 
             gp1.load(0,3,getGlobalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,3,getGlobalValueExec).removeScaleX().removeScaleY().add();
-            getGlobalValueExec.addActionListener(e -> result.append(LedgerClient.getGlobalValue().toString() + "\n\n\n"));
+            getGlobalValueExec.addActionListener(e -> LedgerClient.getGlobalValue(result));
 
             gp1.load(0,4,getExtractLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,4,getExtractExec).removeScaleX().removeScaleY().add();
-            getExtractExec.addActionListener(e -> result.append(LedgerClient.getExtract((String) wallets.getSelectedItem()).toString() + "\n\n\n" ));
+            getExtractExec.addActionListener(e -> LedgerClient.getExtract((String) wallets.getSelectedItem(), result));
 
             gp1.load(0,5,getLedgerLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,5,getLedgerExec).removeScaleX().removeScaleY().add();
-            getLedgerExec.addActionListener(e -> result.append(LedgerClient.getLedger().toString() + "\n\n\n" ));
+            getLedgerExec.addActionListener(e -> LedgerClient.getLedger(result));
 
             gp1.load(0,6,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             gp1.load(3,6,getTotalValueExec).removeScaleX().removeScaleY().add();

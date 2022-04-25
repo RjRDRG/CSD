@@ -42,6 +42,7 @@ public class LedgerClient {
 
 	static String proxyIp = "localhost";
 	static String proxyPort = "8080";
+
 	static Map<String, WalletDetails> wallets = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
@@ -55,7 +56,9 @@ public class LedgerClient {
 		new LedgerSwingGUI();
 	}
 
-	static Result<RequestInfo> loadMoney(String walletId, double amount) {
+	static void loadMoney(String walletId, double amount, IConsole console) {
+		String requestString = "loadMoney: " + walletId + " " + amount;
+		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/load";
 
@@ -66,14 +69,18 @@ public class LedgerClient {
 			);
 			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-			ResponseEntity<RequestInfo> requestInfo = restTemplate().postForEntity(uri, request, RequestInfo.class);
-			return Result.ok(requestInfo.getBody());
+			ResponseEntity<RequestInfo> requestInfo = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
+
+			resultString = Objects.requireNonNull(requestInfo.getBody()).toString();
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
-	static Result<Double> getBalance(String walletId) {
+	static void getBalance(String walletId, IConsole console) {
+		String requestString = "getBalance: " + walletId;
+		String resultString;
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/balance";
 
@@ -84,16 +91,19 @@ public class LedgerClient {
 			);
 			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-			ResponseEntity<Double> balance = restTemplate().postForEntity(uri, request, Double.class);
+			ResponseEntity<Double> balance = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Double.class);
 
-			return Result.ok(balance.getBody());
+			resultString = Objects.requireNonNull(balance.getBody()).toString();
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString =  Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
 
-	static Result<RequestInfo> sendTransaction(String walletId, String walletDestinationId, double amount) {
+	static void sendTransaction(String walletId, String walletDestinationId, double amount, IConsole console) {
+		String requestString = "sendTransaction: " + walletId + " " + walletDestinationId + " " + amount;
+		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/transfer";
 
@@ -105,39 +115,48 @@ public class LedgerClient {
 			);
 			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-			ResponseEntity<RequestInfo> info = restTemplate().postForEntity(uri, request, RequestInfo.class);
+			ResponseEntity<RequestInfo> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
 
-			return Result.ok(info.getBody());
+			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
-	static Result<Double> getGlobalValue() {
+	static void getGlobalValue(IConsole console) {
+		String requestString = "getGlobalValue: ";
+		String resultString;
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/global";
 
-			ResponseEntity<Double> info = restTemplate().postForEntity(uri, new GetGlobalValueRequestBody(), Double.class);
+			ResponseEntity<Double> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetGlobalValueRequestBody(), Double.class);
 
-			return Result.ok(info.getBody());
+			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
-	static Result<Transaction[]> getLedger() {
+	static void getLedger(IConsole console) {
+		String requestString = "getLedger: ";
+		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/ledger";
 
-			ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
+			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
 
-			return Result.ok(info.getBody());
+			resultString = Arrays.toString(info.getBody());
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
-	static Result<Transaction[]> getExtract(String walletId) {
+	static void getExtract(String walletId, IConsole console) {
+		String requestString = "getExtract: " + walletId;
+		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/extract";
 
@@ -149,15 +168,18 @@ public class LedgerClient {
 			);
 			AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
-			ResponseEntity<Transaction[]> info = restTemplate().postForEntity(uri, request, Transaction[].class);
+			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Transaction[].class);
 
-			return Result.ok(info.getBody());
+			resultString = Arrays.toString(Objects.requireNonNull(info.getBody()));
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
-	static Result<RequestInfo> getTotalValue(List<String> walletsIds) {
+	static void getTotalValue(List<String> walletsIds, IConsole console) {
+		String requestString = "getTotalValue: " + walletsIds;
+		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPort + "/total";
 			ArrayList<AuthenticatedRequest<IRequest.Void>> walletList = new ArrayList<>(walletsIds.size());
@@ -172,12 +194,13 @@ public class LedgerClient {
 			}
 
 			GetTotalValueRequestBody request = new GetTotalValueRequestBody(walletList);
-			ResponseEntity<RequestInfo> info = restTemplate().postForEntity(uri, request, RequestInfo.class);
+			ResponseEntity<RequestInfo> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
 
-			return Result.ok(info.getBody());
+			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			return Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage());
+			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
 		}
+		console.printOperation(requestString,resultString);
 	}
 
 
