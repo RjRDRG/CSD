@@ -84,35 +84,68 @@ public class LedgerService {
     }
 
     public Result<Transaction[]> getExtract(AuthenticatedRequest<GetExtractRequestBody> request) {
-        GetExtractRequestBody requestBody = request.getRequestBody().getData();
+        try {
+            GetExtractRequestBody requestBody = request.getRequestBody().getData();
 
-        String ownerId = bytesToString(request.getClientId());
+            String ownerId = bytesToString(request.getClientId());
 
-        return Result.ok(transactionsRepository.findByOwner(ownerId).stream()
-                .map(TransactionEntity::toItem).toArray(Transaction[]::new));
+            return Result.ok(transactionsRepository.findByOwner(ownerId).stream()
+                    .map(TransactionEntity::toItem).toArray(Transaction[]::new));
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     public Result<Double> getTotalValue(GetTotalValueRequestBody request) {
-        double acm = 0;
-        for(AuthenticatedRequest<IRequest.Void> authenticatedRequest : request.getListOfAccounts()) {
-            String clientId = bytesToString(authenticatedRequest.getClientId());
-            acm += transactionsRepository.findByOwner(clientId).stream()
-                    .map(TransactionEntity::getAmount)
-                    .reduce(0.0, Double::sum);
+        try {
+            double acm = 0;
+            for(AuthenticatedRequest<IRequest.Void> authenticatedRequest : request.getListOfAccounts()) {
+                String clientId = bytesToString(authenticatedRequest.getClientId());
+                acm += transactionsRepository.findByOwner(clientId).stream()
+                        .map(TransactionEntity::getAmount)
+                        .reduce(0.0, Double::sum);
+            }
+            return Result.ok(acm);
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
         }
-        return Result.ok(acm);
     }
 
     public Result<Transaction[]> getLedger(GetLedgerRequestBody request) {
-        return Result.ok(transactionsRepository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
+        try {
+            return Result.ok(transactionsRepository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     public Result<Double> getGlobalValue(GetGlobalValueRequestBody request) {
-        return Result.ok(globalValue);
+        try {
+            return Result.ok(globalValue);
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     public Result<Double> getBalance(AuthenticatedRequest<GetBalanceRequestBody> request) {
-        return Result.ok(14.0);
+        try {
+            GetBalanceRequestBody requestBody = request.getRequestBody().getData();
+            double acm = 0;
+
+            String clientId = bytesToString(request.getClientId());
+            acm += transactionsRepository.findByOwner(clientId).stream()
+                    .map(TransactionEntity::getAmount)
+                    .reduce(0.0, Double::sum);
+
+            return Result.ok(acm);
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     private String getLastTransactionHash() throws Exception {
