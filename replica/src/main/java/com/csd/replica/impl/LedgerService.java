@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -69,6 +67,14 @@ public class LedgerService {
             String recipientId = bytesToString(requestBody.getDestination());
 
             if (requestBody.getAmount()<0) return Result.error(Result.Status.BAD_REQUEST, "Transaction amount must be positive");
+
+            double balance = 0;
+            String clientId = bytesToString(request.getClientId());
+            balance += transactionsRepository.findByOwner(clientId).stream()
+                    .map(TransactionEntity::getAmount)
+                    .reduce(0.0, Double::sum);
+
+            if (balance < requestBody.getAmount()) return Result.error(Result.Status.BAD_REQUEST, "Insufficient Credit");
 
             TransactionEntity sender = new TransactionEntity(senderId, -requestBody.getAmount(), timestamp, getLastTransactionHash());
             TransactionEntity recipient = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getTransactionHash(sender.toItem()));
@@ -148,8 +154,25 @@ public class LedgerService {
         }
     }
 
+    public void installSnapshot(Snapshot snapshot) {
+        transactionsRepository.deleteAll();
+        transactionsRepository.saveAll(snapshot.getTransactions());
+    }
+
+    public Snapshot getSnapshot() {
+        return new Snapshot(transactionsRepository.findAll());
+    }
+
     public Transaction[] getTransactionsAfterId(long id) {
         return transactionsRepository.findByIdGreaterThan(id).stream().map(TransactionEntity::toItem).toArray(Transaction[]::new);
+    }
+
+    public long getLastTransactionId() {
+        TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
+        if (entity==null)
+            return -1;
+        else
+            return entity.getId();
     }
 
     private String getLastTransactionHash() throws Exception {

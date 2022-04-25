@@ -19,6 +19,10 @@ public class ProtectedRequest<T extends IRequest> implements IRequest {
         this.requestBody = requestBody;
     }
 
+    public boolean verifyNonce(long nonce) {
+        return requestBody.getNonce() > nonce;
+    }
+
     public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
         return digestSuite.verify(clientPublicKey.getEncoded(), clientId);
     }

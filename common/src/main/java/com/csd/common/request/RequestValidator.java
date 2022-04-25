@@ -33,9 +33,9 @@ public class RequestValidator { //TODO validate nonce
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CRYPTO_CONFIG_PATH));
     }
 
-    public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request) {
+    public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request, long nonce) {
         try {
-            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite);
+            boolean valid = request.verifyClientId(clientIdDigestSuite) && request.verifySignature(clientSignatureSuite) && request.verifyNonce(nonce);
             if (!valid) return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
         } catch (Exception e) {
             log.error(e.getMessage());

@@ -65,5 +65,13 @@ public class LedgerProxy extends ServiceProxy {
         }
     }
 
+    public long getLastTransactionId() {
+        TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
+        if (entity==null)
+            return -1;
+        else
+            return entity.getId();
+    }
+
 }
 

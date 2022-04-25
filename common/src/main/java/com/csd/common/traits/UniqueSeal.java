@@ -11,10 +11,10 @@ import static com.csd.common.util.Serialization.dataToJson;
 public class UniqueSeal<T extends Serializable> implements Serializable {
 
 	T data;
-	double nonce;
+	long nonce;
 	byte[] signature;
 
-	public UniqueSeal(T data, double nonce, IDigestSuite suite) throws Exception {
+	public UniqueSeal(T data, long nonce, IDigestSuite suite) throws Exception {
 		this.data = data;
 		this.nonce = nonce;
 		this.signature = suite.digest(content());
@@ -39,11 +39,11 @@ public class UniqueSeal<T extends Serializable> implements Serializable {
 		this.data = data;
 	}
 
-	public double getNonce() {
+	public long getNonce() {
 		return nonce;
 	}
 
-	public void setNonce(double nonce) {
+	public void setNonce(long nonce) {
 		this.nonce = nonce;
 	}
 

@@ -27,7 +27,7 @@ class LedgerController {
 
     @PostMapping("/load")
     public RequestInfo loadMoney(@RequestBody ProtectedRequest<LoadMoneyRequestBody> request) {
-        Result<RequestInfo> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        Result<RequestInfo> result = ledgerProxy.invokeOrdered(value(validator.validate(request,ledgerProxy.getLastTransactionId())));
         value(result);
         return result.value();
     }
@@ -41,7 +41,7 @@ class LedgerController {
 
     @PostMapping("/transfer")
     public RequestInfo sendTransaction(@RequestBody ProtectedRequest<SendTransactionRequestBody> request) {
-        Result<RequestInfo> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        Result<RequestInfo> result = ledgerProxy.invokeOrdered(value(validator.validate(request,ledgerProxy.getLastTransactionId())));
         value(result);
         return result.value();
     }

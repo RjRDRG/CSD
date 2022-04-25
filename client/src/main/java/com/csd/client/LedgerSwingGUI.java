@@ -271,8 +271,8 @@ public class LedgerSwingGUI extends JFrame{
                 setLayout(new BorderLayout());
                 JGridBagPanel gp0 = new JGridBagPanel();
 
-                gp0.load(0, 0, nameLabel).add();
-                gp0.load(1, 0, name).add();
+                gp0.load(0, 0, nameLabel).removeScaleY().add();
+                gp0.load(1, 0, name).removeScaleY().add();
 
                 submit.addActionListener(e -> {
                     if(!name.getText().isEmpty()) {
@@ -281,9 +281,12 @@ public class LedgerSwingGUI extends JFrame{
                     }
                 });
 
-                gp0.load(1, 1, submit).removeScaleX().removeScaleY().setTopPad(5).setAnchorRight().add();
+                add(gp0, BorderLayout.PAGE_START);
 
-                add(gp0, BorderLayout.CENTER);
+                JGridBagPanel gp1 = new JGridBagPanel();
+                gp1.load(0, 0, Box.createRigidArea(new Dimension(10,10))).removeScaleY().setAnchorRight().add();
+                gp1.load(1, 0, submit).removeScaleX().removeScaleY().setAnchorRight().add();
+                add(gp1, BorderLayout.PAGE_END);
             }
         }
 

@@ -117,7 +117,7 @@ public class LedgerClient {
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
 			UniqueSeal<SendTransactionRequestBody> requestBody = new UniqueSeal<>(
-					new SendTransactionRequestBody(walletDestination.clientId, amount), 0, wallet.signatureSuite
+					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.getRequestCounter(), wallet.signatureSuite
 			);
 			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
@@ -192,7 +192,7 @@ public class LedgerClient {
 
 			for( String walletId : walletsIds ){
 				WalletDetails wallet = wallets.get(walletId);
-				Seal<IRequest.Void> requestBody = new Seal<>( //TODO IRequest.void has to have a field?
+				Seal<IRequest.Void> requestBody = new Seal<>(
 						new IRequest.Void(), wallet.signatureSuite
 				);
 				AuthenticatedRequest<IRequest.Void> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
