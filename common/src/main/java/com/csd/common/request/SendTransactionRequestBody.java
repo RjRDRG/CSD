@@ -7,11 +7,11 @@ import static com.csd.common.util.Serialization.bytesToString;
 
 public class SendTransactionRequestBody implements IRequest {
     private byte[] destination;
-    private double value;
+    private double amount;
 
-    public SendTransactionRequestBody(byte[] destination, double value) {
+    public SendTransactionRequestBody(byte[] destination, double amount) {
         this.destination = destination;
-        this.value = value;
+        this.amount = amount;
     }
 
     public SendTransactionRequestBody() {
@@ -25,12 +25,12 @@ public class SendTransactionRequestBody implements IRequest {
         this.destination = destination;
     }
 
-    public double getValue() {
-        return value;
+    public double getAmount() {
+        return amount;
     }
 
-    public void setValue(double value) {
-        this.value = value;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
     @Override
@@ -38,12 +38,12 @@ public class SendTransactionRequestBody implements IRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SendTransactionRequestBody that = (SendTransactionRequestBody) o;
-        return value == that.value && Arrays.equals(destination, that.destination);
+        return amount == that.amount && Arrays.equals(destination, that.destination);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(value);
+        int result = Objects.hash(amount);
         result = 31 * result + Arrays.hashCode(destination);
         return result;
     }
@@ -52,7 +52,7 @@ public class SendTransactionRequestBody implements IRequest {
     public String toString() {
         return "SendTransactionRequestBody{" +
                 "destination=" + bytesToString(destination) +
-                ", value=" + value +
+                ", amount=" + amount +
                 '}';
     }
 

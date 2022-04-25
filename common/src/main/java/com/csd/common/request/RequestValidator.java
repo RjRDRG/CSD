@@ -14,12 +14,10 @@ import com.csd.common.traits.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 
 public class RequestValidator { //TODO validate nonce
     private static final Logger log = LoggerFactory.getLogger(RequestValidator.class);
-
-    public static final String CONFIG_PATH = "security.conf";
 
     private final IDigestSuite clientIdDigestSuite;
     private final SignatureSuite clientSignatureSuite;
@@ -27,12 +25,12 @@ public class RequestValidator { //TODO validate nonce
     public RequestValidator() throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
-                        new IniSpecification("client_id_digest_suite", CONFIG_PATH),
-                        new StoredSecrets(new KeyStoresInfo("stores",CONFIG_PATH))
+                        new IniSpecification("client_id_digest_suite", CRYPTO_CONFIG_PATH),
+                        new StoredSecrets(new KeyStoresInfo("stores", CRYPTO_CONFIG_PATH))
                 );
         this.clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Verify);
 
-        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CONFIG_PATH));
+        this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CRYPTO_CONFIG_PATH));
     }
 
     public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request) {

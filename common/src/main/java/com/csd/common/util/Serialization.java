@@ -12,12 +12,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class Serialization {
 
 	public static <T extends Serializable> byte[] dataToBytes(T data) {
 		return SerializationUtils.serialize(data);
+	}
+
+	public static <T extends Serializable> byte[] dataToBytesDeterministic(T data) {
+		return dataToJson(data).getBytes(StandardCharsets.UTF_8);
 	}
 
 	public static <T extends Serializable> T bytesToData(byte[] bytes) {

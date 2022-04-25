@@ -19,7 +19,7 @@ public class LedgerSwingGUI extends JFrame{
     public LedgerSwingGUI() throws InterruptedException {
         JPanel mainPanel = new MainPanel();
 
-        setTitle("The Wallet");
+        setTitle("Wallet");
 
         getContentPane().setLayout(new BorderLayout());
 
