@@ -53,12 +53,14 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case LOAD: {
-                Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate((ProtectedRequest<LoadMoneyRequestBody>) consensualRequest.extractRequest(), ledgerService.getLastTransactionId());
+                ProtectedRequest<LoadMoneyRequestBody> extractRequest = consensualRequest.extractRequest();
+                Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, ledgerService.getLastTransactionId(extractRequest.getClientId()));
                 Result<RequestInfo> result = request.valid() ? ledgerService.loadMoney(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
                 return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }
             case TRANSFER: {
-                Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate((ProtectedRequest<SendTransactionRequestBody>) consensualRequest.extractRequest(), ledgerService.getLastTransactionId());
+                ProtectedRequest<SendTransactionRequestBody> extractRequest = consensualRequest.extractRequest();
+                Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, ledgerService.getLastTransactionId(extractRequest.getClientId()));
                 Result<RequestInfo> result = request.valid() ? ledgerService.sendTransaction(request.value(), consensualRequest.getTimestamp()) : Result.error(request);
                 return new ConsentedReply(result.encode(), ledgerService.getTransactionsAfterId(consensualRequest.getLastEntryId()));
             }

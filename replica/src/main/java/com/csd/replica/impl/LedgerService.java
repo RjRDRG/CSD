@@ -167,8 +167,9 @@ public class LedgerService {
         return transactionsRepository.findByIdGreaterThan(id).stream().map(TransactionEntity::toItem).toArray(Transaction[]::new);
     }
 
-    public long getLastTransactionId() {
-        TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
+    public long getLastTransactionId(byte[] ownerId) {
+        String owner = bytesToString(ownerId);
+        TransactionEntity entity = transactionsRepository.findByOwnerAndTopByOrderByIdDesc(owner);
         if (entity==null)
             return -1;
         else

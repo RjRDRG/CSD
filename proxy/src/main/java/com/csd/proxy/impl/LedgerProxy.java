@@ -14,8 +14,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.csd.common.util.Serialization.dataToBytes;
-import static com.csd.common.util.Serialization.bytesToData;
+import static com.csd.common.util.Serialization.*;
 
 @Component
 public class LedgerProxy extends ServiceProxy {
@@ -65,8 +64,9 @@ public class LedgerProxy extends ServiceProxy {
         }
     }
 
-    public long getLastTransactionId() {
-        TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
+    public long getLastTransactionId(byte[] ownerId) {
+        String owner = bytesToString(ownerId);
+        TransactionEntity entity = transactionsRepository.findByOwnerAndTopByOrderByIdDesc(owner);
         if (entity==null)
             return -1;
         else
