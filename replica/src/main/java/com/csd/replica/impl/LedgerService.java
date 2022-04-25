@@ -56,7 +56,7 @@ public class LedgerService {
             return Result.ok(new RequestInfo(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -87,7 +87,7 @@ public class LedgerService {
             return Result.ok(new RequestInfo(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -101,7 +101,7 @@ public class LedgerService {
                     .map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -117,7 +117,7 @@ public class LedgerService {
             return Result.ok(acm);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -126,7 +126,7 @@ public class LedgerService {
             return Result.ok(transactionsRepository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -135,7 +135,7 @@ public class LedgerService {
             return Result.ok(globalValue);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -152,7 +152,7 @@ public class LedgerService {
             return Result.ok(acm);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

@@ -42,7 +42,7 @@ public class LedgerProxy extends ServiceProxy {
 
             return consentedReply.extractReply();
         } catch (Exception e) {
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -61,7 +61,7 @@ public class LedgerProxy extends ServiceProxy {
 
             return consentedReply.extractReply();
         } catch (Exception e) {
-            return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

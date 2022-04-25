@@ -81,7 +81,7 @@ public class LedgerClient {
 
 			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + nonce.getBody() + "}";
 		} catch (Exception e) {
-			resultString =  Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -107,7 +107,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(requestInfo.getBody()).toString();
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -133,7 +133,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(balance.getBody()).toString();
 		} catch (Exception e) {
-			resultString =  Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -162,7 +162,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -177,7 +177,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -192,7 +192,7 @@ public class LedgerClient {
 
 			resultString = Arrays.toString(info.getBody());
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -218,7 +218,7 @@ public class LedgerClient {
 
 			resultString = Arrays.toString(Objects.requireNonNull(info.getBody()));
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -249,7 +249,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
-			resultString = Result.error(Result.Status.NOT_AVAILABLE, e.getClass().getSimpleName() + ": " + e.getMessage()).toString();
+			resultString = e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}

@@ -1,0 +1,16 @@
+com/csd/proxy/db/TransactionEntity.class
+com/csd/proxy/JacksonConfig$BytesJsonDeserializer.class
+com/csd/proxy/impl/LedgerController.class
+com/csd/proxy/db/TransactionRepository.class
+com/csd/proxy/JacksonConfig$BytesJsonSerializer.class
+com/csd/proxy/exceptions/BadRequestException.class
+com/csd/proxy/ProxyApplication.class
+com/csd/proxy/exceptions/NotImplementedException.class
+com/csd/proxy/exceptions/ExceptionAdvice.class
+com/csd/proxy/exceptions/ServerErrorException.class
+com/csd/proxy/exceptions/ForbiddenException.class
+com/csd/proxy/JacksonConfig.class
+com/csd/proxy/exceptions/NotFoundException.class
+com/csd/proxy/exceptions/ResultExtractor$1.class
+com/csd/proxy/impl/LedgerProxy.class
+com/csd/proxy/exceptions/ResultExtractor.class

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.csd.common.util.Serialization.*;
@@ -138,7 +139,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             return dataToBytes(execute(bytesToData(command)));
         } catch (Exception e) {
             log.error(e.getMessage());
-            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
             return dataToBytes(new ConsentedReply(result.encode(), new Transaction[0]));
         }
     }
@@ -149,7 +150,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             return dataToBytes(execute(bytesToData(command)));
         } catch (Exception e) {
             log.error(e.getMessage());
-            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
+            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
             return dataToBytes(new ConsentedReply(result.encode(), new Transaction[0]));
         }
     }

@@ -74,29 +74,28 @@ public interface Result<T extends Serializable> extends Serializable {
 	static <T extends Serializable> Result<T> error(Status error, String message) {
 		return new ErrorResult<>(error,message);		
 	}
-	
-	/**
-	 * Convenience method used to return an error 
-	 * @return
-	 */
-	static <T extends Serializable> Result<T> error(Status error) {
-		return new ErrorResult<>(error,"");		
-	}
 
 	static <T extends Serializable, E extends Serializable> Result<T> error(Result<E> error) {
-		return new ErrorResult<>(error.error(),error.message());
+		return new ErrorResult<>(error.error(), error.message());
 	}
 	
 }
 
 class OkResult<T extends Serializable> implements Result<T> {
 
-	final T result;
+	T result;
 
 	OkResult(T result) {
 		this.result = result;
 	}
-	
+
+	public OkResult() {
+	}
+
+	public void setResult(T result) {
+		this.result = result;
+	}
+
 	@Override
 	public boolean valid() {
 		return true;
@@ -134,11 +133,22 @@ class OkResult<T extends Serializable> implements Result<T> {
 
 class ErrorResult<T extends Serializable> implements Result<T> {
 
-	final Status error;
-	final String message;
+	Status error;
+	String message;
 	
 	ErrorResult(Status error, String message) {
 		this.error = error;
+		this.message = message;
+	}
+
+	public ErrorResult() {
+	}
+
+	public void setError(Status error) {
+		this.error = error;
+	}
+
+	public void setMessage(String message) {
 		this.message = message;
 	}
 

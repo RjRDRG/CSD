@@ -17,7 +17,7 @@ public class ConsentedReply implements Serializable {
         if(encodedResult.valid())
             return Result.ok((T)bytesToData(encodedResult.value()));
         else
-            return Result.error(encodedResult.error());
+            return Result.error(encodedResult);
     }
 
     public ConsentedReply(Result<byte[]> encodedResult, Transaction[] missingEntries) {

@@ -10,6 +10,8 @@ public class ResultExtractor {
         if (result.valid()) return result.value();
 
         switch (result.error()) {
+            case BAD_REQUEST:
+                throw new BadRequestException(result.message());
             case NOT_FOUND:
                 throw new NotFoundException(result.message());
             case FORBIDDEN:
