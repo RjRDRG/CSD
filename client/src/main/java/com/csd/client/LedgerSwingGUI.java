@@ -24,7 +24,6 @@ public class LedgerSwingGUI extends JFrame{
         getContentPane().setLayout(new BorderLayout());
 
         JLabel loading = new JLabel(new ImageIcon("client/src/main/resources/images/load.gif"));
-        loading.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         getContentPane().add(loading, BorderLayout.CENTER);
 
         setSize(new Dimension(1000, 1000));
@@ -32,7 +31,7 @@ public class LedgerSwingGUI extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
-        Thread.sleep(60000);
+        Thread.sleep(1500);
         getContentPane().remove(loading);
 
         JGridBagPanel top = new JGridBagPanel();
