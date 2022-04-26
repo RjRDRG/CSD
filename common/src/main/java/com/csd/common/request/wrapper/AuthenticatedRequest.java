@@ -7,6 +7,7 @@ import com.csd.common.request.IRequest;
 import com.csd.common.traits.Seal;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static com.csd.common.util.Serialization.bytesToString;
 
@@ -21,8 +22,8 @@ public class AuthenticatedRequest<T extends IRequest> implements IRequest {
         this.requestBody = requestBody;
     }
 
-    public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
-        return digestSuite.verify(clientPublicKey.getEncoded(), clientId);
+    public boolean verifyClientId() {
+        return Arrays.equals(Arrays.copyOfRange(clientId, 32, clientId.length), clientPublicKey.getEncoded());
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {

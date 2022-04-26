@@ -31,7 +31,7 @@ class LedgerController {
     public Long startSession(@RequestBody AuthenticatedRequest<StartSessionRequestBody> request) {
         if(request.getRequestBody().getData().getTimestamp().isBefore(OffsetDateTime.now().minusMinutes(10)))
             throw new BadRequestException("Session Timestamp is to old");
-        Result<Long> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        Result<Long> result = ledgerProxy.invokeUnordered(value(validator.validate(request)));
         value(result);
         return result.value();
     }
@@ -59,7 +59,7 @@ class LedgerController {
 
     @PostMapping("/extract")
     public Transaction[] getExtract(@RequestBody AuthenticatedRequest<GetExtractRequestBody> request) {
-        Result<Transaction[]> result = ledgerProxy.invokeOrdered(value(validator.validate(request)));
+        Result<Transaction[]> result = ledgerProxy.invokeUnordered(value(validator.validate(request)));
         value(result);
         return result.value();
     }
@@ -69,21 +69,21 @@ class LedgerController {
         for( AuthenticatedRequest<IRequest.Void> authenticatedRequest : request.getListOfAccounts()){
             value(validator.validate(authenticatedRequest));
         }
-        Result<Double> result = ledgerProxy.invokeOrdered(request);
+        Result<Double> result = ledgerProxy.invokeUnordered(request);
         value(result);
         return result.value();
     }
 
     @PostMapping("/global")
     public Double getGlobalValue(@RequestBody GetGlobalValueRequestBody request) {
-        Result<Double> result = ledgerProxy.invokeOrdered(request);
+        Result<Double> result = ledgerProxy.invokeUnordered(request);
         value(result);
         return result.value();
     }
 
     @PostMapping("/ledger")
     public Transaction[] getLedger(@RequestBody GetLedgerRequestBody request) {
-        Result<Transaction[]> result = ledgerProxy.invokeOrdered(request);
+        Result<Transaction[]> result = ledgerProxy.invokeUnordered(request);
         value(result);
         return result.value();
     }

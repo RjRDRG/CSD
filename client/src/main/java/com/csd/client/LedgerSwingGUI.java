@@ -12,7 +12,7 @@ import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class LedgerSwingGUI extends JFrame{
 
@@ -32,7 +32,7 @@ public class LedgerSwingGUI extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
-        Thread.sleep(30000);
+        //Thread.sleep(30000);
         getContentPane().remove(loading);
 
         JGridBagPanel top = new JGridBagPanel();
@@ -90,15 +90,16 @@ public class LedgerSwingGUI extends JFrame{
             wallets.setPreferredSize(new Dimension(300, wallets.getPreferredSize().height));
             gp0.load(1,0,wallets).removeScaleY().removeScaleX().add();
             gp0.load(2,0,createWalletButton).removeScaleY().removeScaleX().add();
-            createWalletButton.addActionListener(e -> new NewWalletPopUp(n -> {
+            createWalletButton.addActionListener(e -> new NewWalletPopUp((n,s) -> {
+                String walletName = n+"|"+s;
                 try {
-                    LedgerClient.wallets.put(n, new WalletDetails());
+                    LedgerClient.wallets.put(walletName, new WalletDetails(n,s));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                wallets.addItem(n);
-                wallets.setSelectedItem(n);
-                sendTransactionDestination.addItem(n);
+                wallets.addItem(walletName);
+                wallets.setSelectedItem(walletName);
+                sendTransactionDestination.addItem(walletName);
             }));
 
 
@@ -240,7 +241,7 @@ public class LedgerSwingGUI extends JFrame{
     }
 
     static class NewWalletPopUp extends JFrame {
-        public NewWalletPopUp(Consumer<String> consumer) {
+        public NewWalletPopUp(BiConsumer<String,String> consumer) {
             setTitle("New Wallet");
 
             getContentPane().setLayout(new BorderLayout());
@@ -263,20 +264,25 @@ public class LedgerSwingGUI extends JFrame{
 
         class PopUpPanel extends JPanel {
 
-            JLabel nameLabel = new JLabel("Wallet Name");
-            JTextField name = new JTextField();
+            JLabel emailLabel = new JLabel("Email");
+            JTextField email = new JTextField();
+            JLabel accountLabel = new JLabel("Account Name");
+            JTextField account = new JTextField();
             JButton submit = new JButton("Submit");
 
-            public PopUpPanel(Consumer<String> consumer){
+            public PopUpPanel(BiConsumer<String,String> consumer){
                 setLayout(new BorderLayout());
                 JGridBagPanel gp0 = new JGridBagPanel();
 
-                gp0.load(0, 0, nameLabel).removeScaleY().add();
-                gp0.load(1, 0, name).removeScaleY().add();
+                gp0.load(0, 0, emailLabel).removeScaleY().add();
+                gp0.load(1, 0, email).removeScaleY().add();
+
+                gp0.load(0, 1, accountLabel).removeScaleY().add();
+                gp0.load(1, 1, account).removeScaleY().add();
 
                 submit.addActionListener(e -> {
-                    if(!name.getText().isEmpty()) {
-                        consumer.accept(name.getText());
+                    if(!email.getText().isEmpty()) {
+                        consumer.accept(email.getText(), account.getText());
                         NewWalletPopUp.this.dispose();
                     }
                 });

@@ -6,6 +6,8 @@ import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.IRequest;
 import com.csd.common.traits.UniqueSeal;
 
+import java.util.Arrays;
+
 import static com.csd.common.util.Serialization.bytesToString;
 
 public class ProtectedRequest<T extends IRequest> implements IRequest {
@@ -23,8 +25,8 @@ public class ProtectedRequest<T extends IRequest> implements IRequest {
         return requestBody.getNonce() > nonce;
     }
 
-    public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
-        return digestSuite.verify(clientPublicKey.getEncoded(), clientId);
+    public boolean verifyClientId() {
+        return Arrays.equals(Arrays.copyOfRange(clientId, 32, clientId.length), clientPublicKey.getEncoded());
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {

@@ -7,7 +7,6 @@ import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.AuthenticatedRequest;
 import com.csd.common.request.wrapper.ProtectedRequest;
-import com.csd.common.traits.Result;
 import com.csd.common.traits.Seal;
 import com.csd.common.traits.UniqueSeal;
 import com.csd.common.util.Serialization;
@@ -52,7 +51,7 @@ public class LedgerClient {
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
 
-		wallets.put("default",new WalletDetails());
+		wallets.put("default@csd.com",new WalletDetails("default@csd.com","0"));
 
 		//new LedgerPrompt();
 		FlatDarculaLaf.setup();
@@ -77,7 +76,7 @@ public class LedgerClient {
 			AuthenticatedRequest<StartSessionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<Long> nonce = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Long.class);
-			wallets.get(walletId).requestCounter = nonce.getBody();
+			wallets.get(walletId).nonce = nonce.getBody();
 
 			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + nonce.getBody() + "}";
 		} catch (Exception e) {
@@ -94,12 +93,12 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.requestCounter == null) {
+			if(wallet.nonce == null) {
 				startSession(walletId,console);
 			}
 
 			UniqueSeal<LoadMoneyRequestBody> requestBody = new UniqueSeal<>(
-					new LoadMoneyRequestBody(amount), wallet.getRequestCounter(), wallet.signatureSuite
+					new LoadMoneyRequestBody(amount), wallet.getNonce(), wallet.signatureSuite
 			);
 			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
@@ -120,7 +119,7 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.requestCounter == null) {
+			if(wallet.nonce == null) {
 				startSession(walletId,console);
 			}
 
@@ -147,14 +146,14 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.requestCounter == null) {
+			if(wallet.nonce == null) {
 				startSession(walletId,console);
 			}
 
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
 			UniqueSeal<SendTransactionRequestBody> requestBody = new UniqueSeal<>(
-					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.getRequestCounter(), wallet.signatureSuite
+					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.getNonce(), wallet.signatureSuite
 			);
 			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
@@ -205,7 +204,7 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.requestCounter == null) {
+			if(wallet.nonce == null) {
 				startSession(walletId,console);
 			}
 
@@ -233,7 +232,7 @@ public class LedgerClient {
 			for(String walletId : walletsIds ){
 				WalletDetails wallet = wallets.get(walletId);
 
-				if(wallet.requestCounter == null) {
+				if(wallet.nonce == null) {
 					startSession(walletId,console);
 				}
 

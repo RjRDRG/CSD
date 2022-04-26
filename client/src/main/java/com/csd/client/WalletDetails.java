@@ -8,8 +8,10 @@ import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import org.apache.commons.lang3.ArrayUtils;
 
-import static com.csd.common.util.Serialization.bytesToString;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class WalletDetails {
     static final String SECURITY_CONF = "security.conf";
@@ -17,9 +19,9 @@ public class WalletDetails {
     public final byte[] clientId;
     public final EncodedPublicKey clientPublicKey;
     public final SignatureSuite signatureSuite;
-    public Long requestCounter;
+    public Long nonce;
 
-    public WalletDetails() throws Exception {
+    public WalletDetails(String email, String account) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("client_id_digest_suite", SECURITY_CONF),
@@ -33,12 +35,20 @@ public class WalletDetails {
         );
         this.clientPublicKey = signatureSuite.getPublicKey();
 
-        this.clientId = clientIdDigestSuite.digest(clientPublicKey.getEncoded());
+        byte[] provenance = clientIdDigestSuite.digest(ArrayUtils.addAll(
+                email.getBytes(StandardCharsets.UTF_8),
+                account.getBytes(StandardCharsets.UTF_8)
+        ));
 
-        this.requestCounter = null;
+        this.clientId = ArrayUtils.addAll(
+                provenance,
+                clientPublicKey.getEncoded()
+        );
+
+        this.nonce = null;
     }
 
-    long getRequestCounter() {
-        return ++requestCounter;
+    long getNonce() {
+        return ++nonce;
     }
 }
