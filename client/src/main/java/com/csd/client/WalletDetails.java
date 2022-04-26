@@ -35,14 +35,14 @@ public class WalletDetails {
         );
         this.clientPublicKey = signatureSuite.getPublicKey();
 
-        byte[] provenance = clientIdDigestSuite.digest(ArrayUtils.addAll(
+        byte[] provenance = ArrayUtils.addAll(
                 email.getBytes(StandardCharsets.UTF_8),
                 account.getBytes(StandardCharsets.UTF_8)
-        ));
+        );
 
         this.clientId = ArrayUtils.addAll(
-                provenance,
-                clientPublicKey.getEncoded()
+                clientIdDigestSuite.digest(provenance),
+                clientIdDigestSuite.digest(clientPublicKey.getEncoded())
         );
 
         this.nonce = null;

@@ -22,8 +22,8 @@ public class AuthenticatedRequest<T extends IRequest> implements IRequest {
         this.requestBody = requestBody;
     }
 
-    public boolean verifyClientId() {
-        return Arrays.equals(Arrays.copyOfRange(clientId, 32, clientId.length), clientPublicKey.getEncoded());
+    public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
+        return digestSuite.verify(clientPublicKey.getEncoded(), Arrays.copyOfRange(clientId, 32, clientId.length));
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
