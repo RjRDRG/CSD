@@ -39,6 +39,7 @@ public class LedgerClient {
 
 	static {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+		System.setProperty("https.protocols", "TLSv1.2");
 	}
 
 	static String proxyIp = "localhost";

@@ -11,6 +11,7 @@ public class ProxyApplication {
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
+		System.setProperty("https.protocols", "TLSv1.2");
 	}
 
 	public static void main(String[] args) {
