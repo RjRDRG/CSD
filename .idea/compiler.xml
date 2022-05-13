@@ -15,6 +15,7 @@
     <bytecodeTargetLevel>
       <module name="client" target="11" />
       <module name="common" target="11" />
+      <module name="CSD" target="11" />
       <module name="proxy" target="11" />
       <module name="replica" target="11" />
     </bytecodeTargetLevel>
