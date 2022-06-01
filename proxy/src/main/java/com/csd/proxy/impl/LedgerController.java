@@ -31,7 +31,9 @@ class LedgerController {
     public Long startSession(@RequestBody AuthenticatedRequest<StartSessionRequestBody> request) {
         if(request.getRequestBody().getData().getTimestamp().isBefore(OffsetDateTime.now().minusMinutes(10)))
             throw new BadRequestException("Session Timestamp is to old");
-        Result<Long> result = ledgerProxy.invokeUnordered(value(validator.validate(request)));
+        Result<Long> result = ledgerProxy.invokeUnordered(
+                value(validator.validate(request))
+        );
         value(result);
         return result.value();
     }

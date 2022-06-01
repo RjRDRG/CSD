@@ -1,0 +1,26 @@
+
+Questions:
+
+Define private transaction scheme
+
+Miner incentives, coin generation from nothing?
+
+Why do we need to verify duplicated transactions, is the block sequence number not enough?
+
+Proof of ? extra points
+
+InvokeAsync thread synchronization wait for reply listener
+
+Data structure for validating transactions. Chains or Dictionary Options: List<List<Trx>> or Map<Wallet,Trx>
+
+Benchmarking scenarios and metrics
+
+Remember:
+
+Transactions must included the client signature (while preserving anonymity)
+
+Miner reward transaction is named:  coinbase transaction
+
+When building a block the validation of an account balance must take into account the previous transactions inside the block
+
+Transaction nonce are increased on reception, the server detects duplicated transactions using the nonce and warns the user
