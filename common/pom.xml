@@ -15,6 +15,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.rebaze.integrity</groupId>
+            <artifactId>org.rebaze.integrity.tree</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.60</version>

@@ -1,44 +1,51 @@
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/SignatureSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/key/KeyStoresInfo.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/Constants.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetGlobalValueRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/item/RequestInfo.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/IvGenerator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/util/Serialization.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/SaltGenerator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/IDigestSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetBalanceRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/key/EncodedPublicKey.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/LoadMoneyRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/wrapper/ConsensualRequest.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/CMacSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/StoredSecrets.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/IniSpecification.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/RequestValidator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetTotalValueRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/StringGenerator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/IRequest.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/AsymmetricKeyPairGenerator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/traits/Seal.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/SendTransactionRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/SuiteConfiguration.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/ISuiteSecrets.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/wrapper/ProtectedRequest.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/GeneratedSecrets.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/FlexibleDigestSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetExtractRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/ISuiteConfiguration.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/HMacSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/item/Transaction.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetLedgerRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/util/ByteDeserializer.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/SymmetricKeyGenerator.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/HashSuite.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/reply/ConsentedReply.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/util/ByteSerializer.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/config/ISuiteSpecification.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/traits/UniqueSeal.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/key/KeyInfo.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/wrapper/AuthenticatedRequest.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/traits/Result.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/StartSessionRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\ISuiteSecrets.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\FlexibleDigestSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetLedgerRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\wrapper\ConsensusRequest.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\wrapper\AuthenticatedRequest.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\item\Block.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetGlobalValueRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\ProposedMinedBlockRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\key\EncodedPublicKey.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\response\wrapper\ConsensusResponse.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\CMacSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\util\ByteSerializer.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\traits\Signature.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\IniSpecification.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\response\ProposedMinedBlockResponse.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\generators\SaltGenerator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\traits\UniqueSeal.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\traits\Seal.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetTotalValueRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\IRequest.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\key\KeyStoresInfo.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\SuiteConfiguration.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\item\Transaction.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\util\ByteDeserializer.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\response\wrapper\AuthenticatedResponse.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\key\KeyInfo.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\traits\Result.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\item\RequestInfo.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\wrapper\ProtectedRequest.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\generators\SymmetricKeyGenerator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\HMacSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\response\IResponse.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\ISuiteConfiguration.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\StoredSecrets.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\SendTransactionRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\SignatureSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\HashSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetBalanceRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\Constants.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetBlockToMineRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\validator\RequestValidator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\GetExtractRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\generators\AsymmetricKeyPairGenerator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\suites\digest\IDigestSuite.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\generators\IvGenerator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\LoadMoneyRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\GeneratedSecrets.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\request\StartSessionRequestBody.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\generators\StringGenerator.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\cryptography\config\ISuiteSpecification.java
+C:\Users\Rodrigo Ribeiro\IdeaProjects\CSD\common\src\main\java\com\csd\common\util\Serialization.java

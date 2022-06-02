@@ -63,6 +63,7 @@ public class LedgerClient {
 		port = ArrayUtils.indexOf(proxyPorts, proxy);
 	}
 
+	@Deprecated
 	static void startSession(String walletId, IConsole console) {
 		String requestString = "-----> Start Session: " + walletId;
 		String resultString;
@@ -71,10 +72,7 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			Seal<StartSessionRequestBody> requestBody = new Seal<>(
-					new StartSessionRequestBody(OffsetDateTime.now()), wallet.signatureSuite
-			);
-			AuthenticatedRequest<StartSessionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+			AuthenticatedRequest<StartSessionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
 
 			ResponseEntity<Long> nonce = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Long.class);
 			wallets.get(walletId).nonce = nonce.getBody();
@@ -98,10 +96,10 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			UniqueSeal<LoadMoneyRequestBody> requestBody = new UniqueSeal<>(
-					new LoadMoneyRequestBody(amount), wallet.getNonce(), wallet.signatureSuite
+			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(
+					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
+					new LoadMoneyRequestBody(amount)
 			);
-			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<RequestInfo> requestInfo = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
 
@@ -124,10 +122,10 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			Seal<GetBalanceRequestBody> requestBody = new Seal<>(
-					new GetBalanceRequestBody(), wallet.signatureSuite
+			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(
+					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+					new GetBalanceRequestBody()
 			);
-			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<Double> balance = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Double.class);
 
@@ -153,10 +151,10 @@ public class LedgerClient {
 
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
-			UniqueSeal<SendTransactionRequestBody> requestBody = new UniqueSeal<>(
-					new SendTransactionRequestBody(walletDestination.clientId, amount), wallet.getNonce(), wallet.signatureSuite
+			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(
+					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
+					new SendTransactionRequestBody(walletDestination.clientId, amount)
 			);
-			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<RequestInfo> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
 
@@ -209,10 +207,10 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			Seal<GetExtractRequestBody> requestBody = new Seal<>(
-					new GetExtractRequestBody(), wallet.signatureSuite
+			AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(
+					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+					new GetExtractRequestBody()
 			);
-			AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
 
 			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Transaction[].class);
 
@@ -237,10 +235,11 @@ public class LedgerClient {
 					startSession(walletId,console);
 				}
 
-				Seal<IRequest.Void> requestBody = new Seal<>(
-						new IRequest.Void(), wallet.signatureSuite
+				AuthenticatedRequest<IRequest.Void> request = new AuthenticatedRequest<>(
+						wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+						new IRequest.Void()
 				);
-				AuthenticatedRequest<IRequest.Void> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, requestBody);
+
 				walletList.add(request);
 			}
 

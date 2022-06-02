@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import static com.csd.common.util.Serialization.*;
 
+@Deprecated
 public class Seal<T extends Serializable> implements Serializable {
 
 	T data;

@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import static com.csd.common.util.Serialization.dataToJson;
 
+@Deprecated
 public class UniqueSeal<T extends Serializable> implements Serializable {
 
 	T data;

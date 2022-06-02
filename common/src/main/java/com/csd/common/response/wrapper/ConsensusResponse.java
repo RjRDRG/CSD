@@ -1,15 +1,14 @@
-package com.csd.common.reply;
+package com.csd.common.response.wrapper;
 
 import com.csd.common.item.Transaction;
 import com.csd.common.traits.Result;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 
 import static com.csd.common.util.Serialization.bytesToData;
 
-public class ConsentedReply implements Serializable {
+public class ConsensusResponse implements Serializable {
     private Result<byte[]> encodedResult;
     private Transaction[] missingEntries;
 
@@ -20,12 +19,12 @@ public class ConsentedReply implements Serializable {
             return Result.error(encodedResult);
     }
 
-    public ConsentedReply(Result<byte[]> encodedResult, Transaction[] missingEntries) {
+    public ConsensusResponse(Result<byte[]> encodedResult, Transaction[] missingEntries) {
         this.encodedResult = encodedResult;
         this.missingEntries = missingEntries;
     }
 
-    public ConsentedReply() {
+    public ConsensusResponse() {
     }
 
     public Result<byte[]> getEncodedResult() {
@@ -48,7 +47,7 @@ public class ConsentedReply implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConsentedReply that = (ConsentedReply) o;
+        ConsensusResponse that = (ConsensusResponse) o;
         return encodedResult.equals(that.encodedResult) && missingEntries.equals(that.missingEntries);
     }
 

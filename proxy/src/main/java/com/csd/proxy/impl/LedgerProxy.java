@@ -1,9 +1,9 @@
 package com.csd.proxy.impl;
 
 import bftsmart.tom.ServiceProxy;
-import com.csd.common.reply.ConsentedReply;
+import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.request.IRequest;
-import com.csd.common.request.wrapper.ConsensualRequest;
+import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.traits.Result;
 import com.csd.proxy.db.TransactionEntity;
 import com.csd.proxy.db.TransactionRepository;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.*;
@@ -30,17 +29,17 @@ public class LedgerProxy extends ServiceProxy {
     @SuppressWarnings("unchecked")
     public <R extends IRequest, T extends Serializable> Result<T> invokeUnordered(R request) {
         try {
-            ConsensualRequest consensualRequest = new ConsensualRequest(request, 0);
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
 
-            byte[] reply = super.invokeUnordered(dataToBytes(consensualRequest));
+            byte[] reply = super.invokeUnordered(dataToBytes(consensusRequest));
             if(reply.length == 0)
                 return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
 
-            ConsentedReply consentedReply = bytesToData(reply);
+            ConsensusResponse consensusResponse = bytesToData(reply);
 
-            transactionsRepository.saveAll(Arrays.stream(consentedReply.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
+            transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
 
-            return consentedReply.extractReply();
+            return consensusResponse.extractReply();
         } catch (Exception e) {
             return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
@@ -49,17 +48,17 @@ public class LedgerProxy extends ServiceProxy {
     @SuppressWarnings("unchecked")
     public <R extends IRequest, T extends Serializable> Result<T> invokeOrdered(R request) {
         try {
-            ConsensualRequest consensualRequest = new ConsensualRequest(request, 0);
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
 
-            byte[] reply = super.invokeOrdered(dataToBytes(consensualRequest));
+            byte[] reply = super.invokeOrdered(dataToBytes(consensusRequest));
             if(reply.length == 0)
                 return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
 
-            ConsentedReply consentedReply = bytesToData(reply);
+            ConsensusResponse consensusResponse = bytesToData(reply);
 
-            transactionsRepository.saveAll(Arrays.stream(consentedReply.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
+            transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
 
-            return consentedReply.extractReply();
+            return consensusResponse.extractReply();
         } catch (Exception e) {
             return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }

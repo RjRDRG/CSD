@@ -10,21 +10,21 @@ import java.util.Objects;
 import static com.csd.common.util.Serialization.bytesToData;
 import static com.csd.common.util.Serialization.dataToBytes;
 
-public class ConsensualRequest implements IRequest {
+public class ConsensusRequest implements IRequest {
 
     private IRequest.Type type;
     private byte[] encodedRequest;
     private OffsetDateTime timestamp; //quando  a op foi recebida
     private long lastEntryId; //ultima entrada que a proxy recebeu
 
-    public ConsensualRequest(IRequest request, long lastEntryId) {
+    public ConsensusRequest(IRequest request, long lastEntryId) {
         this.type = request.type();
         this.encodedRequest = dataToBytes(request);
         this.timestamp = OffsetDateTime.now();
         this.lastEntryId = lastEntryId;
     }
 
-    ConsensualRequest() {
+    ConsensusRequest() {
     }
 
     public <T extends Serializable> T extractRequest() {
@@ -67,7 +67,7 @@ public class ConsensualRequest implements IRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConsensualRequest that = (ConsensualRequest) o;
+        ConsensusRequest that = (ConsensusRequest) o;
         return lastEntryId == that.lastEntryId && timestamp.equals(that.timestamp) && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest);
     }
 

@@ -4,34 +4,30 @@ import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.IRequest;
-import com.csd.common.traits.Seal;
+import com.csd.common.traits.Signature;
 
-import java.io.Serializable;
 import java.util.Arrays;
-
-import static com.csd.common.util.Serialization.bytesToString;
 
 public class AuthenticatedRequest<T extends IRequest> implements IRequest {
     private byte[] clientId;
-    private EncodedPublicKey clientPublicKey;
-    private Seal<T> requestBody;
+    private Signature<T> clientSignature;
+    private T request;
 
-    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, Seal<T> requestBody) {
+    public AuthenticatedRequest(byte[] clientId, EncodedPublicKey clientPublicKey, SignatureSuite signatureSuite, T request) throws Exception {
         this.clientId = clientId;
-        this.clientPublicKey = clientPublicKey;
-        this.requestBody = requestBody;
-    }
-
-    public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
-        return digestSuite.verify(clientPublicKey.getEncoded(), Arrays.copyOfRange(clientId, 32, clientId.length));
-    }
-
-    public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
-        signatureSuite.setPublicKey(clientPublicKey);
-        return requestBody.verify(signatureSuite);
+        this.clientSignature = new Signature<>(clientPublicKey, signatureSuite, request);
+        this.request = request;
     }
 
     public AuthenticatedRequest() {
+    }
+
+    public boolean verifyClientId(IDigestSuite digestSuite) throws Exception {
+        return digestSuite.verify(clientSignature.getPublicKey().getEncoded(), Arrays.copyOfRange(clientId, 32, clientId.length));
+    }
+
+    public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
+        return clientSignature.verify(signatureSuite, request);
     }
 
     public byte[] getClientId() {
@@ -42,33 +38,24 @@ public class AuthenticatedRequest<T extends IRequest> implements IRequest {
         this.clientId = clientId;
     }
 
-    public EncodedPublicKey getClientPublicKey() {
-        return clientPublicKey;
+    public Signature<T> getClientSignature() {
+        return clientSignature;
     }
 
-    public void setClientPublicKey(EncodedPublicKey clientPublicKey) {
-        this.clientPublicKey = clientPublicKey;
+    public void setClientSignature(Signature<T> clientSignature) {
+        this.clientSignature = clientSignature;
     }
 
-    public Seal<T> getRequestBody() {
-        return requestBody;
+    public T getRequest() {
+        return request;
     }
 
-    public void setRequestBody(Seal<T> requestBody) {
-        this.requestBody = requestBody;
-    }
-
-    @Override
-    public String toString() {
-        return "AuthenticatedRequest{" +
-                "clientId=" + bytesToString(clientId) +
-                ", clientPublicKey=" + clientPublicKey +
-                ", requestBody=" + requestBody +
-                '}';
+    public void setRequest(T request) {
+        this.request = request;
     }
 
     @Override
     public Type type() {
-        return requestBody.getData().type();
+        return request.type();
     }
 }

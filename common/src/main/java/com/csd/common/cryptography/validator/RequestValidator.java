@@ -1,4 +1,4 @@
-package com.csd.common.request;
+package com.csd.common.cryptography.validator;
 
 import com.csd.common.cryptography.config.ISuiteConfiguration;
 import com.csd.common.cryptography.config.IniSpecification;
@@ -8,6 +8,7 @@ import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.request.IRequest;
 import com.csd.common.request.wrapper.AuthenticatedRequest;
 import com.csd.common.request.wrapper.ProtectedRequest;
 import com.csd.common.traits.Result;
@@ -42,7 +43,7 @@ public class RequestValidator {
                 return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
             if (!request.verifyNonce(nonce))
-                return Result.error(Result.Status.FORBIDDEN, "Invalid Nonce: " + nonce + " " + request.getRequestBody().getNonce());
+                return Result.error(Result.Status.FORBIDDEN, "Invalid Nonce: " + nonce + " " + request.getNonce());
         } catch (Exception e) {
             log.error(e.getMessage());
             return Result.error(Result.Status.INTERNAL_ERROR, e.getMessage());
