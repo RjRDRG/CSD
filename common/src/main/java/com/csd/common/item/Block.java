@@ -2,10 +2,11 @@ package com.csd.common.item;
 
 import org.rebaze.integrity.tree.Tree;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 
-public class Block {
+public class Block implements Serializable {
 
     public static class Header {
         private OffsetDateTime timestamp;

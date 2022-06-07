@@ -12,6 +12,7 @@ import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
+import com.csd.common.util.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -54,15 +55,15 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 Result<SignedRequest<StartSessionRequestBody>> request = validator.validate((SignedRequest<StartSessionRequestBody>) consensusRequest.extractRequest());
                 Result<Long> result;
                 String clientId = bytesToString(request.value().getId());
-                OffsetDateTime timestamp = request.value().getRequestBody().getData().getTimestamp();
+                OffsetDateTime timestamp = request.value().getRequest().getTimestamp();
                 if(!request.valid()) {
                     result = Result.error(request);
                 }
                 else if(timestamp.isBefore(OffsetDateTime.now().minusMinutes(10))) {
-                    result = Result.error(Result.Status.BAD_REQUEST, "Session Timestamp is to old");
+                    result = Result.error(Status.BAD_REQUEST, "Session Timestamp is to old");
                 }
                 else if(sessions.contains(clientId)) {
-                    result = Result.error(Result.Status.BAD_REQUEST, "Session already active");
+                    result = Result.error(Status.BAD_REQUEST, "Session already active");
                 }
                 else {
                     long nonce = timestamp.toInstant().toEpochMilli();
@@ -127,7 +128,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             default: {
-                Result<Serializable> result = Result.error(Result.Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
+                Result<Serializable> result = Result.error(Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
         }
@@ -139,7 +140,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             return dataToBytes(execute(bytesToData(command)));
         } catch (Exception e) {
             log.error(e.getMessage());
-            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            Result<Serializable> result = Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
             return dataToBytes(new ConsensusResponse(result.encode(), new Transaction[0]));
         }
     }
@@ -150,7 +151,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
             return dataToBytes(execute(bytesToData(command)));
         } catch (Exception e) {
             log.error(e.getMessage());
-            Result<Serializable> result = Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            Result<Serializable> result = Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
             return dataToBytes(new ConsensusResponse(result.encode(), new Transaction[0]));
         }
     }

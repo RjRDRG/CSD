@@ -4,9 +4,11 @@ import bftsmart.tom.ServiceProxy;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.request.IRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
-import com.csd.common.response.wrapper.MultiSignedResponse;
+import com.csd.common.response.wrapper.ErrorResponse;
+import com.csd.common.response.wrapper.OkResponse;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
+import com.csd.common.util.Status;
 import com.csd.proxy.db.TransactionEntity;
 import com.csd.proxy.db.TransactionRepository;
 import org.springframework.core.env.Environment;
@@ -35,15 +37,19 @@ public class LedgerProxy extends ServiceProxy {
 
             byte[] reply = super.invokeUnordered(dataToBytes(consensusRequest));
             if(reply.length == 0)
-                return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
+                return new ErrorResponse<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
 
             ConsensusResponse consensusResponse = bytesToData(reply);
 
             transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
 
-            return consensusResponse.extractReply();
+            Result<T> result = consensusResponse.extractResult();
+            if(result.valid())
+                return new OkResponse<>(result.value());
+            else
+                return new ErrorResponse<>(result);
         } catch (Exception e) {
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return new ErrorResponse<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -54,15 +60,19 @@ public class LedgerProxy extends ServiceProxy {
 
             byte[] reply = super.invokeOrdered(dataToBytes(consensusRequest));
             if(reply.length == 0)
-                return Result.error(Result.Status.NOT_AVAILABLE, "Not enough correct replicas");
+                return new ErrorResponse<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
 
             ConsensusResponse consensusResponse = bytesToData(reply);
 
             transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
 
-            return consensusResponse.extractReply();
+            Result<T> result = consensusResponse.extractResult();
+            if(result.valid())
+                return new OkResponse<>(result.value());
+            else
+                return new ErrorResponse<>(result);
         } catch (Exception e) {
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return new ErrorResponse<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

@@ -1,14 +1,13 @@
 package com.csd.common.request.wrapper;
 
-import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.IRequest;
 
 public class UniqueRequest<T extends IRequest> extends SignedRequest<T> {
     private int nonce;
 
-    public UniqueRequest(byte[] clientId, EncodedPublicKey clientPublicKey, SignatureSuite signatureSuite, int nonce, T request) throws Exception {
-        super(clientId, clientPublicKey, signatureSuite, request);
+    public UniqueRequest(byte[] clientId, SignatureSuite signatureSuite, int nonce, T request) throws Exception {
+        super(clientId, signatureSuite, request);
         this.nonce = nonce;
     }
 

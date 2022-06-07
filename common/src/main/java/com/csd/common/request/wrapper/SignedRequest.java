@@ -8,14 +8,16 @@ import com.csd.common.traits.Signature;
 
 import java.util.Arrays;
 
+import static com.csd.common.util.Serialization.dataToBytesDeterministic;
+
 public class SignedRequest<T extends IRequest> implements IRequest {
     private byte[] id;
-    private Signature<T> signature;
+    private Signature signature;
     private T request;
 
-    public SignedRequest(byte[] id, SignatureSuite signatureSuite, T request) throws Exception {
+    public SignedRequest(byte[] id, SignatureSuite signatureSuite, T request) {
         this.id = id;
-        this.signature = new Signature<>(signatureSuite.getPublicKey(), signatureSuite, request);
+        this.signature = new Signature(signatureSuite, dataToBytesDeterministic(request));
         this.request = request;
     }
 
@@ -27,7 +29,7 @@ public class SignedRequest<T extends IRequest> implements IRequest {
     }
 
     public boolean verifySignature(SignatureSuite signatureSuite) throws Exception {
-        return signature.verify(signatureSuite, request);
+        return signature.verify(signatureSuite, dataToBytesDeterministic(request));
     }
 
     public byte[] getId() {
@@ -38,11 +40,11 @@ public class SignedRequest<T extends IRequest> implements IRequest {
         this.id = id;
     }
 
-    public Signature<T> getSignature() {
+    public Signature getSignature() {
         return signature;
     }
 
-    public void setSignature(Signature<T> signature) {
+    public void setSignature(Signature signature) {
         this.signature = signature;
     }
 

@@ -10,6 +10,7 @@ import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
+import com.csd.common.util.Status;
 import com.csd.replica.db.TransactionEntity;
 import com.csd.replica.db.TransactionRepository;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class LedgerService {
     public Result<TransactionDetails> loadMoney(UniqueRequest<LoadMoneyRequestBody> request, OffsetDateTime timestamp) {
         try {
             String recipientId = bytesToString(request.getId());
-            LoadMoneyRequestBody requestBody = request.getRequestBody().getData();
+            LoadMoneyRequestBody requestBody = request.getRequest();
 
             TransactionEntity t = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getLastTransactionHash());
             transactionsRepository.save(t);
@@ -54,19 +55,19 @@ public class LedgerService {
             return Result.ok(new TransactionDetails(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
     @Transactional
     public Result<TransactionDetails> sendTransaction(UniqueRequest<SendTransactionRequestBody> request, OffsetDateTime timestamp) {
         try {
-            SendTransactionRequestBody requestBody = request.getRequestBody().getData();
+            SendTransactionRequestBody requestBody = request.getRequest();
 
             String senderId = bytesToString(request.getId());
             String recipientId = bytesToString(requestBody.getDestination());
 
-            if (requestBody.getAmount()<0) return Result.error(Result.Status.BAD_REQUEST, "Transaction amount must be positive");
+            if (requestBody.getAmount()<0) return Result.error(Status.BAD_REQUEST, "Transaction amount must be positive");
 
             double balance = 0;
             String clientId = bytesToString(request.getId());
@@ -74,7 +75,7 @@ public class LedgerService {
                     .map(TransactionEntity::getAmount)
                     .reduce(0.0, Double::sum);
 
-            if (balance < requestBody.getAmount()) return Result.error(Result.Status.BAD_REQUEST, "Insufficient Credit");
+            if (balance < requestBody.getAmount()) return Result.error(Status.BAD_REQUEST, "Insufficient Credit");
 
             TransactionEntity sender = new TransactionEntity(senderId, -requestBody.getAmount(), timestamp, getLastTransactionHash());
             TransactionEntity recipient = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getTransactionHash(sender.toItem()));
@@ -85,13 +86,13 @@ public class LedgerService {
             return Result.ok(new TransactionDetails(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
     public Result<Transaction[]> getExtract(SignedRequest<GetExtractRequestBody> request) {
         try {
-            GetExtractRequestBody requestBody = request.getRequestBody().getData();
+            GetExtractRequestBody requestBody = request.getRequest();
 
             String ownerId = bytesToString(request.getId());
 
@@ -99,7 +100,7 @@ public class LedgerService {
                     .map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -115,7 +116,7 @@ public class LedgerService {
             return Result.ok(acm);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -124,7 +125,7 @@ public class LedgerService {
             return Result.ok(transactionsRepository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -133,13 +134,13 @@ public class LedgerService {
             return Result.ok(globalValue);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
     public Result<Double> getBalance(SignedRequest<GetBalanceRequestBody> request) {
         try {
-            GetBalanceRequestBody requestBody = request.getRequestBody().getData();
+            GetBalanceRequestBody requestBody = request.getRequest();
             double acm = 0;
 
             String clientId = bytesToString(request.getId());
@@ -150,7 +151,7 @@ public class LedgerService {
             return Result.ok(acm);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
-            return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

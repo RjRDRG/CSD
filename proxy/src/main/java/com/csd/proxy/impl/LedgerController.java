@@ -9,9 +9,7 @@ import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.response.wrapper.ErrorResponse;
-import com.csd.common.response.wrapper.MultiSignedResponse;
 import com.csd.common.response.wrapper.Response;
-import com.csd.common.response.wrapper.SignedResponse;
 import com.csd.common.traits.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.proxy.exceptions.ResponseEntityBuilder.buildResponse;
-import static com.csd.proxy.exceptions.ResponseEntityBuilder.map;
-import static java.lang.Thread.currentThread;
 
 @RestController
 class LedgerController {
@@ -52,24 +48,41 @@ class LedgerController {
 
     @PostMapping("/load")
     public ResponseEntity<Response<TransactionDetails>> loadMoney(@RequestBody UniqueRequest<LoadMoneyRequestBody> request) {
-        MultiSignedResponse<Result<TransactionDetails>> result = ledgerProxy.invokeOrdered(map(validator.validate(request)));
-        map(result.getResponse());
-        return new SignedResponse<>(proxySignatureSuite, result);
+        var v = validator.validate(request);
+        if(!v.valid()) {
+            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+        }
+
+        Response<TransactionDetails> response = ledgerProxy.invokeOrdered(request);
+        response.proxySignature(proxySignatureSuite);
+
+        return buildResponse(response);
     }
 
     @PostMapping("/balance")
     public ResponseEntity<Response<Double>> getBalance(@RequestBody SignedRequest<GetBalanceRequestBody> request) {
-        MultiSignedResponse<Result<Double>> result = ledgerProxy.invokeUnordered(map(validator.validate(request)));
-        map(result.getResponse());
+        var v = validator.validate(request);
+        if(!v.valid()) {
+            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+        }
 
-        return new SignedResponse<>(result,);
+        Response<Double> response = ledgerProxy.invokeUnordered(request);
+        response.proxySignature(proxySignatureSuite);
+
+        return buildResponse(response);
     }
 
     @PostMapping("/transfer")
     public ResponseEntity<Response<TransactionDetails>> sendTransaction(@RequestBody UniqueRequest<SendTransactionRequestBody> request) {
-        MultiSignedResponse<Result<TransactionDetails>> result = ledgerProxy.invokeOrdered(map(validator.validate(request)));
-        map(result);
-        return result.value();
+        var v = validator.validate(request);
+        if(!v.valid()) {
+            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+        }
+
+        Response<TransactionDetails> response = ledgerProxy.invokeOrdered(request);
+        response.proxySignature(proxySignatureSuite);
+
+        return buildResponse(response);
     }
 
     @PostMapping("/extract")
@@ -104,16 +117,23 @@ class LedgerController {
     }
 
     @PostMapping("/ledger")
-    public ResponseEntity<Response<<Block>> getBlockToMine(@RequestBody GetBlockToMineRequestBody request) {
-        //TODO run on proxy (with client as intrusion detector) or on replicas (as unordered operation)
+    public ResponseEntity<Response<Block>> getBlockToMine(@RequestBody GetBlockToMineRequestBody request) {
+        Response<Block> response = ledgerProxy.invokeUnordered(request);
+        response.proxySignature(proxySignatureSuite);
 
-        return null;
+        return buildResponse(response);
     }
 
     @PostMapping("/ledger")
     public ResponseEntity<Response<ProposedMinedBlockResponse>> proposedMinedBlock(@RequestBody SignedRequest<ProposedMinedBlockRequestBody> request) {
-        Result<ProposedMinedBlockResponse> result = ledgerProxy.invokeOrdered(request);
-        map(result);
-        return result.value();
+        var v = validator.validate(request);
+        if(!v.valid()) {
+            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+        }
+
+        Response<ProposedMinedBlockResponse> response = ledgerProxy.invokeOrdered(request);
+        response.proxySignature(proxySignatureSuite);
+
+        return buildResponse(response);
     }
 }
