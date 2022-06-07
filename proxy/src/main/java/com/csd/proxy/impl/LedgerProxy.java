@@ -75,6 +75,5 @@ public class LedgerProxy extends ServiceProxy {
             return new ErrorResponse<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
-
 }
 

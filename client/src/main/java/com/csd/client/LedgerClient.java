@@ -7,6 +7,7 @@ import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.UniqueRequest;
+import com.csd.common.response.wrapper.Response;
 import com.csd.common.util.Serialization;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import org.apache.commons.lang3.ArrayUtils;
@@ -19,10 +20,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.lang.NonNull;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
@@ -70,12 +75,12 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			SignedRequest<StartSessionRequestBody> request = new SignedRequest<>(wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
+			SignedRequest<StartSessionRequestBody> request = new SignedRequest<>(wallet.clientId, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
 
-			ResponseEntity<Long> nonce = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Long.class);
-			wallets.get(walletId).nonce = nonce.getBody();
+			ResponseEntity<Response<Integer>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Integer>>() {});
+			wallets.get(walletId).nonce = responseEntity.getBody().response();
 
-			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + nonce.getBody() + "}";
+			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + responseEntity.getBody() + "}";
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -95,13 +100,12 @@ public class LedgerClient {
 			}
 
 			UniqueRequest<LoadMoneyRequestBody> request = new UniqueRequest<>(
-					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
+					wallet.clientId, wallet.signatureSuite, wallet.getNonce(),
 					new LoadMoneyRequestBody(amount)
 			);
 
-			ResponseEntity<TransactionDetails> requestInfo = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, TransactionDetails.class);
-
-			resultString = Objects.requireNonNull(requestInfo.getBody()).toString();
+			ResponseEntity<Response<TransactionDetails>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<TransactionDetails>>() {});
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -121,13 +125,13 @@ public class LedgerClient {
 			}
 
 			SignedRequest<GetBalanceRequestBody> request = new SignedRequest<>(
-					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+					wallet.clientId, wallet.signatureSuite,
 					new GetBalanceRequestBody()
 			);
 
-			ResponseEntity<Double> balance = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Double.class);
+			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
 
-			resultString = Objects.requireNonNull(balance.getBody()).toString();
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -150,13 +154,13 @@ public class LedgerClient {
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
 			UniqueRequest<SendTransactionRequestBody> request = new UniqueRequest<>(
-					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
+					wallet.clientId, wallet.signatureSuite, wallet.getNonce(),
 					new SendTransactionRequestBody(walletDestination.clientId, amount)
 			);
 
-			ResponseEntity<TransactionDetails> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, TransactionDetails.class);
+			ResponseEntity<Response<TransactionDetails>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<TransactionDetails>>() {});
 
-			resultString = Objects.requireNonNull(info.getBody()).toString();
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -169,9 +173,10 @@ public class LedgerClient {
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/global";
 
-			ResponseEntity<Double> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetGlobalValueRequestBody(), Double.class);
+			GetGlobalValueRequestBody request = new GetGlobalValueRequestBody();
+			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
 
-			resultString = Objects.requireNonNull(info.getBody()).toString();
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -184,9 +189,10 @@ public class LedgerClient {
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/ledger";
 
-			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, new GetLedgerRequestBody(), Transaction[].class);
+			GetLedgerRequestBody request = new GetLedgerRequestBody();
+			ResponseEntity<Response<ArrayList<Transaction>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Transaction>>>() {});
 
-			resultString = Arrays.toString(info.getBody());
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -206,13 +212,13 @@ public class LedgerClient {
 			}
 
 			SignedRequest<GetExtractRequestBody> request = new SignedRequest<>(
-					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+					wallet.clientId, wallet.signatureSuite,
 					new GetExtractRequestBody()
 			);
 
-			ResponseEntity<Transaction[]> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Transaction[].class);
+			ResponseEntity<Response<ArrayList<Transaction>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Transaction>>>() {});
 
-			resultString = Arrays.toString(Objects.requireNonNull(info.getBody()));
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -234,7 +240,7 @@ public class LedgerClient {
 				}
 
 				SignedRequest<IRequest.Void> request = new SignedRequest<>(
-						wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
+						wallet.clientId, wallet.signatureSuite,
 						new IRequest.Void()
 				);
 
@@ -242,9 +248,10 @@ public class LedgerClient {
 			}
 
 			GetTotalValueRequestBody request = new GetTotalValueRequestBody(walletList);
-			ResponseEntity<Double> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Double.class);
+			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
 
-			resultString = Objects.requireNonNull(info.getBody()).toString();
+
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
 		}
@@ -258,7 +265,7 @@ public class LedgerClient {
 		return converter;
 	}
 
-	static RestTemplate restTemplate() {
+	static @NonNull RestTemplate restTemplate() {
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 
@@ -285,8 +292,7 @@ public class LedgerClient {
 			return restTemplate;
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 }

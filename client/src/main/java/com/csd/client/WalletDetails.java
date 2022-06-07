@@ -16,9 +16,8 @@ public class WalletDetails {
     static final String SECURITY_CONF = "security.conf";
 
     public final byte[] clientId;
-    public final EncodedPublicKey clientPublicKey;
     public final SignatureSuite signatureSuite;
-    public Long nonce;
+    public Integer nonce;
 
     public WalletDetails(String email, String account) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -32,7 +31,6 @@ public class WalletDetails {
                 new IniSpecification("client_signature_suite", SECURITY_CONF),
                 new IniSpecification("client_signature_keygen_suite", SECURITY_CONF)
         );
-        this.clientPublicKey = signatureSuite.getPublicKey();
 
         byte[] provenance = ArrayUtils.addAll(
                 email.getBytes(StandardCharsets.UTF_8),
@@ -41,7 +39,7 @@ public class WalletDetails {
 
         this.clientId = ArrayUtils.addAll(
                 clientIdDigestSuite.digest(provenance),
-                clientIdDigestSuite.digest(clientPublicKey.getEncoded())
+                clientIdDigestSuite.digest(signatureSuite.getPublicKey().getEncoded())
         );
 
         this.nonce = null;

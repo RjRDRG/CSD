@@ -70,7 +70,7 @@ public class OkResponse<T extends Serializable> implements Response<T> {
 
     @Override
     public Status error() {
-        return null;
+        return Status.OK;
     }
 
     @Override
