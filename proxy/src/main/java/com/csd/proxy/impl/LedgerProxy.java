@@ -4,6 +4,8 @@ import bftsmart.tom.ServiceProxy;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.request.IRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
+import com.csd.common.response.wrapper.MultiSignedResponse;
+import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
 import com.csd.proxy.db.TransactionEntity;
 import com.csd.proxy.db.TransactionRepository;
@@ -27,7 +29,7 @@ public class LedgerProxy extends ServiceProxy {
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends IRequest, T extends Serializable> Result<T> invokeUnordered(R request) {
+    public <R extends IRequest, T extends Serializable> Response<T> invokeUnordered(R request) {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
 
@@ -46,7 +48,7 @@ public class LedgerProxy extends ServiceProxy {
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends IRequest, T extends Serializable> Result<T> invokeOrdered(R request) {
+    public <R extends IRequest, T extends Serializable> Response<T> invokeOrdered(R request) {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
 

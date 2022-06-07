@@ -8,21 +8,25 @@ import java.util.Arrays;
 
 import static com.csd.common.util.Serialization.dataToJson;
 
-public class Signature<T> {
+public class Signature {
     private EncodedPublicKey publicKey;
     private byte[] signature;
 
-    public Signature(EncodedPublicKey publicKey, SignatureSuite signatureSuite, T data) throws Exception {
-        this.publicKey = publicKey;
-        this.signature = signatureSuite.digest(dataToJson(data).getBytes(StandardCharsets.UTF_8));
+    public Signature(SignatureSuite signatureSuite, byte[] data) {
+        this.publicKey = signatureSuite.getPublicKey();
+        try {
+            this.signature = signatureSuite.digest(dataToJson(data).getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Signature() {
     }
 
-    public boolean verify(SignatureSuite signatureSuite, T data) throws Exception {
+    public boolean verify(SignatureSuite signatureSuite, byte[] data) throws Exception {
         signatureSuite.setPublicKey(publicKey);
-        return signatureSuite.verify(dataToJson(data).getBytes(StandardCharsets.UTF_8), signature);
+        return signatureSuite.verify(data, signature);
     }
 
     public EncodedPublicKey getPublicKey() {

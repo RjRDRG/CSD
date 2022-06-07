@@ -11,7 +11,6 @@ import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class WalletDetails {
     static final String SECURITY_CONF = "security.conf";
@@ -48,7 +47,7 @@ public class WalletDetails {
         this.nonce = null;
     }
 
-    long getNonce() {
+    int getNonce() {
         return ++nonce;
     }
 }

@@ -1,27 +1,25 @@
 package com.csd.common.request;
 
-import com.csd.common.request.wrapper.AuthenticatedRequest;
+import com.csd.common.request.wrapper.SignedRequest;
 
-import javax.print.DocFlavor;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class GetTotalValueRequestBody implements IRequest {
-    private ArrayList<AuthenticatedRequest<Void>> listOfAccounts;
+    private ArrayList<SignedRequest<Void>> listOfAccounts;
 
-    public GetTotalValueRequestBody(ArrayList<AuthenticatedRequest<Void>> listOfAccounts) {
+    public GetTotalValueRequestBody(ArrayList<SignedRequest<Void>> listOfAccounts) {
         this.listOfAccounts = listOfAccounts;
     }
 
     public GetTotalValueRequestBody() {
     }
 
-    public ArrayList<AuthenticatedRequest<Void>> getListOfAccounts() {
+    public ArrayList<SignedRequest<Void>> getListOfAccounts() {
         return listOfAccounts;
     }
 
-    public void setListOfAccounts(ArrayList<AuthenticatedRequest<Void>> listOfAccounts) {
+    public void setListOfAccounts(ArrayList<SignedRequest<Void>> listOfAccounts) {
         this.listOfAccounts = listOfAccounts;
     }
 

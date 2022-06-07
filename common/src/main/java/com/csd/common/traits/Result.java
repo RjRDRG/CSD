@@ -1,5 +1,7 @@
 package com.csd.common.traits;
 
+import com.csd.common.util.Status;
+
 import java.io.Serializable;
 
 import static com.csd.common.util.Serialization.dataToBytes;
@@ -15,8 +17,6 @@ import static com.csd.common.util.Serialization.dataToJson;
  * @param <T> type of the result value associated with success
  */
 public interface Result<T extends Serializable> extends Serializable {
-
-	enum Status{ OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, NOT_AVAILABLE };
 
 	/**
 	 * Tests if the result is an error.

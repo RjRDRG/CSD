@@ -1,0 +1,5 @@
+package com.csd.common.util;
+
+public enum Status {
+    OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, NOT_AVAILABLE
+}

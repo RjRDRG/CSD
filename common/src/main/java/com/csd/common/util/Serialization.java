@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.lang3.SerializationUtils;
 import org.bouncycastle.util.encoders.Hex;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -84,5 +85,16 @@ public class Serialization {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static byte[] concat(byte[] a, byte[] b) {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		try {
+			outputStream.write(a);
+			outputStream.write(b);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return outputStream.toByteArray();
 	}
 }

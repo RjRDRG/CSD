@@ -2,18 +2,17 @@ package com.csd.common.item;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 import static com.csd.common.util.Serialization.dataToJson;
 
-public class RequestInfo implements Serializable {
+public class TransactionDetails implements Serializable {
     private OffsetDateTime timestamp;
 
-    public RequestInfo(OffsetDateTime timestamp) {
+    public TransactionDetails(OffsetDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
-    public RequestInfo() {
+    public TransactionDetails() {
     }
 
     public OffsetDateTime getTimestamp() {

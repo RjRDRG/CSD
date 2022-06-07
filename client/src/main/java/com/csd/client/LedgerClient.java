@@ -2,13 +2,11 @@ package com.csd.client;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.csd.common.item.RequestInfo;
+import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
-import com.csd.common.request.wrapper.AuthenticatedRequest;
-import com.csd.common.request.wrapper.ProtectedRequest;
-import com.csd.common.traits.Seal;
-import com.csd.common.traits.UniqueSeal;
+import com.csd.common.request.wrapper.SignedRequest;
+import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.util.Serialization;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import org.apache.commons.lang3.ArrayUtils;
@@ -72,7 +70,7 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			AuthenticatedRequest<StartSessionRequestBody> request = new AuthenticatedRequest<>(wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
+			SignedRequest<StartSessionRequestBody> request = new SignedRequest<>(wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
 
 			ResponseEntity<Long> nonce = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, Long.class);
 			wallets.get(walletId).nonce = nonce.getBody();
@@ -96,12 +94,12 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			ProtectedRequest<LoadMoneyRequestBody> request = new ProtectedRequest<>(
+			UniqueRequest<LoadMoneyRequestBody> request = new UniqueRequest<>(
 					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
 					new LoadMoneyRequestBody(amount)
 			);
 
-			ResponseEntity<RequestInfo> requestInfo = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
+			ResponseEntity<TransactionDetails> requestInfo = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, TransactionDetails.class);
 
 			resultString = Objects.requireNonNull(requestInfo.getBody()).toString();
 		} catch (Exception e) {
@@ -122,7 +120,7 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			AuthenticatedRequest<GetBalanceRequestBody> request = new AuthenticatedRequest<>(
+			SignedRequest<GetBalanceRequestBody> request = new SignedRequest<>(
 					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
 					new GetBalanceRequestBody()
 			);
@@ -151,12 +149,12 @@ public class LedgerClient {
 
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
-			ProtectedRequest<SendTransactionRequestBody> request = new ProtectedRequest<>(
+			UniqueRequest<SendTransactionRequestBody> request = new UniqueRequest<>(
 					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite, wallet.getNonce(),
 					new SendTransactionRequestBody(walletDestination.clientId, amount)
 			);
 
-			ResponseEntity<RequestInfo> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, RequestInfo.class);
+			ResponseEntity<TransactionDetails> info = Objects.requireNonNull(restTemplate()).postForEntity(uri, request, TransactionDetails.class);
 
 			resultString = Objects.requireNonNull(info.getBody()).toString();
 		} catch (Exception e) {
@@ -207,7 +205,7 @@ public class LedgerClient {
 				startSession(walletId,console);
 			}
 
-			AuthenticatedRequest<GetExtractRequestBody> request = new AuthenticatedRequest<>(
+			SignedRequest<GetExtractRequestBody> request = new SignedRequest<>(
 					wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
 					new GetExtractRequestBody()
 			);
@@ -226,7 +224,7 @@ public class LedgerClient {
 		String resultString;
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/total";
-			ArrayList<AuthenticatedRequest<IRequest.Void>> walletList = new ArrayList<>(walletsIds.size());
+			ArrayList<SignedRequest<IRequest.Void>> walletList = new ArrayList<>(walletsIds.size());
 
 			for(String walletId : walletsIds ){
 				WalletDetails wallet = wallets.get(walletId);
@@ -235,7 +233,7 @@ public class LedgerClient {
 					startSession(walletId,console);
 				}
 
-				AuthenticatedRequest<IRequest.Void> request = new AuthenticatedRequest<>(
+				SignedRequest<IRequest.Void> request = new SignedRequest<>(
 						wallet.clientId, wallet.clientPublicKey, wallet.signatureSuite,
 						new IRequest.Void()
 				);

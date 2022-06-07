@@ -4,13 +4,13 @@ import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import com.csd.common.cryptography.validator.RequestValidator;
-import com.csd.common.item.RequestInfo;
+import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.request.*;
-import com.csd.common.request.wrapper.AuthenticatedRequest;
+import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
-import com.csd.common.request.wrapper.ProtectedRequest;
+import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +51,9 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {
         switch (consensusRequest.getType()) {
             case SESSION: {
-                Result<AuthenticatedRequest<StartSessionRequestBody>> request = validator.validate((AuthenticatedRequest<StartSessionRequestBody>) consensusRequest.extractRequest());
+                Result<SignedRequest<StartSessionRequestBody>> request = validator.validate((SignedRequest<StartSessionRequestBody>) consensusRequest.extractRequest());
                 Result<Long> result;
-                String clientId = bytesToString(request.value().getClientId());
+                String clientId = bytesToString(request.value().getId());
                 OffsetDateTime timestamp = request.value().getRequestBody().getData().getTimestamp();
                 if(!request.valid()) {
                     result = Result.error(request);
@@ -72,15 +72,15 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case BALANCE: {
-                Result<AuthenticatedRequest<GetBalanceRequestBody>> request = validator.validate((AuthenticatedRequest<GetBalanceRequestBody>) consensusRequest.extractRequest());
+                Result<SignedRequest<GetBalanceRequestBody>> request = validator.validate((SignedRequest<GetBalanceRequestBody>) consensusRequest.extractRequest());
                 Result<Double> result = request.valid() ? ledgerService.getBalance(request.value()) : Result.error(request);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case LOAD: {
-                ProtectedRequest<LoadMoneyRequestBody> extractRequest = consensusRequest.extractRequest();
-                String clientId = bytesToString(extractRequest.getClientId());
-                Result<ProtectedRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
-                Result<RequestInfo> result;
+                UniqueRequest<LoadMoneyRequestBody> extractRequest = consensusRequest.extractRequest();
+                String clientId = bytesToString(extractRequest.getId());
+                Result<UniqueRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
+                Result<TransactionDetails> result;
                 if (request.valid()) {
                     result = ledgerService.loadMoney(request.value(), consensusRequest.getTimestamp());
                     sessions.increment(clientId);
@@ -89,10 +89,10 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TRANSFER: {
-                ProtectedRequest<SendTransactionRequestBody> extractRequest = consensusRequest.extractRequest();
-                String clientId = bytesToString(extractRequest.getClientId());
-                Result<ProtectedRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
-                Result<RequestInfo> result;
+                UniqueRequest<SendTransactionRequestBody> extractRequest = consensusRequest.extractRequest();
+                String clientId = bytesToString(extractRequest.getId());
+                Result<UniqueRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
+                Result<TransactionDetails> result;
                 if (request.valid()) {
                     result = ledgerService.sendTransaction(request.value(), consensusRequest.getTimestamp());
                     sessions.increment(clientId);
@@ -102,14 +102,14 @@ public class LedgerReplica extends DefaultSingleRecoverable {
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case EXTRACT: {
-                Result<AuthenticatedRequest<GetExtractRequestBody>> request = validator.validate((AuthenticatedRequest<GetExtractRequestBody>) consensusRequest.extractRequest());
+                Result<SignedRequest<GetExtractRequestBody>> request = validator.validate((SignedRequest<GetExtractRequestBody>) consensusRequest.extractRequest());
                 Result<Transaction[]> result = request.valid() ? ledgerService.getExtract(request.value()) : Result.error(request);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TOTAL_VAL: {
                 Result<GetTotalValueRequestBody> request = Result.ok(consensusRequest.extractRequest());
-                for( AuthenticatedRequest<IRequest.Void> authenticatedRequest : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
-                    Result<AuthenticatedRequest<IRequest.Void>> result = validator.validate(authenticatedRequest);
+                for( SignedRequest<IRequest.Void> signedRequest : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
+                    Result<SignedRequest<IRequest.Void>> result = validator.validate(signedRequest);
                     if (! result.valid()){
                         request = Result.error(result);
                         break;

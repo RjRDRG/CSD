@@ -4,11 +4,11 @@ package com.csd.replica.impl;
 import com.csd.common.cryptography.config.IniSpecification;
 import com.csd.common.cryptography.suites.digest.HashSuite;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
-import com.csd.common.item.RequestInfo;
+import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
-import com.csd.common.request.wrapper.AuthenticatedRequest;
-import com.csd.common.request.wrapper.ProtectedRequest;
+import com.csd.common.request.wrapper.SignedRequest;
+import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
 import com.csd.replica.db.TransactionEntity;
 import com.csd.replica.db.TransactionRepository;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -43,9 +41,9 @@ public class LedgerService {
         this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH));
     }
 
-    public Result<RequestInfo> loadMoney(ProtectedRequest<LoadMoneyRequestBody> request, OffsetDateTime timestamp) {
+    public Result<TransactionDetails> loadMoney(UniqueRequest<LoadMoneyRequestBody> request, OffsetDateTime timestamp) {
         try {
-            String recipientId = bytesToString(request.getClientId());
+            String recipientId = bytesToString(request.getId());
             LoadMoneyRequestBody requestBody = request.getRequestBody().getData();
 
             TransactionEntity t = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getLastTransactionHash());
@@ -53,7 +51,7 @@ public class LedgerService {
 
             globalValue += requestBody.getAmount();
 
-            return Result.ok(new RequestInfo(timestamp));
+            return Result.ok(new TransactionDetails(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -61,17 +59,17 @@ public class LedgerService {
     }
 
     @Transactional
-    public Result<RequestInfo> sendTransaction(ProtectedRequest<SendTransactionRequestBody> request, OffsetDateTime timestamp) {
+    public Result<TransactionDetails> sendTransaction(UniqueRequest<SendTransactionRequestBody> request, OffsetDateTime timestamp) {
         try {
             SendTransactionRequestBody requestBody = request.getRequestBody().getData();
 
-            String senderId = bytesToString(request.getClientId());
+            String senderId = bytesToString(request.getId());
             String recipientId = bytesToString(requestBody.getDestination());
 
             if (requestBody.getAmount()<0) return Result.error(Result.Status.BAD_REQUEST, "Transaction amount must be positive");
 
             double balance = 0;
-            String clientId = bytesToString(request.getClientId());
+            String clientId = bytesToString(request.getId());
             balance += transactionsRepository.findByOwner(clientId).stream()
                     .map(TransactionEntity::getAmount)
                     .reduce(0.0, Double::sum);
@@ -84,18 +82,18 @@ public class LedgerService {
             transactionsRepository.save(sender);
             transactionsRepository.save(recipient);
 
-            return Result.ok(new RequestInfo(timestamp));
+            return Result.ok(new TransactionDetails(timestamp));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Result.Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 
-    public Result<Transaction[]> getExtract(AuthenticatedRequest<GetExtractRequestBody> request) {
+    public Result<Transaction[]> getExtract(SignedRequest<GetExtractRequestBody> request) {
         try {
             GetExtractRequestBody requestBody = request.getRequestBody().getData();
 
-            String ownerId = bytesToString(request.getClientId());
+            String ownerId = bytesToString(request.getId());
 
             return Result.ok(transactionsRepository.findByOwner(ownerId).stream()
                     .map(TransactionEntity::toItem).toArray(Transaction[]::new));
@@ -108,8 +106,8 @@ public class LedgerService {
     public Result<Double> getTotalValue(GetTotalValueRequestBody request) {
         try {
             double acm = 0;
-            for(AuthenticatedRequest<IRequest.Void> authenticatedRequest : request.getListOfAccounts()) {
-                String clientId = bytesToString(authenticatedRequest.getClientId());
+            for(SignedRequest<IRequest.Void> signedRequest : request.getListOfAccounts()) {
+                String clientId = bytesToString(signedRequest.getId());
                 acm += transactionsRepository.findByOwner(clientId).stream()
                         .map(TransactionEntity::getAmount)
                         .reduce(0.0, Double::sum);
@@ -139,12 +137,12 @@ public class LedgerService {
         }
     }
 
-    public Result<Double> getBalance(AuthenticatedRequest<GetBalanceRequestBody> request) {
+    public Result<Double> getBalance(SignedRequest<GetBalanceRequestBody> request) {
         try {
             GetBalanceRequestBody requestBody = request.getRequestBody().getData();
             double acm = 0;
 
-            String clientId = bytesToString(request.getClientId());
+            String clientId = bytesToString(request.getId());
             acm += transactionsRepository.findByOwner(clientId).stream()
                     .map(TransactionEntity::getAmount)
                     .reduce(0.0, Double::sum);

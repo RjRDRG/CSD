@@ -1,7 +1,7 @@
 
 Questions:
 
-Define private transaction scheme
+Define private transaction scheme outside the network?
 
 Miner incentives, coin generation from nothing?
 
@@ -15,6 +15,9 @@ Data structure for validating transactions. Chains or Dictionary Options: List<L
 
 Benchmarking scenarios and metrics
 
+
+
+
 Remember:
 
 Transactions must included the client signature (while preserving anonymity)
@@ -24,3 +27,11 @@ Miner reward transaction is named:  coinbase transaction
 When building a block the validation of an account balance must take into account the previous transactions inside the block
 
 Transaction nonce are increased on reception, the server detects duplicated transactions using the nonce and warns the user
+
+
+
+Backlog:
+
+Client Id provenance is random seed not the client email
+
+Nonce is an int equal to number of transactions performed by the client, start session is still required, the client persist the last nonce

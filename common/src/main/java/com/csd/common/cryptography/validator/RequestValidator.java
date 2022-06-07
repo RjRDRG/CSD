@@ -9,8 +9,8 @@ import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.IRequest;
-import com.csd.common.request.wrapper.AuthenticatedRequest;
-import com.csd.common.request.wrapper.ProtectedRequest;
+import com.csd.common.request.wrapper.SignedRequest;
+import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +34,9 @@ public class RequestValidator {
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CRYPTO_CONFIG_PATH));
     }
 
-    public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request, long nonce) {
+    public <R extends IRequest> Result<UniqueRequest<R>> validate(UniqueRequest<R> request, long nonce) {
         try {
-            if (!request.verifyClientId(clientIdDigestSuite))
+            if (!request.verifyId(clientIdDigestSuite))
                 return Result.error(Result.Status.FORBIDDEN, "Invalid Id");
 
             if (!request.verifySignature(clientSignatureSuite))
@@ -51,9 +51,9 @@ public class RequestValidator {
         return Result.ok(request);
     }
 
-    public <R extends IRequest> Result<ProtectedRequest<R>> validate(ProtectedRequest<R> request) {
+    public <R extends IRequest> Result<UniqueRequest<R>> validate(UniqueRequest<R> request) {
         try {
-            if (!request.verifyClientId(clientIdDigestSuite))
+            if (!request.verifyId(clientIdDigestSuite))
                 return Result.error(Result.Status.FORBIDDEN, "Invalid Id");
 
             if (!request.verifySignature(clientSignatureSuite))
@@ -65,9 +65,9 @@ public class RequestValidator {
         return Result.ok(request);
     }
 
-    public <R extends IRequest> Result<AuthenticatedRequest<R>> validate(AuthenticatedRequest<R> request) {
+    public <R extends IRequest> Result<SignedRequest<R>> validate(SignedRequest<R> request) {
         try {
-            if (!request.verifyClientId(clientIdDigestSuite))
+            if (!request.verifyId(clientIdDigestSuite))
                 return Result.error(Result.Status.FORBIDDEN, "Invalid Signature");
 
             if (!request.verifySignature(clientSignatureSuite))
