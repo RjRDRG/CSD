@@ -38,16 +38,16 @@ public class RequestValidator {
     public <R extends IRequest> Result<UniqueRequest<R>> validate(UniqueRequest<R> request, long nonce) {
         try {
             if (!request.verifyId(clientIdDigestSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Id");
+                return Result.error(Status.FORBIDDEN, "Invalid Id: "  + request);
 
             if (!request.verifySignature(clientSignatureSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Signature");
+                return Result.error(Status.FORBIDDEN, "Invalid Signature: " + request);
 
             if (!request.verifyNonce(nonce))
-                return Result.error(Status.FORBIDDEN, "Invalid Nonce: " + nonce + " " + request.getNonce());
+                return Result.error(Status.FORBIDDEN, "Invalid Nonce: " + request);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return Result.error(Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Status.INTERNAL_ERROR, e.getMessage() + ": " + request);
         }
         return Result.ok(request);
     }
@@ -55,13 +55,13 @@ public class RequestValidator {
     public <R extends IRequest> Result<UniqueRequest<R>> validate(UniqueRequest<R> request) {
         try {
             if (!request.verifyId(clientIdDigestSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Id");
+                return Result.error(Status.FORBIDDEN, "Invalid Id: " + request);
 
             if (!request.verifySignature(clientSignatureSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Signature");
+                return Result.error(Status.FORBIDDEN, "Invalid Signature: " + request);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return Result.error(Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Status.INTERNAL_ERROR, e.getMessage() + ": " + request);
         }
         return Result.ok(request);
     }
@@ -69,13 +69,13 @@ public class RequestValidator {
     public <R extends IRequest> Result<SignedRequest<R>> validate(SignedRequest<R> request) {
         try {
             if (!request.verifyId(clientIdDigestSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Signature");
+                return Result.error(Status.FORBIDDEN, "Invalid Id: " + request);
 
             if (!request.verifySignature(clientSignatureSuite))
-                return Result.error(Status.FORBIDDEN, "Invalid Signature");
+                return Result.error(Status.FORBIDDEN, "Invalid Signature: " + request);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return Result.error(Status.INTERNAL_ERROR, e.getMessage());
+            return Result.error(Status.INTERNAL_ERROR, e.getMessage() + ": " + request);
         }
         return Result.ok(request);
     }
