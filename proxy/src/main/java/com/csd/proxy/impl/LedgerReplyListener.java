@@ -5,27 +5,32 @@ import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.traits.Signature;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import static com.csd.common.util.Serialization.bytesToData;
+import static com.csd.common.util.Serialization.*;
 
 public class LedgerReplyListener implements ReplyListener {
     private final AsynchServiceProxy serviceProxy;
-    private final Thread callerThread;
-    private double q;
-    private Map<ConsensusResponse, List<TOMMessage>> responses = new ConcurrentHashMap<>();
-    private ConsensusResponse response = null;
 
-    public LedgerReplyListener(AsynchServiceProxy serviceProxy, Thread callerThread) {
+    private final CountDownLatch latch;
+    private double q;
+    private Map<String, List<TOMMessage>> responses = new ConcurrentHashMap<>();
+    private ConsensusResponse response = null;
+    private List<Signature> signatures;
+
+    public LedgerReplyListener(AsynchServiceProxy serviceProxy, CountDownLatch latch) {
         this.serviceProxy = serviceProxy;
-        this.callerThread = callerThread;
+        this.latch = latch;
         this.q = Math.ceil((double) (serviceProxy.getViewManager().getCurrentViewN() + serviceProxy.getViewManager().getCurrentViewF() + 1) / 3.0);
     }
 
@@ -38,14 +43,12 @@ public class LedgerReplyListener implements ReplyListener {
 
     @Override
     public void replyReceived(RequestContext requestContext, TOMMessage tomMessage) {
-        System.out.println("\n\n\n\\nn\nadasdasdassdasdasdas\n\n\n\n");
-        ConsensusResponse response = bytesToData(tomMessage.getContent());
-        System.out.println("\n\n\n\\nn\n#########################\n\n\n\n");
-        List<TOMMessage> l = responses.computeIfAbsent(response, k -> new LinkedList<>());
+        List<TOMMessage> l = responses.computeIfAbsent(bytesToHex(tomMessage.getContent()), k -> new LinkedList<>());
         l.add(tomMessage);
-        if (l.size() >= q) {
-            this.response = response;
-            callerThread.notify();
+        if (l.size() > q) {
+            this.response = bytesToData(tomMessage.getContent());
+            this.signatures = l.stream().map(t -> new Signature((SignatureSuite) null, t.serializedMessageSignature)).collect(Collectors.toList()); /*TODO get public key*/
+            latch.countDown();
             serviceProxy.cleanAsynchRequest(requestContext.getOperationId());
         }
     }
@@ -55,6 +58,6 @@ public class LedgerReplyListener implements ReplyListener {
     }
 
     public List<Signature> getResponseSignatures() {
-        return responses.get(response).stream().map(t -> new Signature((SignatureSuite) null, t.serializedMessageSignature)).collect(Collectors.toList()); /*TODO get public key*/
+        return signatures;
     }
 }

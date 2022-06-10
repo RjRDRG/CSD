@@ -16,7 +16,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.*;
@@ -46,10 +50,10 @@ public class LedgerProxy extends AsynchServiceProxy {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
 
-            Thread thread = Thread.currentThread();
-            LedgerReplyListener listener = new LedgerReplyListener(this, thread);
+            CountDownLatch latch = new CountDownLatch(1);
+            LedgerReplyListener listener = new LedgerReplyListener(this, latch);
             super.invokeAsynchRequest(dataToBytes(consensusRequest), listener, type);
-            thread.wait(TIMEOUT_PERIOD);
+            latch.await(TIMEOUT_PERIOD, TimeUnit.MILLISECONDS);
 
             ConsensusResponse consensusResponse = listener.getResponse();
             if(consensusResponse != null) {

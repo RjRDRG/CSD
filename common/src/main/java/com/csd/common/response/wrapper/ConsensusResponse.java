@@ -44,19 +44,6 @@ public class ConsensusResponse implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ConsensusResponse that = (ConsensusResponse) o;
-        return encodedResult.equals(that.encodedResult);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(encodedResult);
-    }
-
-    @Override
     public String toString() {
         return "ReplicaReply{" +
                 ", encodedResult=" + encodedResult +

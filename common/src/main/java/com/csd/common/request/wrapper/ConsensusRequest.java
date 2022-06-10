@@ -67,12 +67,12 @@ public class ConsensusRequest implements IRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConsensusRequest that = (ConsensusRequest) o;
-        return lastEntryId == that.lastEntryId && timestamp.equals(that.timestamp) && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest);
+        return lastEntryId == that.lastEntryId && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest) && timestamp.equals(that.timestamp);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(timestamp, type, lastEntryId);
+        int result = Objects.hash(type, timestamp, lastEntryId);
         result = 31 * result + Arrays.hashCode(encodedRequest);
         return result;
     }
