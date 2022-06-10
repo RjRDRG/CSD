@@ -78,11 +78,11 @@ public class LedgerClient {
 			SignedRequest<StartSessionRequestBody> request = new SignedRequest<>(wallet.clientId, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
 
 			ResponseEntity<Response<Integer>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Integer>>() {});
-			wallets.get(walletId).nonce = responseEntity.getBody().response();
+			wallets.get(walletId).nonce = Objects.requireNonNull(responseEntity.getBody()).response();
 
 			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + responseEntity.getBody() + "}";
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = e + e.getMessage();
 		}
 		console.printOperation(requestString,resultString);
 	}

@@ -48,12 +48,12 @@ public class ConsensusResponse implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConsensusResponse that = (ConsensusResponse) o;
-        return encodedResult.equals(that.encodedResult) && missingEntries.equals(that.missingEntries);
+        return encodedResult.equals(that.encodedResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(encodedResult, missingEntries);
+        return Objects.hash(encodedResult);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.csd.common.traits.Signature;
 import com.csd.common.util.Status;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface Response<T extends Serializable> extends Serializable {
@@ -20,7 +21,7 @@ public interface Response<T extends Serializable> extends Serializable {
 
     void proxySignature(SignatureSuite signatureSuite);
 
-    void replicaSignature(SignatureSuite signatureSuite);
+    void replicaSignatures(List<Signature> signatures);
 
     List<Signature> replicaSignatures();
 }

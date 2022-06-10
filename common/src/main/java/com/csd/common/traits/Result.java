@@ -3,6 +3,7 @@ package com.csd.common.traits;
 import com.csd.common.util.Status;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import static com.csd.common.util.Serialization.dataToBytes;
 import static com.csd.common.util.Serialization.dataToJson;
@@ -126,6 +127,19 @@ class OkResult<T extends Serializable> implements Result<T> {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		OkResult<?> okResult = (OkResult<?>) o;
+		return result.equals(okResult.result);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(result);
+	}
+
+	@Override
 	public String toString() {
 		return dataToJson(result);
 	}
@@ -183,6 +197,19 @@ class ErrorResult<T extends Serializable> implements Result<T> {
 	@Override
 	public Result<byte[]> encode() {
 		return Result.error(error,message);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ErrorResult<?> that = (ErrorResult<?>) o;
+		return error == that.error && Objects.equals(message, that.message);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(error, message);
 	}
 
 	@Override

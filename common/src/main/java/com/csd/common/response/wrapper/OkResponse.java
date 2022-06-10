@@ -27,8 +27,9 @@ public class OkResponse<T extends Serializable> implements Response<T> {
         this.proxySignature = new Signature(signatureSuite, concat(dataToBytesDeterministic(response), dataToBytesDeterministic(replicaSignatures)));
     }
 
-    public void replicaSignature(SignatureSuite signatureSuite) {
-        this.replicaSignatures.add(new Signature(signatureSuite, dataToBytesDeterministic(response)));
+    @Override
+    public void replicaSignatures(List<Signature> signatures) {
+        this.replicaSignatures = new ArrayList<>(signatures);
     }
 
     public OkResponse() {

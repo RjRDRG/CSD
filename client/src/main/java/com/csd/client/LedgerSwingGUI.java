@@ -3,6 +3,7 @@ package com.csd.client;
 import com.csd.client.ui.JGridBagPanel;
 import com.csd.client.ui.JPromptTextField;
 import com.csd.common.traits.Result;
+import com.csd.common.util.Status;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -127,7 +128,7 @@ public class LedgerSwingGUI extends JFrame{
                 try {
                     LedgerClient.loadMoney((String) wallets.getSelectedItem(), Double.parseDouble(loadMoneyAmount.getText()), result);
                 } catch (Exception exception) {
-                    result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                    result.append(Result.error(Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
                 }
             });
 
@@ -150,7 +151,7 @@ public class LedgerSwingGUI extends JFrame{
                             result
                     );
                 } catch (Exception exception) {
-                    result.append(Result.error(Result.Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                    result.append(Result.error(Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
                 }
             });
 

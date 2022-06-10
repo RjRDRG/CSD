@@ -7,8 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static com.csd.common.util.Serialization.bytesToData;
-import static com.csd.common.util.Serialization.dataToBytes;
+import static com.csd.common.util.Serialization.*;
 
 public class ConsensusRequest implements IRequest {
 

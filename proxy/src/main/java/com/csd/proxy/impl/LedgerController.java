@@ -1,6 +1,9 @@
 package com.csd.proxy.impl;
 
 import com.csd.common.cryptography.config.IniSpecification;
+import com.csd.common.cryptography.config.StoredSecrets;
+import com.csd.common.cryptography.config.SuiteConfiguration;
+import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.cryptography.validator.RequestValidator;
 import com.csd.common.item.*;
@@ -32,7 +35,10 @@ class LedgerController {
     LedgerController(LedgerProxy ledgerProxy) throws Exception {
         this.ledgerProxy = ledgerProxy;
         this.validator = new RequestValidator();
-        this.proxySignatureSuite = new SignatureSuite(new IniSpecification("proxy_signature_suite", CRYPTO_CONFIG_PATH));
+        this.proxySignatureSuite = new SignatureSuite(new SuiteConfiguration(
+                new IniSpecification("proxy_signature_suite", CRYPTO_CONFIG_PATH),
+                new StoredSecrets(new KeyStoresInfo("stores", CRYPTO_CONFIG_PATH))
+        ), SignatureSuite.Mode.Both);
     }
 
     @PostMapping("/session")
@@ -131,7 +137,7 @@ class LedgerController {
         return buildResponse(response);
     }
 
-    @PostMapping("/ledger")
+    @PostMapping("/block")
     public ResponseEntity<Response<Block>> getBlockToMine(@RequestBody GetBlockToMineRequestBody request) {
         Response<Block> response = ledgerProxy.invokeUnordered(request);
         response.proxySignature(proxySignatureSuite);
@@ -139,7 +145,7 @@ class LedgerController {
         return buildResponse(response);
     }
 
-    @PostMapping("/ledger")
+    @PostMapping("/proposal")
     public ResponseEntity<Response<ProposedMinedBlockResponse>> proposedMinedBlock(@RequestBody SignedRequest<ProposedMinedBlockRequestBody> request) {
         var v = validator.validate(request);
         if(!v.valid()) {

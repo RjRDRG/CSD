@@ -46,8 +46,9 @@ public class ErrorResponse<T extends Serializable> implements Response<T>{
         );
     }
 
-    public void replicaSignature(SignatureSuite signatureSuite) {
-        this.replicaSignatures.add(new Signature(signatureSuite, concat(dataToBytesDeterministic(error), dataToBytesDeterministic(message))));
+    @Override
+    public void replicaSignatures(List<Signature> signatures) {
+        this.replicaSignatures = new ArrayList<>(signatures);
     }
 
     public ErrorResponse() {
