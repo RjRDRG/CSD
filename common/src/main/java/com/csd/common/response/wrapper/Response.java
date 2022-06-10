@@ -5,7 +5,6 @@ import com.csd.common.traits.Signature;
 import com.csd.common.util.Status;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface Response<T extends Serializable> extends Serializable {

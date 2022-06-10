@@ -4,6 +4,7 @@ import bftsmart.communication.client.ReplyListener;
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
+import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
@@ -47,7 +48,7 @@ public class LedgerReplyListener implements ReplyListener {
         l.add(tomMessage);
         if (l.size() > q) {
             this.response = bytesToData(tomMessage.getContent());
-            this.signatures = l.stream().map(t -> new Signature((SignatureSuite) null, t.serializedMessageSignature)).collect(Collectors.toList()); /*TODO get public key*/
+            this.signatures = l.stream().map(t -> new Signature((EncodedPublicKey) null, t.serializedMessageSignature)).collect(Collectors.toList()); /*TODO get public key*/
             latch.countDown();
             serviceProxy.cleanAsynchRequest(requestContext.getOperationId());
         }

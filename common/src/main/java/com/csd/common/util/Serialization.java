@@ -1,6 +1,7 @@
 package com.csd.common.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -78,9 +79,18 @@ public class Serialization {
 		}
 	}
 
-	public static <T> T jsonToData(byte[] bytes, Class<T> type) {
+	public static <T> T jsonToData(String s, Class<T> type) {
 		try {
-			return jsonMapper.readValue(bytes, type);
+			return jsonMapper.readValue(s, type);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static <T> T jsonToData(String s, TypeReference<T> type) {
+		try {
+			return jsonMapper.readValue(s, type);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
