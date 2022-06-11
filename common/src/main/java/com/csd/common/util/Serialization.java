@@ -97,11 +97,11 @@ public class Serialization {
 		}
 	}
 
-	public static byte[] concat(byte[] a, byte[] b) {
+	public static byte[] concat(byte[]... a) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 		try {
-			outputStream.write(a);
-			outputStream.write(b);
+			for (byte[] b : a)
+				outputStream.write(b);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

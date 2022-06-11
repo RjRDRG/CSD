@@ -10,15 +10,13 @@ import com.csd.common.item.*;
 import com.csd.common.response.ProposedMinedBlockResponse;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
-import com.csd.common.request.wrapper.UniqueRequest;
-import com.csd.common.response.wrapper.ErrorResponse;
 import com.csd.common.response.wrapper.Response;
-import com.csd.common.traits.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
@@ -41,24 +39,11 @@ class LedgerController {
         ), SignatureSuite.Mode.Both);
     }
 
-    @PostMapping("/session")
-    public ResponseEntity<Response<Integer>> startSession(@RequestBody SignedRequest<StartSessionRequestBody> request) {
-        var v = validator.validate(request);
-        if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
-        }
-
-        Response<Integer> response = ledgerProxy.invokeUnordered(request);
-        response.proxySignature(proxySignatureSuite);
-
-        return buildResponse(response);
-    }
-
     @PostMapping("/load")
-    public ResponseEntity<Response<TransactionDetails>> loadMoney(@RequestBody UniqueRequest<LoadMoneyRequestBody> request) {
-        var v = validator.validate(request);
+    public ResponseEntity<Response<TransactionDetails>> loadMoney(@RequestBody SignedRequest<LoadMoneyRequestBody> request) {
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
         if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+            return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
         Response<TransactionDetails> response = ledgerProxy.invokeOrdered(request);
@@ -69,9 +54,9 @@ class LedgerController {
 
     @PostMapping("/balance")
     public ResponseEntity<Response<Double>> getBalance(@RequestBody SignedRequest<GetBalanceRequestBody> request) {
-        var v = validator.validate(request);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
         if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+            return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
         Response<Double> response = ledgerProxy.invokeUnordered(request);
@@ -81,10 +66,10 @@ class LedgerController {
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Response<TransactionDetails>> sendTransaction(@RequestBody UniqueRequest<SendTransactionRequestBody> request) {
-        var v = validator.validate(request);
+    public ResponseEntity<Response<TransactionDetails>> sendTransaction(@RequestBody SignedRequest<SendTransactionRequestBody> request) {
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
         if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+            return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
         Response<TransactionDetails> response = ledgerProxy.invokeOrdered(request);
@@ -95,9 +80,9 @@ class LedgerController {
 
     @PostMapping("/extract")
     public ResponseEntity<Response<ArrayList<Transaction>>> getExtract(@RequestBody SignedRequest<GetExtractRequestBody> request) {
-        var v = validator.validate(request);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
         if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+            return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
         Response<ArrayList<Transaction>> response = ledgerProxy.invokeUnordered(request);
@@ -109,9 +94,9 @@ class LedgerController {
     @PostMapping("/total")
     public ResponseEntity<Response<Double>> getTotalValue(@RequestBody GetTotalValueRequestBody request) {
         for(SignedRequest<IRequest.Void> signedRequest : request.getListOfAccounts()){
-            var v = validator.validate(signedRequest);
+            var v = validator.validate(signedRequest, ledgerProxy.getLastTrxDate(signedRequest.getId()));
             if(!v.valid()) {
-                return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+                return buildResponse(new Response<>(v, proxySignatureSuite));
             }
         }
 
@@ -147,9 +132,9 @@ class LedgerController {
 
     @PostMapping("/proposal")
     public ResponseEntity<Response<ProposedMinedBlockResponse>> proposedMinedBlock(@RequestBody SignedRequest<ProposedMinedBlockRequestBody> request) {
-        var v = validator.validate(request);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
         if(!v.valid()) {
-            return buildResponse(new ErrorResponse<>(v, proxySignatureSuite));
+            return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
         Response<ProposedMinedBlockResponse> response = ledgerProxy.invokeOrdered(request);

@@ -5,8 +5,6 @@ import bftsmart.tom.core.messages.TOMMessageType;
 import com.csd.common.request.IRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
-import com.csd.common.response.wrapper.ErrorResponse;
-import com.csd.common.response.wrapper.OkResponse;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
@@ -16,9 +14,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -48,7 +46,7 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     private <R extends IRequest, T extends Serializable> Response<T> invoke(R request, TOMMessageType type) {
         try {
-            ConsensusRequest consensusRequest = new ConsensusRequest(request, 0);
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, 0); //TODO lastEntryId
 
             CountDownLatch latch = new CountDownLatch(1);
             LedgerReplyListener listener = new LedgerReplyListener(this, latch);
@@ -61,21 +59,25 @@ public class LedgerProxy extends AsynchServiceProxy {
                 Result<T> result = consensusResponse.extractResult();
                 Response<T> response = null;
                 if(result.valid())
-                    response = new OkResponse<>(result.value());
+                    response = new Response<>(result.value());
                 else
-                    response = new ErrorResponse<>(result);
+                    response = new Response<>(result);
                 response.replicaSignatures(listener.getResponseSignatures());
                 return response;
             }
             else {
-                return new ErrorResponse<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
+                return new Response<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
             }
         } catch (Exception e) {
             System.out.println("\n\n\n\n");
             e.printStackTrace();
             System.out.println("\n\n\n\n");
-            return new ErrorResponse<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            return new Response<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
+    }
+
+    public OffsetDateTime getLastTrxDate(byte[] owner) {
+        return Optional.ofNullable(transactionsRepository.findTopByOwnerByOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }
 

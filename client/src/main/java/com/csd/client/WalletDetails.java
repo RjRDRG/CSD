@@ -17,7 +17,6 @@ public class WalletDetails {
 
     public final byte[] clientId;
     public final SignatureSuite signatureSuite;
-    public Integer nonce;
 
     public WalletDetails(String email, String account) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -41,11 +40,5 @@ public class WalletDetails {
                 clientIdDigestSuite.digest(provenance),
                 clientIdDigestSuite.digest(signatureSuite.getPublicKey().getEncoded())
         );
-
-        this.nonce = null;
-    }
-
-    int getNonce() {
-        return ++nonce;
     }
 }

@@ -10,7 +10,6 @@ import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
-import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 
 import static com.csd.common.util.Serialization.*;
@@ -34,13 +32,11 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     private final Environment environment;
 
     private final RequestValidator validator;
-    private final SessionRegistry sessions;
 
     public LedgerReplica(LedgerService ledgerService, Environment environment) throws Exception {
         this.ledgerService = ledgerService;
         this.environment = environment;
         this.validator = new RequestValidator();
-        this.sessions = new SessionRegistry();
     }
 
     public void start(String[] args) {
@@ -51,67 +47,35 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {
         switch (consensusRequest.getType()) {
-            case SESSION: {
-                Result<SignedRequest<StartSessionRequestBody>> request = validator.validate((SignedRequest<StartSessionRequestBody>) consensusRequest.extractRequest());
-                Result<Long> result;
-                String clientId = bytesToString(request.value().getId());
-                OffsetDateTime timestamp = request.value().getRequest().getTimestamp();
-                if(!request.valid()) {
-                    result = Result.error(request);
-                }
-                else if(timestamp.isBefore(OffsetDateTime.now().minusMinutes(10))) {
-                    result = Result.error(Status.BAD_REQUEST, "Session Timestamp is to old");
-                }
-                else if(sessions.contains(clientId)) {
-                    result = Result.error(Status.BAD_REQUEST, "Session already active");
-                }
-                else {
-                    long nonce = timestamp.toInstant().toEpochMilli();
-                    sessions.putSession(clientId, nonce);
-                    result = Result.ok(nonce);
-                }
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
-            }
             case BALANCE: {
-                Result<SignedRequest<GetBalanceRequestBody>> request = validator.validate((SignedRequest<GetBalanceRequestBody>) consensusRequest.extractRequest());
-                Result<Double> result = request.valid() ? ledgerService.getBalance(request.value()) : Result.error(request);
+                SignedRequest<GetBalanceRequestBody> request =  consensusRequest.extractRequest();
+                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
+                Result<Double> result =  v.valid() ? ledgerService.getBalance(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case LOAD: {
-                UniqueRequest<LoadMoneyRequestBody> extractRequest = consensusRequest.extractRequest();
-                String clientId = bytesToString(extractRequest.getId());
-                Result<UniqueRequest<LoadMoneyRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
-                Result<TransactionDetails> result;
-                if (request.valid()) {
-                    result = ledgerService.loadMoney(request.value(), consensusRequest.getTimestamp());
-                    sessions.increment(clientId);
-                }
-                else result = Result.error(request);
+                SignedRequest<LoadMoneyRequestBody> request = consensusRequest.extractRequest();
+                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
+                Result<TransactionDetails> result =  v.valid() ? ledgerService.loadMoney(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TRANSFER: {
-                UniqueRequest<SendTransactionRequestBody> extractRequest = consensusRequest.extractRequest();
-                String clientId = bytesToString(extractRequest.getId());
-                Result<UniqueRequest<SendTransactionRequestBody>> request = validator.validate(extractRequest, sessions.getSession(clientId));
-                Result<TransactionDetails> result;
-                if (request.valid()) {
-                    result = ledgerService.sendTransaction(request.value(), consensusRequest.getTimestamp());
-                    sessions.increment(clientId);
-                }
-                else result = Result.error(request);
-
+                SignedRequest<SendTransactionRequestBody> request = consensusRequest.extractRequest();
+                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
+                Result<TransactionDetails> result =  v.valid() ? ledgerService.sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case EXTRACT: {
-                Result<SignedRequest<GetExtractRequestBody>> request = validator.validate((SignedRequest<GetExtractRequestBody>) consensusRequest.extractRequest());
-                Result<Transaction[]> result = request.valid() ? ledgerService.getExtract(request.value()) : Result.error(request);
+                SignedRequest<GetExtractRequestBody> request = consensusRequest.extractRequest();
+                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
+                Result<Transaction[]> result = v.valid() ? ledgerService.getExtract(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TOTAL_VAL: {
                 Result<GetTotalValueRequestBody> request = Result.ok(consensusRequest.extractRequest());
-                for( SignedRequest<IRequest.Void> signedRequest : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
-                    Result<SignedRequest<IRequest.Void>> result = validator.validate(signedRequest);
-                    if (! result.valid()){
+                for(SignedRequest<IRequest.Void> r : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
+                    Result<SignedRequest<IRequest.Void>> result = validator.validate(r, ledgerService.getLastTrxDate(r.getId()));
+                    if (!result.valid()){
                         request = Result.error(result);
                         break;
                     }

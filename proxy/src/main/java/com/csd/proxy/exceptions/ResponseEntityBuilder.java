@@ -1,9 +1,6 @@
 package com.csd.proxy.exceptions;
 
-import com.csd.common.response.wrapper.ErrorResponse;
 import com.csd.common.response.wrapper.Response;
-import com.csd.common.traits.Result;
-import com.csd.common.util.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

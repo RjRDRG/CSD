@@ -13,13 +13,11 @@ public class ConsensusRequest implements IRequest {
 
     private IRequest.Type type;
     private byte[] encodedRequest;
-    private OffsetDateTime timestamp; //quando  a op foi recebida
-    private long lastEntryId; //ultima entrada que a proxy recebeu
+    private long lastEntryId;
 
     public ConsensusRequest(IRequest request, long lastEntryId) {
         this.type = request.type();
         this.encodedRequest = dataToBytes(request);
-        this.timestamp = OffsetDateTime.now();
         this.lastEntryId = lastEntryId;
     }
 
@@ -46,14 +44,6 @@ public class ConsensusRequest implements IRequest {
         this.encodedRequest = encodedRequest;
     }
 
-    public OffsetDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(OffsetDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public long getLastEntryId() {
         return lastEntryId;
     }
@@ -67,12 +57,12 @@ public class ConsensusRequest implements IRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConsensusRequest that = (ConsensusRequest) o;
-        return lastEntryId == that.lastEntryId && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest) && timestamp.equals(that.timestamp);
+        return lastEntryId == that.lastEntryId && type == that.type && Arrays.equals(encodedRequest, that.encodedRequest);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(type, timestamp, lastEntryId);
+        int result = Objects.hash(type, lastEntryId);
         result = 31 * result + Arrays.hashCode(encodedRequest);
         return result;
     }
@@ -82,7 +72,6 @@ public class ConsensusRequest implements IRequest {
         return "ConsensualRequest{" +
                 "type=" + type +
                 ", encodedRequest=" + Arrays.toString(encodedRequest) +
-                ", timestamp=" + timestamp +
                 ", lastEntryId=" + lastEntryId +
                 '}';
     }

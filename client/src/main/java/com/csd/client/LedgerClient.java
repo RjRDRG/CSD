@@ -6,7 +6,6 @@ import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
-import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.util.Serialization;
 import com.formdev.flatlaf.FlatDarculaLaf;
@@ -34,7 +33,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 @ActiveProfiles("ssl")
@@ -66,27 +64,6 @@ public class LedgerClient {
 		port = ArrayUtils.indexOf(proxyPorts, proxy);
 	}
 
-	@Deprecated
-	static void startSession(String walletId, IConsole console) {
-		String requestString = "-----> Start Session: " + walletId;
-		String resultString;
-		try{
-			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/session";
-
-			WalletDetails wallet = wallets.get(walletId);
-
-			SignedRequest<StartSessionRequestBody> request = new SignedRequest<>(wallet.clientId, wallet.signatureSuite, new StartSessionRequestBody(OffsetDateTime.now()));
-
-			ResponseEntity<Response<Integer>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Integer>>() {});
-			wallets.get(walletId).nonce = Objects.requireNonNull(responseEntity.getBody()).response();
-
-			resultString = "Session Started for wallet {" + walletId + "} starting with nonce {" + responseEntity.getBody() + "}";
-		} catch (Exception e) {
-			resultString = e + e.getMessage();
-		}
-		console.printOperation(requestString,resultString);
-	}
-
 	static void loadMoney(String walletId, double amount, IConsole console) {
 		String requestString = "-----> loadMoney: " + walletId + " " + amount;
 		String resultString;
@@ -95,12 +72,8 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.nonce == null) {
-				startSession(walletId,console);
-			}
-
-			UniqueRequest<LoadMoneyRequestBody> request = new UniqueRequest<>(
-					wallet.clientId, wallet.signatureSuite, wallet.getNonce(),
+			SignedRequest<LoadMoneyRequestBody> request = new SignedRequest<>(
+					wallet.clientId, wallet.signatureSuite,
 					new LoadMoneyRequestBody(amount)
 			);
 
@@ -119,10 +92,6 @@ public class LedgerClient {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/balance";
 
 			WalletDetails wallet = wallets.get(walletId);
-
-			if(wallet.nonce == null) {
-				startSession(walletId,console);
-			}
 
 			SignedRequest<GetBalanceRequestBody> request = new SignedRequest<>(
 					wallet.clientId, wallet.signatureSuite,
@@ -147,14 +116,10 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.nonce == null) {
-				startSession(walletId,console);
-			}
-
 			WalletDetails walletDestination = wallets.get(walletDestinationId);
 
-			UniqueRequest<SendTransactionRequestBody> request = new UniqueRequest<>(
-					wallet.clientId, wallet.signatureSuite, wallet.getNonce(),
+			SignedRequest<SendTransactionRequestBody> request = new SignedRequest<>(
+					wallet.clientId, wallet.signatureSuite,
 					new SendTransactionRequestBody(walletDestination.clientId, amount)
 			);
 
@@ -207,10 +172,6 @@ public class LedgerClient {
 
 			WalletDetails wallet = wallets.get(walletId);
 
-			if(wallet.nonce == null) {
-				startSession(walletId,console);
-			}
-
 			SignedRequest<GetExtractRequestBody> request = new SignedRequest<>(
 					wallet.clientId, wallet.signatureSuite,
 					new GetExtractRequestBody()
@@ -234,10 +195,6 @@ public class LedgerClient {
 
 			for(String walletId : walletsIds ){
 				WalletDetails wallet = wallets.get(walletId);
-
-				if(wallet.nonce == null) {
-					startSession(walletId,console);
-				}
 
 				SignedRequest<IRequest.Void> request = new SignedRequest<>(
 						wallet.clientId, wallet.signatureSuite,

@@ -8,7 +8,6 @@ import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
-import com.csd.common.request.wrapper.UniqueRequest;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
 import com.csd.replica.db.TransactionEntity;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -42,17 +42,17 @@ public class LedgerService {
         this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH));
     }
 
-    public Result<TransactionDetails> loadMoney(UniqueRequest<LoadMoneyRequestBody> request, OffsetDateTime timestamp) {
+    public Result<TransactionDetails> loadMoney(SignedRequest<LoadMoneyRequestBody> request) {
         try {
             String recipientId = bytesToString(request.getId());
             LoadMoneyRequestBody requestBody = request.getRequest();
 
-            TransactionEntity t = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getLastTransactionHash());
+            TransactionEntity t = new TransactionEntity(recipientId, requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
             transactionsRepository.save(t);
 
             globalValue += requestBody.getAmount();
 
-            return Result.ok(new TransactionDetails(timestamp));
+            return Result.ok(new TransactionDetails(request.getNonce()));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -60,7 +60,7 @@ public class LedgerService {
     }
 
     @Transactional
-    public Result<TransactionDetails> sendTransaction(UniqueRequest<SendTransactionRequestBody> request, OffsetDateTime timestamp) {
+    public Result<TransactionDetails> sendTransaction(SignedRequest<SendTransactionRequestBody> request) {
         try {
             SendTransactionRequestBody requestBody = request.getRequest();
 
@@ -77,13 +77,13 @@ public class LedgerService {
 
             if (balance < requestBody.getAmount()) return Result.error(Status.BAD_REQUEST, "Insufficient Credit");
 
-            TransactionEntity sender = new TransactionEntity(senderId, -requestBody.getAmount(), timestamp, getLastTransactionHash());
-            TransactionEntity recipient = new TransactionEntity(recipientId, requestBody.getAmount(), timestamp, getTransactionHash(sender.toItem()));
+            TransactionEntity sender = new TransactionEntity(senderId, -requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
+            TransactionEntity recipient = new TransactionEntity(recipientId, requestBody.getAmount(), request.getNonce(), getTransactionHash(sender.toItem()));
 
             transactionsRepository.save(sender);
             transactionsRepository.save(recipient);
 
-            return Result.ok(new TransactionDetails(timestamp));
+            return Result.ok(new TransactionDetails(request.getNonce()));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -179,5 +179,9 @@ public class LedgerService {
 
     private String getTransactionHash(Transaction transaction) throws Exception {
         return bytesToString(transactionDigestSuite.digest(dataToBytesDeterministic(transaction)));
+    }
+
+    public OffsetDateTime getLastTrxDate(byte[] owner) {
+        return Optional.ofNullable(transactionsRepository.findTopByOwnerByOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }

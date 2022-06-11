@@ -1,10 +1,8 @@
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/validator/RequestValidator.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/suites/digest/SignatureSuite.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/wrapper/UniqueRequest.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/response/wrapper/OkResponse.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/Constants.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/request/GetGlobalValueRequestBody.java
-/home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/response/wrapper/ErrorResponse.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/generators/IvGenerator.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/util/Serialization.java
 /home/rodrigo/IdeaProjects/CSD/common/src/main/java/com/csd/common/cryptography/key/EncodedPublicKey.java

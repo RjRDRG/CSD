@@ -9,4 +9,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     TransactionEntity findTopByOrderByIdDesc();
     List<TransactionEntity> findByIdGreaterThan(long id);
     List<TransactionEntity> findByOwner(String owner);
+
+    TransactionEntity findTopByOwnerByOrderByTimestampAsc(String owner);
 }

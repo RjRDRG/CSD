@@ -36,4 +36,6 @@ Client Id provenance is random seed not the client email
 
 Nonce is an int equal to number of transactions performed by the client, start session is still required, the client persist the last nonce
 
-Generate keys
+Generate proper signature keys
+
+Fix the lastEntry mechanism
