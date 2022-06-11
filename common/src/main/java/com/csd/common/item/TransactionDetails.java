@@ -25,6 +25,8 @@ public class TransactionDetails implements Serializable {
 
     @Override
     public String toString() {
-        return dataToJson(this);
+        return "TransactionDetails{" +
+                "timestamp=" + timestamp +
+                '}';
     }
 }

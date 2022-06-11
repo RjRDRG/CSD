@@ -39,3 +39,5 @@ Nonce is an int equal to number of transactions performed by the client, start s
 Generate proper signature keys
 
 Fix the lastEntry mechanism
+
+Findout why arent meesages from replicas being signed

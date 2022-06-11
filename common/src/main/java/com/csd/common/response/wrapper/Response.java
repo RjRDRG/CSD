@@ -7,6 +7,7 @@ import com.csd.common.util.Status;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.csd.common.util.Serialization.concat;
@@ -114,12 +115,11 @@ public class Response<T extends Serializable> {
 
     @Override
     public String toString() {
-        return "Response{" +
-                "proxySignature=" + (proxySignature==null) +
-                ", replicaSignatures=" + replicaSignatures.size() +
-                ", response=" + response +
-                ", error=" + error +
-                ", message='" + message + '\'' +
-                '}';
+        return "Response{\n" +
+                "\tproxySignature=" + proxySignature +
+                "\n\treplicaSignatures=" + replicaSignatures +
+                "\n\terror=" + error + ", message='" + message +
+                "\n\tresponse=" + response  +
+                "\n}";
     }
 }

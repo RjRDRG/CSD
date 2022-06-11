@@ -1,7 +1,6 @@
 com/csd/replica/impl/LedgerService.class
 com/csd/replica/JacksonConfig$BytesJsonSerializer.class
 com/csd/replica/db/TransactionRepository.class
-com/csd/replica/impl/SessionRegistry.class
 com/csd/replica/JacksonConfig.class
 com/csd/replica/impl/LedgerReplica$1.class
 com/csd/replica/db/TransactionEntity.class

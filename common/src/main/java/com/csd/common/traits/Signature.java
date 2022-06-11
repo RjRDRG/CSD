@@ -6,7 +6,9 @@ import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Optional;
 
+import static com.csd.common.util.Serialization.bytesToString;
 import static com.csd.common.util.Serialization.dataToJson;
 
 public class Signature implements Serializable {
@@ -53,9 +55,6 @@ public class Signature implements Serializable {
 
     @Override
     public String toString() {
-        return "Signature{" +
-                "publicKey=" + publicKey +
-                ", signature=" + Arrays.toString(signature) +
-                '}';
+        return "publicKey=" + Optional.ofNullable(publicKey).map(e-> Arrays.toString(e.getEncoded())).orElse("Null") + ", sig=" + Arrays.toString(signature);
     }
 }

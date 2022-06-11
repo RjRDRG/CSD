@@ -77,7 +77,7 @@ public class LedgerProxy extends AsynchServiceProxy {
     }
 
     public OffsetDateTime getLastTrxDate(byte[] owner) {
-        return Optional.ofNullable(transactionsRepository.findTopByOwnerByOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
+        return Optional.ofNullable(transactionsRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }
 

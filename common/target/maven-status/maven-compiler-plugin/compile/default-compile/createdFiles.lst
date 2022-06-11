@@ -30,7 +30,6 @@ com/csd/common/cryptography/generators/SymmetricKeyGenerator.class
 com/csd/common/request/LoadMoneyRequestBody.class
 com/csd/common/response/ProposedMinedBlockResponse.class
 com/csd/common/cryptography/suites/digest/SignatureSuite$Mode.class
-com/csd/common/request/StartSessionRequestBody.class
 com/csd/common/item/Block$Header.class
 com/csd/common/response/wrapper/Response.class
 com/csd/common/cryptography/generators/AsymmetricKeyPairGenerator.class
@@ -50,7 +49,6 @@ com/csd/common/request/ProposedMinedBlockRequestBody.class
 com/csd/common/Constants.class
 com/csd/common/request/wrapper/ConsensusRequest.class
 com/csd/common/traits/ErrorResult.class
-com/csd/common/request/wrapper/UniqueRequest.class
 com/csd/common/request/GetTotalValueRequestBody.class
 com/csd/common/request/SendTransactionRequestBody.class
 com/csd/common/request/GetBalanceRequestBody.class

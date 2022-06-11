@@ -10,10 +10,7 @@ import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.traits.Signature;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -46,6 +43,7 @@ public class LedgerReplyListener implements ReplyListener {
     public void replyReceived(RequestContext requestContext, TOMMessage tomMessage) {
         List<TOMMessage> l = responses.computeIfAbsent(bytesToHex(tomMessage.getContent()), k -> new LinkedList<>());
         l.add(tomMessage);
+        System.out.println("\n\n\n\n --" + tomMessage.signed + Arrays.toString(tomMessage.serializedMessageSignature) + "\n" + Arrays.toString(tomMessage.serializedMessageMAC));
         if (l.size() > q) {
             this.response = bytesToData(tomMessage.getContent());
             this.signatures = l.stream().map(t -> new Signature((EncodedPublicKey) null, t.serializedMessageSignature)).collect(Collectors.toList()); /*TODO get public key*/

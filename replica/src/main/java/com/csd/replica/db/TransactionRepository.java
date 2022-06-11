@@ -2,7 +2,6 @@ package com.csd.replica.db;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
@@ -10,5 +9,5 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     List<TransactionEntity> findByIdGreaterThan(long id);
     List<TransactionEntity> findByOwner(String owner);
 
-    TransactionEntity findTopByOwnerByOrderByTimestampAsc(String owner);
+    TransactionEntity findFirstByOwnerOrderByTimestampAsc(String owner);
 }
