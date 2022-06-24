@@ -53,11 +53,21 @@ public class LedgerClient {
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
 
-		wallets.put("default@csd.com",new WalletDetails("default@csd.com","0"));
+		createWallet("default@csd.com", UUID.randomUUID().toString(), null);
 
-		//new LedgerPrompt();
 		FlatDarculaLaf.setup();
 		new LedgerSwingGUI();
+	}
+
+	static void createWallet(String id, String seed, IConsole console) {
+		try {
+			wallets.put(id,new WalletDetails(id,seed));
+			if(console != null) {
+				console.printOperation("createWallet: ", "Seed: " + seed);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	static void changeProxy(String proxy) {

@@ -9,10 +9,10 @@ import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 public class LedgerSwingGUI extends JFrame{
@@ -91,15 +91,10 @@ public class LedgerSwingGUI extends JFrame{
             gp0.load(1,0,wallets).removeScaleY().removeScaleX().add();
             gp0.load(2,0,createWalletButton).removeScaleY().removeScaleX().add();
             createWalletButton.addActionListener(e -> new NewWalletPopUp((n,s) -> {
-                String walletName = n+"|"+s;
-                try {
-                    LedgerClient.wallets.put(walletName, new WalletDetails(n,s));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                wallets.addItem(walletName);
-                wallets.setSelectedItem(walletName);
-                sendTransactionDestination.addItem(walletName);
+                LedgerClient.createWallet(n, s, result);
+                wallets.addItem(n);
+                wallets.setSelectedItem(n);
+                sendTransactionDestination.addItem(n);
             }));
 
 
@@ -266,8 +261,8 @@ public class LedgerSwingGUI extends JFrame{
 
             JLabel emailLabel = new JLabel("Email");
             JTextField email = new JTextField();
-            JLabel accountLabel = new JLabel("Account Name");
-            JTextField account = new JTextField();
+            JLabel seedLabel = new JLabel("Seed");
+            JLabel seed = new JLabel(UUID.randomUUID().toString());
             JButton submit = new JButton("Submit");
 
             public PopUpPanel(BiConsumer<String,String> consumer){
@@ -277,12 +272,12 @@ public class LedgerSwingGUI extends JFrame{
                 gp0.load(0, 0, emailLabel).removeScaleY().add();
                 gp0.load(1, 0, email).removeScaleY().add();
 
-                gp0.load(0, 1, accountLabel).removeScaleY().add();
-                gp0.load(1, 1, account).removeScaleY().add();
+                gp0.load(0, 1, seedLabel).removeScaleY().add();
+                gp0.load(1, 1, seed).removeScaleY().add();
 
                 submit.addActionListener(e -> {
                     if(!email.getText().isEmpty()) {
-                        consumer.accept(email.getText(), account.getText());
+                        consumer.accept(email.getText(), seed.getText());
                         NewWalletPopUp.this.dispose();
                     }
                 });

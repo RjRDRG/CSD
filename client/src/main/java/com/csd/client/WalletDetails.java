@@ -18,7 +18,7 @@ public class WalletDetails {
     public final byte[] clientId;
     public final SignatureSuite signatureSuite;
 
-    public WalletDetails(String email, String account) throws Exception {
+    public WalletDetails(String email, String seed) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
                 new SuiteConfiguration(
                         new IniSpecification("client_id_digest_suite", SECURITY_CONF),
@@ -33,7 +33,7 @@ public class WalletDetails {
 
         byte[] provenance = ArrayUtils.addAll(
                 email.getBytes(StandardCharsets.UTF_8),
-                account.getBytes(StandardCharsets.UTF_8)
+                seed.getBytes(StandardCharsets.UTF_8)
         );
 
         this.clientId = ArrayUtils.addAll(
