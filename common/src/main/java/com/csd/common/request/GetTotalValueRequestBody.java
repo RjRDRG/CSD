@@ -1,50 +1,46 @@
 package com.csd.common.request;
 
-import com.csd.common.request.wrapper.SignedRequest;
+import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.traits.Signature;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
 
-public class GetTotalValueRequestBody implements IRequest {
-    private ArrayList<SignedRequest<Void>> listOfAccounts;
+import static com.csd.common.util.Serialization.concat;
+import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
-    public GetTotalValueRequestBody(ArrayList<SignedRequest<Void>> listOfAccounts) {
-        this.listOfAccounts = listOfAccounts;
+public class GetTotalValueRequestBody extends Request {
+
+    public GetTotalValueRequestBody(byte[][] clientId, SignatureSuite[] signatureSuite) {
+        try {
+            this.clientId = clientId;
+            this.clientSignature = new Signature[signatureSuite.length];
+            int count = 0;
+            for (SignatureSuite suite : signatureSuite) {
+                clientSignature[count] = new Signature(suite.getPublicKey(), suite.digest(serializedRequest()));
+                count++;
+            }
+            this.nonce = OffsetDateTime.now();
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public GetTotalValueRequestBody() {
     }
 
-    public ArrayList<SignedRequest<Void>> getListOfAccounts() {
-        return listOfAccounts;
-    }
-
-    public void setListOfAccounts(ArrayList<SignedRequest<Void>> listOfAccounts) {
-        this.listOfAccounts = listOfAccounts;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GetTotalValueRequestBody that = (GetTotalValueRequestBody) o;
-        return listOfAccounts.equals(that.listOfAccounts);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(listOfAccounts);
+    public byte[] serializedRequest() {
+        return concat(concat(clientId),dataToBytesDeterministic(nonce));
     }
 
     @Override
     public String toString() {
         return "GetTotalValueRequestBody{" +
-                "listOfAccounts=" + listOfAccounts +
+                "clientId=" + Arrays.toString(clientId) +
+                ", clientSignature=" + Arrays.toString(clientSignature) +
+                ", proxySignatures=" + Arrays.toString(proxySignatures) +
+                ", nonce=" + nonce +
                 '}';
-    }
-
-    @Override
-    public Type type() {
-        return Type.TOTAL_VAL;
     }
 }

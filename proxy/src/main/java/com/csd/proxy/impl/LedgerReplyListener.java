@@ -4,9 +4,8 @@ import bftsmart.communication.client.ReplyListener;
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
-import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.key.IPubKeyRegistry;
-import com.csd.common.cryptography.key.PubKeyRegistry;
+import com.csd.common.cryptography.key.ExperimentalKeyRegistry;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.ReplicaResponse;
 import com.csd.common.traits.Signature;
@@ -30,7 +29,7 @@ public class LedgerReplyListener implements ReplyListener {
 
     public LedgerReplyListener(AsynchServiceProxy serviceProxy, CountDownLatch latch) {
         this.serviceProxy = serviceProxy;
-        this.pubKeyRegistry = new PubKeyRegistry();
+        this.pubKeyRegistry = new ExperimentalKeyRegistry();
         this.latch = latch;
         this.q = Math.ceil((double) (serviceProxy.getViewManager().getCurrentViewN() + serviceProxy.getViewManager().getCurrentViewF() + 1) / 3.0);
         this.replicaResponses = new ArrayList<>();

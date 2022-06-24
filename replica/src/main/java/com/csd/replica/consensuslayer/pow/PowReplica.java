@@ -1,21 +1,15 @@
-package com.csd.replica.impl;
+package com.csd.replica.consensuslayer.pow;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
-import bftsmart.tom.server.Executable;
-import bftsmart.tom.server.Recoverable;
-import bftsmart.tom.server.Replier;
-import bftsmart.tom.server.RequestVerifier;
-import bftsmart.tom.server.defaultservices.DefaultReplier;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import bftsmart.tom.util.KeyLoader;
 import com.csd.common.cryptography.validator.RequestValidator;
-import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
-import com.csd.common.response.wrapper.ConsensusResponse;
+import com.csd.common.item.TransactionDetails;
 import com.csd.common.request.*;
-import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.request.wrapper.ConsensusRequest;
+import com.csd.common.request.wrapper.SignedRequest;
+import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
 import org.slf4j.Logger;
@@ -26,22 +20,23 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import static com.csd.common.util.Serialization.*;
+import static com.csd.common.util.Serialization.bytesToData;
+import static com.csd.common.util.Serialization.dataToBytes;
 
 @Component
-public class LedgerReplica extends DefaultSingleRecoverable {
+public class PowReplica extends DefaultSingleRecoverable {
 
-    private static final Logger log = LoggerFactory.getLogger(LedgerReplica.class);
+    private static final Logger log = LoggerFactory.getLogger(PowReplica.class);
 
     private int replicaId;
-    private final LedgerService ledgerService;
+    private final PowService powService;
     private final Environment environment;
 
     private final RequestValidator validator;
 
-    public LedgerReplica(LedgerService ledgerService, Environment environment) throws Exception {
+    public PowReplica(PowService powService, Environment environment) throws Exception {
         super();
-        this.ledgerService = ledgerService;
+        this.powService = powService;
         this.environment = environment;
         this.validator = new RequestValidator();
     }
@@ -57,51 +52,51 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         switch (consensusRequest.getType()) {
             case BALANCE: {
                 SignedRequest<GetBalanceRequestBody> request =  consensusRequest.extractRequest();
-                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
-                Result<Double> result =  v.valid() ? ledgerService.getBalance(request) : Result.error(v);
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                var v = validator.validate(request, powService.getLastTrxDate(request.getId()));
+                Result<Double> result =  v.valid() ? powService.getBalance(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case LOAD: {
                 SignedRequest<LoadMoneyRequestBody> request = consensusRequest.extractRequest();
-                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
-                Result<TransactionDetails> result =  v.valid() ? ledgerService.loadMoney(request) : Result.error(v);
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                var v = validator.validate(request, powService.getLastTrxDate(request.getId()));
+                Result<TransactionDetails> result =  v.valid() ? powService.loadMoney(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TRANSFER: {
                 SignedRequest<SendTransactionRequestBody> request = consensusRequest.extractRequest();
-                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
-                Result<TransactionDetails> result =  v.valid() ? ledgerService.sendTransaction(request) : Result.error(v);
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                var v = validator.validate(request, powService.getLastTrxDate(request.getId()));
+                Result<TransactionDetails> result =  v.valid() ? powService.sendTransaction(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case EXTRACT: {
                 SignedRequest<GetExtractRequestBody> request = consensusRequest.extractRequest();
-                var v = validator.validate(request, ledgerService.getLastTrxDate(request.getId()));
-                Result<Transaction[]> result = v.valid() ? ledgerService.getExtract(request) : Result.error(v);
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                var v = validator.validate(request, powService.getLastTrxDate(request.getId()));
+                Result<Transaction[]> result = v.valid() ? powService.getExtract(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case TOTAL_VAL: {
                 Result<GetTotalValueRequestBody> request = Result.ok(consensusRequest.extractRequest());
-                for(SignedRequest<IRequest.Void> r : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
-                    Result<SignedRequest<IRequest.Void>> result = validator.validate(r, ledgerService.getLastTrxDate(r.getId()));
+                for(SignedRequest<Request.Void> r : ((GetTotalValueRequestBody) consensusRequest.extractRequest()).getListOfAccounts()){
+                    Result<SignedRequest<Request.Void>> result = validator.validate(r, powService.getLastTrxDate(r.getId()));
                     if (!result.valid()){
                         request = Result.error(result);
                         break;
                     }
                 }
-                Result<Double> result = request.valid() ? ledgerService.getTotalValue(request.value()) : Result.error(request);
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                Result<Double> result = request.valid() ? powService.getTotalValue(request.value()) : Result.error(request);
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case GLOBAL_VAL: {
-                Result<Double> result = ledgerService.getGlobalValue(consensusRequest.extractRequest());
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                Result<Double> result = powService.getGlobalValue(consensusRequest.extractRequest());
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             case LEDGER: {
-                Result<Transaction[]> result = ledgerService.getLedger(consensusRequest.extractRequest());
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                Result<Transaction[]> result = powService.getLedger(consensusRequest.extractRequest());
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
             default: {
                 Result<Serializable> result = Result.error(Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
-                return new ConsensusResponse(result.encode(), ledgerService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
+                return new ConsensusResponse(result.encode(), powService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
         }
     }
@@ -130,12 +125,12 @@ public class LedgerReplica extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        return dataToBytes(ledgerService.getSnapshot());
+        return dataToBytes(powService.getSnapshot());
     }
 
     @Override
     public void installSnapshot(byte[] state) {
-        ledgerService.installSnapshot(bytesToData(state));
+        powService.installSnapshot(bytesToData(state));
     }
 
 }

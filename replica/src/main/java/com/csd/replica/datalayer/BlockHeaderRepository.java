@@ -1,4 +1,4 @@
-package com.csd.replica.db;
+package com.csd.replica.datalayer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

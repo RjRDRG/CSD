@@ -1,6 +1,7 @@
 package com.csd.replica;
 
-import com.csd.replica.impl.LedgerReplica;
+import com.csd.replica.consensuslayer.IConsensusLayer;
+import com.csd.replica.consensuslayer.bftsmart.BftSmartReplica;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,10 +15,10 @@ public class ReplicaApplication implements CommandLineRunner {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 
-	private final LedgerReplica replica;
+	private final IConsensusLayer consensusLayer;
 
-	public ReplicaApplication(LedgerReplica replica) {
-		this.replica = replica;
+	public ReplicaApplication(BftSmartReplica replica) {
+		this.consensusLayer = replica;
 	}
 
 	public static void main(String[] args) {
@@ -26,6 +27,6 @@ public class ReplicaApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		replica.start(args);
+		consensusLayer.start(args);
 	}
 }

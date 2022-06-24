@@ -1,4 +1,4 @@
-package com.csd.replica.db;
+package com.csd.replica.datalayer;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

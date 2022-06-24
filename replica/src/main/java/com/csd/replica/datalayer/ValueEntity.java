@@ -1,31 +1,28 @@
-package com.csd.replica.db;
+package com.csd.replica.datalayer;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.time.OffsetDateTime;
 
 @Entity
-public class TransactionIOEntity implements Serializable {
+public class ValueEntity implements Serializable {
 
     private @Id @GeneratedValue long id;
-
     private long blockId;
-    private long transactionId;
+    private long txid;
     private String owner;
     private long value;
-    private OffsetDateTime timestamp;
 
-    public TransactionIOEntity() {}
-
-    public TransactionIOEntity(long blockId, long transactionId, String owner, long value, OffsetDateTime timestamp) {
+    public ValueEntity(long id, long blockId, long txid, String owner, long value) {
+        this.id = id;
         this.blockId = blockId;
-        this.transactionId = transactionId;
+        this.txid = txid;
         this.owner = owner;
         this.value = value;
-        this.timestamp = timestamp;
     }
+
+    public ValueEntity() {}
 
     public long getId() {
         return id;
@@ -43,12 +40,12 @@ public class TransactionIOEntity implements Serializable {
         this.blockId = blockId;
     }
 
-    public long getTransactionId() {
-        return transactionId;
+    public long getTxid() {
+        return txid;
     }
 
-    public void setTransactionId(long transactionId) {
-        this.transactionId = transactionId;
+    public void setTxid(long txid) {
+        this.txid = txid;
     }
 
     public String getOwner() {
@@ -65,13 +62,5 @@ public class TransactionIOEntity implements Serializable {
 
     public void setValue(long value) {
         this.value = value;
-    }
-
-    public OffsetDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(OffsetDateTime timestamp) {
-        this.timestamp = timestamp;
     }
 }

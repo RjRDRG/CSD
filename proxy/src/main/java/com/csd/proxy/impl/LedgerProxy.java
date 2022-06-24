@@ -2,7 +2,7 @@ package com.csd.proxy.impl;
 
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
-import com.csd.common.request.IRequest;
+import com.csd.common.request.Request;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.Response;
@@ -36,16 +36,16 @@ public class LedgerProxy extends AsynchServiceProxy {
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends IRequest, T extends Serializable> Response<T> invokeUnordered(R request) {
+    public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request) {
         return invoke(request, TOMMessageType.UNORDERED_REQUEST);
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends IRequest, T extends Serializable> Response<T> invokeOrdered(R request) {
+    public <R extends Request, T extends Serializable> Response<T> invokeOrdered(R request) {
         return invoke(request, TOMMessageType.ORDERED_REQUEST);
     }
 
-    private <R extends IRequest, T extends Serializable> Response<T> invoke(R request, TOMMessageType type) {
+    private <R extends Request, T extends Serializable> Response<T> invoke(R request, TOMMessageType type) {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(request, 0); //TODO lastEntryId
 

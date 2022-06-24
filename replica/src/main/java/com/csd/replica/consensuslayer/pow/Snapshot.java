@@ -1,24 +1,24 @@
-package com.csd.replica.impl;
+package com.csd.replica.consensuslayer.pow;
 
-import com.csd.replica.db.TransactionIOEntity;
+import com.csd.replica.datalayer.ValueEntity;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class Snapshot implements Serializable {
-    private List<TransactionIOEntity> transactions;
+    private List<ValueEntity> transactions;
     private double globalValue;
 
-    public Snapshot(List<TransactionIOEntity> transactions, double globalValue) {
+    public Snapshot(List<ValueEntity> transactions, double globalValue) {
         this.transactions = transactions;
         this.globalValue = globalValue;
     }
 
-    public List<TransactionIOEntity> getTransactions() {
+    public List<ValueEntity> getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(List<TransactionIOEntity> transactions) {
+    public void setTransactions(List<ValueEntity> transactions) {
         this.transactions = transactions;
     }
 

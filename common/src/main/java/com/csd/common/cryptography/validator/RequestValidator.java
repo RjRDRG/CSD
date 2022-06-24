@@ -8,7 +8,7 @@ import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
-import com.csd.common.request.IRequest;
+import com.csd.common.request.Request;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
@@ -36,7 +36,7 @@ public class RequestValidator {
         this.clientSignatureSuite = new SignatureSuite(new IniSpecification("client_signature_suite", CRYPTO_CONFIG_PATH));
     }
 
-    public <R extends IRequest> Result<SignedRequest<R>> validate(SignedRequest<R> request, OffsetDateTime nonce) {
+    public <R extends Request> Result<SignedRequest<R>> validate(SignedRequest<R> request, OffsetDateTime nonce) {
         try {
             if (!request.verifyId(clientIdDigestSuite))
                 return Result.error(Status.FORBIDDEN, "Invalid Id: "  + request);
