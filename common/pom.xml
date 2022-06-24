@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.rebaze.integrity</groupId>
             <artifactId>org.rebaze.integrity.tree</artifactId>
-            <version>LATEST</version>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -58,6 +58,11 @@
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
         </dependency>
     </dependencies>
 </project>

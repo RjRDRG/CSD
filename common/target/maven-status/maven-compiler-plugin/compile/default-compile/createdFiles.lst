@@ -25,7 +25,9 @@ com/csd/common/traits/OkResult.class
 com/csd/common/cryptography/validator/RequestValidator.class
 com/csd/common/cryptography/generators/IvGenerator.class
 com/csd/common/request/wrapper/SignedRequest.class
+com/csd/common/cryptography/key/IPubKeyRegistry.class
 com/csd/common/cryptography/config/GeneratedSecrets.class
+com/csd/common/response/wrapper/ReplicaResponse.class
 com/csd/common/cryptography/generators/SymmetricKeyGenerator.class
 com/csd/common/request/LoadMoneyRequestBody.class
 com/csd/common/response/ProposedMinedBlockResponse.class
@@ -38,6 +40,7 @@ com/csd/common/cryptography/suites/digest/FlexibleDigestSuite.class
 com/csd/common/request/GetBlockToMineRequestBody.class
 com/csd/common/cryptography/key/KeyStoresInfo.class
 com/csd/common/traits/Signature.class
+com/csd/common/cryptography/key/PubKeyRegistry.class
 com/csd/common/cryptography/config/ISuiteConfiguration.class
 com/csd/common/cryptography/config/SuiteConfiguration.class
 com/csd/common/cryptography/suites/digest/SignatureSuite.class

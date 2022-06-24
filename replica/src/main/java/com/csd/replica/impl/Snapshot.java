@@ -1,24 +1,24 @@
 package com.csd.replica.impl;
 
-import com.csd.replica.db.TransactionEntity;
+import com.csd.replica.db.TransactionIOEntity;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class Snapshot implements Serializable {
-    private List<TransactionEntity> transactions;
+    private List<TransactionIOEntity> transactions;
     private double globalValue;
 
-    public Snapshot(List<TransactionEntity> transactions, double globalValue) {
+    public Snapshot(List<TransactionIOEntity> transactions, double globalValue) {
         this.transactions = transactions;
         this.globalValue = globalValue;
     }
 
-    public List<TransactionEntity> getTransactions() {
+    public List<TransactionIOEntity> getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(List<TransactionEntity> transactions) {
+    public void setTransactions(List<TransactionIOEntity> transactions) {
         this.transactions = transactions;
     }
 

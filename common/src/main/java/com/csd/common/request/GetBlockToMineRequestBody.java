@@ -3,6 +3,6 @@ package com.csd.common.request;
 public class GetBlockToMineRequestBody implements IRequest {
     @Override
     public Type type() {
-        return null;
+        return Type.MINE;
     }
 }

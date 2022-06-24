@@ -8,8 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.csd.common.util.Serialization.bytesToString;
-import static com.csd.common.util.Serialization.dataToJson;
+import static com.csd.common.util.Serialization.*;
 
 public class Signature implements Serializable {
     private EncodedPublicKey publicKey;
@@ -55,6 +54,6 @@ public class Signature implements Serializable {
 
     @Override
     public String toString() {
-        return "publicKey=" + Optional.ofNullable(publicKey).map(e-> Arrays.toString(e.getEncoded())).orElse("Null") + ", sig=" + Arrays.toString(signature);
+        return bytesToHex(signature).substring(0,10) + "..";
     }
 }

@@ -31,6 +31,7 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     public LedgerProxy(Environment environment, TransactionRepository transactionsRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
+        //super(environment.getProperty("proxy.id", Integer.class), (String)null, new DefaultKeyLoader());
         this.transactionsRepository = transactionsRepository;
     }
 
@@ -62,7 +63,7 @@ public class LedgerProxy extends AsynchServiceProxy {
                     response = new Response<>(result.value());
                 else
                     response = new Response<>(result);
-                response.replicaSignatures(listener.getResponseSignatures());
+                response.replicaResponses(listener.getReplicaResponses());
                 return response;
             }
             else {

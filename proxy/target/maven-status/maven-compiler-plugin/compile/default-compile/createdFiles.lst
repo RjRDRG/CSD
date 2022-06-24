@@ -1,3 +1,4 @@
+com/csd/proxy/impl/DefaultKeyLoader.class
 com/csd/proxy/db/TransactionEntity.class
 com/csd/proxy/JacksonConfig$BytesJsonDeserializer.class
 com/csd/proxy/impl/LedgerController.class

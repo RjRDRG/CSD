@@ -10,8 +10,9 @@ import com.csd.common.request.*;
 import com.csd.common.request.wrapper.SignedRequest;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
-import com.csd.replica.db.TransactionEntity;
-import com.csd.replica.db.TransactionRepository;
+import com.csd.replica.db.BlockHeaderRepository;
+import com.csd.replica.db.TransactionIOEntity;
+import com.csd.replica.db.TransactionIORepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,13 +33,17 @@ public class LedgerService {
 
     private double globalValue;
 
-    private final TransactionRepository transactionsRepository;
+    private final BlockHeaderRepository blockHeaderRepository;
+    private final TransactionIORepository transactionIORepository;
 
     private final IDigestSuite transactionDigestSuite;
 
-    public LedgerService(TransactionRepository transactionsRepository) throws Exception {
+    private final 
+
+    public LedgerService(TransactionIORepository transactionIORepository, BlockHeaderRepository blockHeaderRepository) throws Exception {
         this.globalValue = 0;
-        this.transactionsRepository = transactionsRepository;
+        this.transactionIORepository = transactionIORepository;
+        this.blockHeaderRepository = blockHeaderRepository;
         this.transactionDigestSuite = new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH));
     }
 
@@ -47,8 +52,8 @@ public class LedgerService {
             String recipientId = bytesToString(request.getId());
             LoadMoneyRequestBody requestBody = request.getRequest();
 
-            TransactionEntity t = new TransactionEntity(recipientId, requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
-            transactionsRepository.save(t);
+            TransactionIOEntity t = new TransactionIOEntity(recipientId, requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
+            transactionIORepository.save(t);
 
             globalValue += requestBody.getAmount();
 
@@ -71,17 +76,17 @@ public class LedgerService {
 
             double balance = 0;
             String clientId = bytesToString(request.getId());
-            balance += transactionsRepository.findByOwner(clientId).stream()
-                    .map(TransactionEntity::getAmount)
+            balance += transactionIORepository.findByOwner(clientId).stream()
+                    .map(TransactionIOEntity::getAmount)
                     .reduce(0.0, Double::sum);
 
             if (balance < requestBody.getAmount()) return Result.error(Status.BAD_REQUEST, "Insufficient Credit");
 
-            TransactionEntity sender = new TransactionEntity(senderId, -requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
-            TransactionEntity recipient = new TransactionEntity(recipientId, requestBody.getAmount(), request.getNonce(), getTransactionHash(sender.toItem()));
+            TransactionIOEntity sender = new TransactionIOEntity(senderId, -requestBody.getAmount(), request.getNonce(), getLastTransactionHash());
+            TransactionIOEntity recipient = new TransactionIOEntity(recipientId, requestBody.getAmount(), request.getNonce(), getTransactionHash(sender.toItem()));
 
-            transactionsRepository.save(sender);
-            transactionsRepository.save(recipient);
+            transactionIORepository.save(sender);
+            transactionIORepository.save(recipient);
 
             return Result.ok(new TransactionDetails(request.getNonce()));
         } catch (Exception e) {
@@ -96,8 +101,8 @@ public class LedgerService {
 
             String ownerId = bytesToString(request.getId());
 
-            return Result.ok(transactionsRepository.findByOwner(ownerId).stream()
-                    .map(TransactionEntity::toItem).toArray(Transaction[]::new));
+            return Result.ok(transactionIORepository.findByOwner(ownerId).stream()
+                    .map(TransactionIOEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -109,8 +114,8 @@ public class LedgerService {
             double acm = 0;
             for(SignedRequest<IRequest.Void> signedRequest : request.getListOfAccounts()) {
                 String clientId = bytesToString(signedRequest.getId());
-                acm += transactionsRepository.findByOwner(clientId).stream()
-                        .map(TransactionEntity::getAmount)
+                acm += transactionIORepository.findByOwner(clientId).stream()
+                        .map(TransactionIOEntity::getAmount)
                         .reduce(0.0, Double::sum);
             }
             return Result.ok(acm);
@@ -122,7 +127,7 @@ public class LedgerService {
 
     public Result<Transaction[]> getLedger(GetLedgerRequestBody request) {
         try {
-            return Result.ok(transactionsRepository.findAll().stream().map(TransactionEntity::toItem).toArray(Transaction[]::new));
+            return Result.ok(transactionIORepository.findAll().stream().map(TransactionIOEntity::toItem).toArray(Transaction[]::new));
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -144,8 +149,8 @@ public class LedgerService {
             double acm = 0;
 
             String clientId = bytesToString(request.getId());
-            acm += transactionsRepository.findByOwner(clientId).stream()
-                    .map(TransactionEntity::getAmount)
+            acm += transactionIORepository.findByOwner(clientId).stream()
+                    .map(TransactionIOEntity::getAmount)
                     .reduce(0.0, Double::sum);
 
             return Result.ok(acm);
@@ -156,21 +161,21 @@ public class LedgerService {
     }
 
     public void installSnapshot(Snapshot snapshot) {
-        transactionsRepository.deleteAll();
-        transactionsRepository.saveAll(snapshot.getTransactions());
+        transactionIORepository.deleteAll();
+        transactionIORepository.saveAll(snapshot.getTransactions());
         globalValue = snapshot.getGlobalValue();
     }
 
     public Snapshot getSnapshot() {
-        return new Snapshot(transactionsRepository.findAll(), globalValue);
+        return new Snapshot(transactionIORepository.findAll(), globalValue);
     }
 
     public Transaction[] getTransactionsAfterId(long id) {
-        return transactionsRepository.findByIdGreaterThan(id).stream().map(TransactionEntity::toItem).toArray(Transaction[]::new);
+        return transactionIORepository.findByIdGreaterThan(id).stream().map(TransactionIOEntity::toItem).toArray(Transaction[]::new);
     }
 
     private String getLastTransactionHash() throws Exception {
-        TransactionEntity entity = transactionsRepository.findTopByOrderByIdDesc();
+        TransactionIOEntity entity = transactionIORepository.findTopByOrderByIdDesc();
         if (entity==null)
             return "";
         else
@@ -182,6 +187,6 @@ public class LedgerService {
     }
 
     public OffsetDateTime getLastTrxDate(byte[] owner) {
-        return Optional.ofNullable(transactionsRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
+        return Optional.ofNullable(transactionIORepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(TransactionIOEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }

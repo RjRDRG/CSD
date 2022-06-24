@@ -52,10 +52,17 @@
 			<artifactId>common</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>com.github.bft-smart</groupId>
 			<artifactId>library</artifactId>
 			<version>1.2</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>com.github.RjRDRG</groupId>
+			<artifactId>bft-smart</artifactId>
+			<version>a59ee88</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

@@ -12,6 +12,7 @@ public class ConsensusResponse implements Serializable {
     private Result<byte[]> encodedResult;
     private Transaction[] missingEntries;
 
+    @SuppressWarnings("unchecked")
     public <T extends Serializable> Result<T> extractResult() {
         if(encodedResult.valid())
             return Result.ok((T)bytesToData(encodedResult.value()));

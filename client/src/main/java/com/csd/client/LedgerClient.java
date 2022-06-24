@@ -237,7 +237,7 @@ public class LedgerClient {
 			keyStore.load(inputStream, "aq1sw2de3".toCharArray());
 
 			SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(new SSLContextBuilder()
-					.loadTrustMaterial(null, new TrustSelfSignedStrategy())
+					.loadTrustMaterial(keyStore, new TrustSelfSignedStrategy())
 					.loadKeyMaterial(keyStore, "aq1sw2de3".toCharArray()).build(), NoopHostnameVerifier.INSTANCE);
 
 			CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();

@@ -2,7 +2,13 @@ package com.csd.replica.impl;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.server.Executable;
+import bftsmart.tom.server.Recoverable;
+import bftsmart.tom.server.Replier;
+import bftsmart.tom.server.RequestVerifier;
+import bftsmart.tom.server.defaultservices.DefaultReplier;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import bftsmart.tom.util.KeyLoader;
 import com.csd.common.cryptography.validator.RequestValidator;
 import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Transaction;
@@ -34,6 +40,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
     private final RequestValidator validator;
 
     public LedgerReplica(LedgerService ledgerService, Environment environment) throws Exception {
+        super();
         this.ledgerService = ledgerService;
         this.environment = environment;
         this.validator = new RequestValidator();
@@ -43,6 +50,7 @@ public class LedgerReplica extends DefaultSingleRecoverable {
         replicaId = args.length > 0 ? Integer.parseInt(args[0]) : environment.getProperty("replica.id", int.class);
         log.info("The id of the replica is: " + replicaId);
         new ServiceReplica(replicaId, this, this);
+        //new ServiceReplica(replicaId, (String)"", this, this, (RequestVerifier)null, (Replier)(new DefaultReplier()), new DefaultKeyLoader());
     }
 
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {

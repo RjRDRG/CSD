@@ -10,5 +10,6 @@
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/NotFoundException.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ResponseEntityBuilder.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/db/TransactionEntity.java
+/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/impl/DefaultKeyLoader.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/impl/LedgerController.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ForbiddenException.java

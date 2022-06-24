@@ -3,5 +3,6 @@
 /home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/ReplicaApplication.java
 /home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/db/TransactionRepository.java
 /home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/db/TransactionEntity.java
+/home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/impl/DefaultKeyLoader.java
 /home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/JacksonConfig.java
 /home/rodrigo/IdeaProjects/CSD/replica/src/main/java/com/csd/replica/impl/LedgerReplica.java

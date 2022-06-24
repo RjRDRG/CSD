@@ -7,7 +7,6 @@ import com.csd.common.util.Status;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.csd.common.util.Serialization.concat;
@@ -16,16 +15,16 @@ import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 public class Response<T extends Serializable> {
 
     private Signature proxySignature;
-    private ArrayList<Signature> replicaSignatures;
+    private ArrayList<ReplicaResponse> replicaResponses;
     private T response;
-    private Status error;
+    private Status status;
     private String message;
 
     public Response(T response) {
         this.proxySignature = null;
-        this.replicaSignatures = new ArrayList<>();
+        this.replicaResponses = new ArrayList<>();
         this.response = response;
-        this.error = Status.OK;
+        this.status = Status.OK;
         this.message = null;
     }
 
@@ -38,28 +37,28 @@ public class Response<T extends Serializable> {
         proxySignature(signatureSuite);
     }
 
-    public Response(Status error, String message) {
+    public Response(Status status, String message) {
         this.response = null;
-        this.error = error;
+        this.status = status;
         this.message = message;
         this.proxySignature = null;
-        this.replicaSignatures = new ArrayList<>();
+        this.replicaResponses = new ArrayList<>();
     }
 
     public void proxySignature(SignatureSuite signatureSuite) {
         this.proxySignature = new Signature(
                 signatureSuite,
                 concat(
-                        dataToBytesDeterministic(error),
+                        dataToBytesDeterministic(status),
                         dataToBytesDeterministic(message),
                         dataToBytesDeterministic(response),
-                        dataToBytesDeterministic(replicaSignatures)
+                        dataToBytesDeterministic(replicaResponses)
                 )
         );
     }
 
-    public void replicaSignatures(List<Signature> signatures) {
-        this.replicaSignatures = new ArrayList<>(signatures);
+    public void replicaResponses(List<ReplicaResponse> signatures) {
+        this.replicaResponses = new ArrayList<>(signatures);
     }
 
     public Response() {
@@ -73,12 +72,12 @@ public class Response<T extends Serializable> {
         this.proxySignature = proxySignature;
     }
 
-    public List<Signature> getReplicaSignatures() {
-        return replicaSignatures;
+    public List<ReplicaResponse> getReplicaResponses() {
+        return replicaResponses;
     }
 
-    public void setReplicaSignatures(ArrayList<Signature> replicaSignatures) {
-        this.replicaSignatures = replicaSignatures;
+    public void setReplicaResponses(ArrayList<ReplicaResponse> replicaResponses) {
+        this.replicaResponses = replicaResponses;
     }
 
     public T getResponse() {
@@ -90,7 +89,7 @@ public class Response<T extends Serializable> {
     }
 
     public boolean valid() {
-        return error == Status.OK;
+        return status == Status.OK;
     }
 
     public T response() {
@@ -98,7 +97,7 @@ public class Response<T extends Serializable> {
     }
 
     public Status error() {
-        return error;
+        return status;
     }
 
     public String message() {
@@ -109,16 +108,16 @@ public class Response<T extends Serializable> {
         return proxySignature;
     }
 
-    public List<Signature> replicaSignatures() {
-        return replicaSignatures;
+    public List<ReplicaResponse> replicaResponses() {
+        return replicaResponses;
     }
 
     @Override
     public String toString() {
         return "Response{\n" +
                 "\tproxySignature=" + proxySignature +
-                "\n\treplicaSignatures=" + replicaSignatures +
-                "\n\terror=" + error + ", message='" + message +
+                "\n\treplicaResponses=" + replicaResponses.stream().map(r -> "\n\t\t" + r.toString()).reduce("", (s0,s1) -> s0 + s1) +
+                "\n\tstatus=" + status + ", message='" + message +
                 "\n\tresponse=" + response  +
                 "\n}";
     }

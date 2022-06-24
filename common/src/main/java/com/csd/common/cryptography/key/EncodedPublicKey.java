@@ -7,6 +7,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.csd.common.util.Serialization.bytesToHex;
 import static com.csd.common.util.Serialization.bytesToString;
 
 public class EncodedPublicKey implements Serializable {
@@ -61,7 +62,7 @@ public class EncodedPublicKey implements Serializable {
 	@Override
 	public String toString() {
 		return "EncodedPublicKey{" +
-				"enconded=" + bytesToString(encoded) +
+				"enconded=" + bytesToHex(encoded) +
 				", alg='" + alg + '\'' +
 				'}';
 	}

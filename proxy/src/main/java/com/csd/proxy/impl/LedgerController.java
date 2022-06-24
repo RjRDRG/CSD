@@ -121,25 +121,4 @@ class LedgerController {
 
         return buildResponse(response);
     }
-
-    @PostMapping("/block")
-    public ResponseEntity<Response<Block>> getBlockToMine(@RequestBody GetBlockToMineRequestBody request) {
-        Response<Block> response = ledgerProxy.invokeUnordered(request);
-        response.proxySignature(proxySignatureSuite);
-
-        return buildResponse(response);
-    }
-
-    @PostMapping("/proposal")
-    public ResponseEntity<Response<ProposedMinedBlockResponse>> proposedMinedBlock(@RequestBody SignedRequest<ProposedMinedBlockRequestBody> request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getId()));
-        if(!v.valid()) {
-            return buildResponse(new Response<>(v, proxySignatureSuite));
-        }
-
-        Response<ProposedMinedBlockResponse> response = ledgerProxy.invokeOrdered(request);
-        response.proxySignature(proxySignatureSuite);
-
-        return buildResponse(response);
-    }
 }
