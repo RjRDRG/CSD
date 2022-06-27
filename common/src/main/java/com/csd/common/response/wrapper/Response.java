@@ -45,6 +45,15 @@ public class Response<T extends Serializable> {
         this.replicaResponses = new ArrayList<>();
     }
 
+    public Response(Status status, String message, SignatureSuite signatureSuite) {
+        this.response = null;
+        this.status = status;
+        this.message = message;
+        this.proxySignature = null;
+        this.replicaResponses = new ArrayList<>();
+        proxySignature(signatureSuite);
+    }
+
     public void proxySignature(SignatureSuite signatureSuite) {
         this.proxySignature = new Signature(
                 signatureSuite,

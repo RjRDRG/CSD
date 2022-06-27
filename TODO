@@ -1,7 +1,7 @@
 
 Questions:
 
-Define private transaction scheme outside the network?
+Define private resource scheme outside the network?
 
 Miner incentives, coin generation from nothing?
 
@@ -22,7 +22,7 @@ Remember:
 
 Transactions must included the client signature (while preserving anonymity)
 
-Miner reward transaction is named:  coinbase transaction
+Miner reward resource is named:  coinbase resource
 
 When building a block the validation of an account balance must take into account the previous transactions inside the block
 

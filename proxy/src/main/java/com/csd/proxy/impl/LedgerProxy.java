@@ -8,8 +8,8 @@ import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
-import com.csd.proxy.db.TransactionEntity;
-import com.csd.proxy.db.TransactionRepository;
+import com.csd.proxy.ledger.ResourceEntity;
+import com.csd.proxy.ledger.ResourceRepository;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -27,36 +27,36 @@ import static com.csd.common.util.Serialization.*;
 public class LedgerProxy extends AsynchServiceProxy {
 
     private static final int TIMEOUT_PERIOD = 5000;
-    private final TransactionRepository transactionsRepository;
+    public final ResourceRepository transactionsRepository;
 
-    public LedgerProxy(Environment environment, TransactionRepository transactionsRepository) {
+    public LedgerProxy(Environment environment, ResourceRepository transactionsRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
         //super(environment.getProperty("proxy.id", Integer.class), (String)null, new DefaultKeyLoader());
         this.transactionsRepository = transactionsRepository;
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request) {
-        return invoke(request, TOMMessageType.UNORDERED_REQUEST);
+    public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request, ConsensusRequest.Type t0) {
+        return invoke(request, t0, TOMMessageType.UNORDERED_REQUEST);
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends Request, T extends Serializable> Response<T> invokeOrdered(R request) {
-        return invoke(request, TOMMessageType.ORDERED_REQUEST);
+    public <R extends Request, T extends Serializable> Response<T> invokeOrdered(R request, ConsensusRequest.Type t0) {
+        return invoke(request, t0, TOMMessageType.ORDERED_REQUEST);
     }
 
-    private <R extends Request, T extends Serializable> Response<T> invoke(R request, TOMMessageType type) {
+    private <R extends Request, T extends Serializable> Response<T> invoke(R request, ConsensusRequest.Type t0, TOMMessageType t1) {
         try {
-            ConsensusRequest consensusRequest = new ConsensusRequest(request, 0); //TODO lastEntryId
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, 0); //TODO lastEntryId
 
             CountDownLatch latch = new CountDownLatch(1);
             LedgerReplyListener listener = new LedgerReplyListener(this, latch);
-            super.invokeAsynchRequest(dataToBytes(consensusRequest), listener, type);
+            super.invokeAsynchRequest(dataToBytes(consensusRequest), listener, t1);
             latch.await(TIMEOUT_PERIOD, TimeUnit.MILLISECONDS);
 
             ConsensusResponse consensusResponse = listener.getResponse();
             if(consensusResponse != null) {
-                transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(TransactionEntity::new).collect(Collectors.toList()));
+                transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(ResourceEntity::new).collect(Collectors.toList()));
                 Result<T> result = consensusResponse.extractResult();
                 Response<T> response = null;
                 if(result.valid())
@@ -78,7 +78,7 @@ public class LedgerProxy extends AsynchServiceProxy {
     }
 
     public OffsetDateTime getLastTrxDate(byte[] owner) {
-        return Optional.ofNullable(transactionsRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(TransactionEntity::getTimestamp).orElse(OffsetDateTime.MIN);
+        return Optional.ofNullable(transactionsRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(ResourceEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }
 

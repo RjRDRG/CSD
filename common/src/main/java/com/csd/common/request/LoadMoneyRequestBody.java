@@ -10,9 +10,9 @@ import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
 public class LoadMoneyRequestBody extends Request {
-    private double amount;
+    private Double amount;
 
-    public LoadMoneyRequestBody(byte[] clientId, SignatureSuite signatureSuite, double amount) {
+    public LoadMoneyRequestBody(byte[] clientId, SignatureSuite signatureSuite, Double amount) {
         try {
             this.clientId = new byte[][]{clientId};
             this.clientSignature = new Signature[]{
@@ -28,11 +28,11 @@ public class LoadMoneyRequestBody extends Request {
     public LoadMoneyRequestBody() {
     }
 
-    public double getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 

@@ -31,9 +31,11 @@ public class Signature implements Serializable {
         this.signature = signature;
     }
 
-    public boolean verify(SignatureSuite signatureSuite, byte[] data) throws Exception {
-        signatureSuite.setPublicKey(publicKey);
-        return signatureSuite.verify(data, signature);
+    public boolean verify(SignatureSuite signatureSuite, byte[] data, boolean useSuiteKey) throws Exception {
+        if(useSuiteKey)
+            return signatureSuite.verify(data, signature);
+        else
+            return signatureSuite.verify(data, signature, publicKey.toPublicKey());
     }
 
     public EncodedPublicKey getPublicKey() {

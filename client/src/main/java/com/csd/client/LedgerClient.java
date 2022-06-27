@@ -3,8 +3,8 @@ package com.csd.client;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
+import com.csd.common.item.Resource;
 import com.csd.common.item.TransactionDetails;
-import com.csd.common.item.Transaction;
 import com.csd.common.request.*;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.util.Serialization;
@@ -74,7 +74,7 @@ public class LedgerClient {
 		port = ArrayUtils.indexOf(proxyPorts, proxy);
 	}
 
-	static void loadMoney(String walletId, double amount, IConsole console) {
+	static void loadMoney(String walletId, String amount, IConsole console) {
 		String requestString = "-----> loadMoney: " + walletId + " " + amount;
 		String resultString;
 		try {
@@ -162,7 +162,7 @@ public class LedgerClient {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/ledger";
 
 			GetLedgerRequestBody request = new GetLedgerRequestBody();
-			ResponseEntity<Response<ArrayList<Transaction>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Transaction>>>() {});
+			ResponseEntity<Response<ArrayList<Resource>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Resource>>>() {});
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
@@ -183,7 +183,7 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite
 			);
 
-			ResponseEntity<Response<ArrayList<Transaction>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Transaction>>>() {});
+			ResponseEntity<Response<ArrayList<Resource>>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<ArrayList<Resource>>>() {});
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {

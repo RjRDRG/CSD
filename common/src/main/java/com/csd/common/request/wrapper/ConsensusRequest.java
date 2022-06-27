@@ -16,13 +16,26 @@ public class ConsensusRequest implements Serializable {
 
     private Type type;
     private byte[] encodedRequest;
+    private long lastEntryId;
 
-    public ConsensusRequest(Request request, Type type) {
+    public ConsensusRequest(Request request, Type type, long lastEntryId) {
         this.encodedRequest = dataToBytes(request);
-        this.type = type;
+        this.lastEntryId = lastEntryId;
     }
 
     public ConsensusRequest() {
+    }
+
+    public <T extends Serializable> T extractRequest() {
+        return bytesToData(encodedRequest);
+    }
+
+    public long getLastEntryId() {
+        return lastEntryId;
+    }
+
+    public void setLastEntryId(long lastEntryId) {
+        this.lastEntryId = lastEntryId;
     }
 
     public Type getType() {

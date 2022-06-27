@@ -14,10 +14,21 @@ import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
 public abstract class Request implements Serializable {
+
+    protected String requestId;
+
     protected byte[][] clientId;
     protected Signature[] clientSignature;
     protected Signature[] proxySignatures;
     protected OffsetDateTime nonce;
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
 
     public byte[][] getClientId() {
         return clientId;
@@ -43,6 +54,12 @@ public abstract class Request implements Serializable {
         this.proxySignatures = proxySignatures;
     }
 
+    public void addProxySignature(Signature proxySignature) {
+        List<Signature> s = new ArrayList<>(Arrays.asList(proxySignatures));
+        s.add(proxySignature);
+        proxySignatures = s.toArray(new Signature[]{});
+    }
+
     public OffsetDateTime getNonce() {
         return nonce;
     }
@@ -66,7 +83,7 @@ public abstract class Request implements Serializable {
                 byte[] id = clientId[count];
                 if (!digestSuite.verify(s.getPublicKey().getEncoded(), Arrays.copyOfRange(id, 32, id.length)))
                     return false;
-                if(!s.verify(signatureSuite, serializedRequest()))
+                if(!s.verify(signatureSuite, serializedRequest(), false))
                     return false;
                 count++;
             }
@@ -88,7 +105,7 @@ public abstract class Request implements Serializable {
             for (SignatureSuite suite : signatureSuites) {
                 for (Signature s : proxySignatures) {
                     if(suite.getPublicKey().equals(s.getPublicKey())) {
-                        if(s.verify(suite, serializedRequestWithClientSig())) {
+                        if(s.verify(suite, serializedRequestWithClientSig(), true)) {
                             counter++;
                             proxySignatures.remove(s);
                         }
