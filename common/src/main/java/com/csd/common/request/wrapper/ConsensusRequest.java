@@ -11,7 +11,7 @@ import static com.csd.common.util.Serialization.*;
 public class ConsensusRequest implements Serializable {
 
     public enum Type implements Serializable {
-        LOAD, BALANCE, TRANSFER, EXTRACT, TOTAL_VAL, GLOBAL_VAL, LEDGER
+        LOAD, BALANCE, TRANSFER, EXTRACT, TOTAL_VAL, GLOBAL_VAL, LEDGER, BLOCK
     }
 
     private Type type;

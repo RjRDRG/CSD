@@ -1,9 +1,6 @@
 
 package com.csd.replica.servicelayer;
 
-import com.csd.common.cryptography.config.IniSpecification;
-import com.csd.common.cryptography.suites.digest.HashSuite;
-import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.item.Resource;
 import com.csd.common.request.*;
 import com.csd.common.traits.Result;
@@ -15,14 +12,9 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.UUID;
+import java.util.*;
 
-import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
-import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
 @Service
 public class ReplicaService {
@@ -32,21 +24,17 @@ public class ReplicaService {
     private final ResourceRepository resourceRepository;
 
     private final PriorityQueue<Transaction> transactionPoll;
-    private final IDigestSuite blockDigestSuite;
 
     public ReplicaService(ResourceRepository resourceRepository, BlockHeaderRepository blockHeaderRepository) throws Exception {
         this.resourceRepository = resourceRepository;
         this.blockHeaderRepository = blockHeaderRepository;
         this.transactionPoll = new PriorityQueue<>(new TransactionComparator());
-        this.blockDigestSuite = new HashSuite(new IniSpecification("block_digest_suite", CRYPTO_CONFIG_PATH));
     }
 
     public Result<LoadMoneyRequestBody> loadMoney(LoadMoneyRequestBody request) {
         try {
-            Transaction t = new Transaction(null, request.getClientId()[0], request.getAmount(), 0.0, request.getNonce(), request.getClientSignature()[0].getSignature());
+            Transaction t = new Transaction(request.getRequestId(), null, request.getClientId()[0], request.getAmount(), 0.0, request.getNonce(), request.getClientSignature()[0].getSignature());
             transactionPoll.add(t);
-
-            request.setRequestId(UUID.randomUUID().toString());
 
             return Result.ok(request);
         } catch (Exception e) {
@@ -58,10 +46,8 @@ public class ReplicaService {
     @Transactional
     public Result<SendTransactionRequestBody> sendTransaction(SendTransactionRequestBody request) {
         try {
-            Transaction t = new Transaction(request.getClientId()[0], request.getRecipient(), request.getAmount(), 0.0, request.getNonce(), request.getClientSignature()[0].getSignature());
+            Transaction t = new Transaction(request.getRequestId(), request.getClientId()[0], request.getRecipient(), request.getAmount(), 0.0, request.getNonce(), request.getClientSignature()[0].getSignature());
             transactionPoll.add(t);
-
-            request.setRequestId(UUID.randomUUID().toString());
 
             return Result.ok(request);
         } catch (Exception e) {
@@ -141,6 +127,22 @@ public class ReplicaService {
         }
     }
 
+    public List<Transaction> getTransactionBatch(int size) {
+        List<Transaction> t = new ArrayList<>(size);
+        Iterator<Transaction> it = transactionPoll.iterator();
+        for(int i=0; i<size; i++) {
+            if(it.hasNext())
+                t.add(it.next());
+            else
+                return t;
+        }
+        return t;
+    }
+
+    public BlockHeaderEntity getLastBlock() {
+        return blockHeaderRepository.findTopByOrderByIdDesc();
+    }
+
     public void installSnapshot(Snapshot snapshot) {
         resourceRepository.deleteAll();
         resourceRepository.saveAll(snapshot.getResources());
@@ -154,18 +156,6 @@ public class ReplicaService {
 
     public Resource[] getTransactionsAfterId(long id) {
         return resourceRepository.findByIdGreaterThan(id).stream().map(ResourceEntity::toItem).toArray(Resource[]::new);
-    }
-
-    private String getLastTransactionHash() throws Exception {
-        ResourceEntity entity = resourceRepository.findTopByOrderByIdDesc();
-        if (entity==null)
-            return "";
-        else
-            return getTransactionHash(entity.toItem());
-    }
-
-    private String getTransactionHash(Resource resource) throws Exception {
-        return bytesToString(blockDigestSuite.digest(dataToBytesDeterministic(resource)));
     }
 
     public OffsetDateTime getLastTrxDate(byte[] owner) {

@@ -3,47 +3,63 @@ package com.csd.replica.consensuslayer.pow;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import com.csd.common.cryptography.config.IniSpecification;
+import com.csd.common.cryptography.suites.digest.HashSuite;
+import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.validator.RequestValidator;
+import com.csd.common.datastructs.MerkleTree;
 import com.csd.common.item.Resource;
 import com.csd.common.request.*;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.traits.Result;
+import com.csd.common.util.Serialization;
 import com.csd.common.util.Status;
+import com.csd.replica.consensuslayer.IConsensusLayer;
+import com.csd.replica.datalayer.Block;
+import com.csd.replica.datalayer.BlockHeaderEntity;
+import com.csd.replica.datalayer.Transaction;
 import com.csd.replica.servicelayer.ReplicaService;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static com.csd.common.util.Serialization.bytesToData;
-import static com.csd.common.util.Serialization.dataToBytes;
+import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
+import static com.csd.common.util.Serialization.*;
 
 @Component
-public class PowReplica extends DefaultSingleRecoverable {
+public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLayer {
 
-    private static final Logger log = LoggerFactory.getLogger(PowReplica.class);
-
+    private static final Logger log = LoggerFactory.getLogger(PowOrderer.class);
     private int replicaId;
     private final ReplicaService replicaService;
     private final Environment environment;
 
     private final RequestValidator validator;
 
-    public PowReplica(ReplicaService replicaService, Environment environment) throws Exception {
+    private ServiceReplica serviceReplica;
+
+    public PowOrderer(ReplicaService replicaService, Environment environment) throws Exception {
         super();
         this.replicaService = replicaService;
         this.environment = environment;
         this.validator = new RequestValidator(environment.getProperty("proxy.quorum.size" , int.class));
     }
 
-    public void start(String[] args) {
+    public void start(String[] args) throws Exception {
         replicaId = args.length > 0 ? Integer.parseInt(args[0]) : environment.getProperty("replica.id", int.class);
         log.info("The id of the replica is: " + replicaId);
-        new ServiceReplica(replicaId, this, this);
+        serviceReplica = new ServiceReplica(replicaId, this, this);
     }
 
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {

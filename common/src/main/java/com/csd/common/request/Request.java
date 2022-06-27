@@ -69,9 +69,10 @@ public abstract class Request implements Serializable {
     }
 
     public abstract byte[] serializedRequest();
-    public byte[] serializedRequestWithClientSig() {
+    public byte[] serializedSignedRequest() {
         return concat(
             serializedRequest(),
+            dataToBytesDeterministic(requestId),
             dataToBytesDeterministic(clientSignature)
         );
     }
@@ -105,7 +106,7 @@ public abstract class Request implements Serializable {
             for (SignatureSuite suite : signatureSuites) {
                 for (Signature s : proxySignatures) {
                     if(suite.getPublicKey().equals(s.getPublicKey())) {
-                        if(s.verify(suite, serializedRequestWithClientSig(), true)) {
+                        if(s.verify(suite, serializedSignedRequest(), true)) {
                             counter++;
                             proxySignatures.remove(s);
                         }

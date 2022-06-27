@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.item.Resource;
 import com.csd.common.item.TransactionDetails;
+import com.csd.common.item.Wallet;
 import com.csd.common.request.*;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.util.Serialization;
@@ -47,7 +48,7 @@ public class LedgerClient {
 	public static String proxyPorts[] = {"8080","8081","8082","8083"};
 	static int port = 0;
 
-	static Map<String, WalletDetails> wallets = new HashMap<>();
+	static Map<String, Wallet> wallets = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -61,7 +62,7 @@ public class LedgerClient {
 
 	static void createWallet(String id, String seed, IConsole console) {
 		try {
-			wallets.put(id,new WalletDetails(id,seed));
+			wallets.put(id,new Wallet(id,seed));
 			if(console != null) {
 				console.printOperation("createWallet: ", "Seed: " + seed);
 			}
@@ -80,7 +81,7 @@ public class LedgerClient {
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/load";
 
-			WalletDetails wallet = wallets.get(walletId);
+			Wallet wallet = wallets.get(walletId);
 
 			LoadMoneyRequestBody request = new LoadMoneyRequestBody(
 					wallet.clientId, wallet.signatureSuite, amount
@@ -100,7 +101,7 @@ public class LedgerClient {
 		try{
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/balance";
 
-			WalletDetails wallet = wallets.get(walletId);
+			Wallet wallet = wallets.get(walletId);
 
 			GetBalanceRequestBody request = new GetBalanceRequestBody(
 					wallet.clientId, wallet.signatureSuite
@@ -122,9 +123,9 @@ public class LedgerClient {
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/transfer";
 
-			WalletDetails wallet = wallets.get(walletId);
+			Wallet wallet = wallets.get(walletId);
 
-			WalletDetails walletDestination = wallets.get(walletDestinationId);
+			Wallet walletDestination = wallets.get(walletDestinationId);
 
 			SendTransactionRequestBody request = new SendTransactionRequestBody(
 					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount
@@ -177,7 +178,7 @@ public class LedgerClient {
 		try {
 			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/extract";
 
-			WalletDetails wallet = wallets.get(walletId);
+			Wallet wallet = wallets.get(walletId);
 
 			GetExtractRequestBody request = new GetExtractRequestBody(
 					wallet.clientId, wallet.signatureSuite
@@ -203,7 +204,7 @@ public class LedgerClient {
 
 			int count = 0;
 			for(String walletId : walletsIds ){
-				WalletDetails wallet = wallets.get(walletId);
+				Wallet wallet = wallets.get(walletId);
 				clientId[count] = wallet.clientId;
 				signatureSuite[count] = wallet.signatureSuite;
 				count++;

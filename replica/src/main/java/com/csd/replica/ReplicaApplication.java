@@ -1,7 +1,7 @@
 package com.csd.replica;
 
 import com.csd.replica.consensuslayer.IConsensusLayer;
-import com.csd.replica.consensuslayer.bftsmart.BftSmartReplica;
+import com.csd.replica.consensuslayer.pow.PowOrderer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,8 +17,8 @@ public class ReplicaApplication implements CommandLineRunner {
 
 	private final IConsensusLayer consensusLayer;
 
-	public ReplicaApplication(BftSmartReplica replica) {
-		this.consensusLayer = replica;
+	public ReplicaApplication(PowOrderer orderer) {
+		this.consensusLayer = orderer;
 	}
 
 	public static void main(String[] args) {

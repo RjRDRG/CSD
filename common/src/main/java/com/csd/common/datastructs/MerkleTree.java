@@ -1,11 +1,15 @@
 package com.csd.common.datastructs;
 
+import com.csd.common.cryptography.suites.digest.IDigestSuite;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.zip.Adler32;
+
+import static com.csd.common.util.Serialization.concat;
 
 public class MerkleTree {
 
@@ -15,7 +19,7 @@ public class MerkleTree {
     public static final byte LEAF_SIG_TYPE = 0x0;
     public static final byte INTERNAL_SIG_TYPE = 0x01;
 
-    private final Adler32 crc = new Adler32();
+    private final IDigestSuite digestSuite;
     private List<byte[]> leafSigs;
     private Node root;
     private int depth;
@@ -26,23 +30,9 @@ public class MerkleTree {
      * The Merkle tree is built from the bottom up.
      * @param leafSignatures
      */
-    public MerkleTree(List<byte[]> leafSignatures) {
+    public MerkleTree(List<byte[]> leafSignatures, IDigestSuite digestSuite) {
+        this.digestSuite = digestSuite;
         constructTree(leafSignatures);
-    }
-
-    /**
-     * Use this constructor when you have already constructed the tree of Nodes
-     * (from deserialization).
-     * @param treeRoot
-     * @param numNodes
-     * @param height
-     * @param leafSignatures
-     */
-    public MerkleTree(Node treeRoot, int numNodes, int height, List<byte[]> leafSignatures) {
-        root = treeRoot;
-        nnodes = numNodes;
-        depth = height;
-        leafSigs = leafSignatures;
     }
 
 
@@ -219,10 +209,11 @@ public class MerkleTree {
     }
 
     byte[] internalHash(byte[] leftChildSig, byte[] rightChildSig) {
-        crc.reset();
-        crc.update(leftChildSig);
-        crc.update(rightChildSig);
-        return longToByteArray(crc.getValue());
+        try {
+            return digestSuite.digest(concat(leftChildSig, rightChildSig));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -237,7 +228,7 @@ public class MerkleTree {
      * Internal Nodes will have at least one child (always on the left).
      * Leaf Nodes will have no children (left = right = null).
      */
-    static class Node {
+    public static class Node {
         public byte type;  // INTERNAL_SIG_TYPE or LEAF_SIG_TYPE
         public byte[] sig; // signature of the node
         public Node left;

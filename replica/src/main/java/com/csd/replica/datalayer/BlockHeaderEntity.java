@@ -1,10 +1,15 @@
 package com.csd.replica.datalayer;
 
+import com.csd.common.cryptography.suites.digest.IDigestSuite;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+
+import static com.csd.common.util.Serialization.concat;
+import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
 @Entity
 public class BlockHeaderEntity implements Serializable {
@@ -17,6 +22,21 @@ public class BlockHeaderEntity implements Serializable {
     byte[] nonce;
 
     public BlockHeaderEntity() {}
+
+    public byte[] getDigest(IDigestSuite suite) {
+        try {
+            return suite.digest(concat(
+                    dataToBytesDeterministic(id),
+                    dataToBytesDeterministic(timestamp),
+                    previousBlockHash,
+                    merkleRootHash,
+                    dataToBytesDeterministic(difficultyTarget),
+                    nonce
+            ));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public long getId() {
         return id;

@@ -10,15 +10,9 @@
         <module name="client" />
         <module name="common" />
         <module name="replica" />
+        <module name="miner" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="client" target="11" />
-      <module name="common" target="11" />
-      <module name="CSD" target="11" />
-      <module name="proxy" target="11" />
-      <module name="replica" target="11" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

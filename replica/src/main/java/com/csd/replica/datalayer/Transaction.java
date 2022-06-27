@@ -1,11 +1,13 @@
 package com.csd.replica.datalayer;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 
 import static com.csd.common.util.Serialization.bytesToHex;
 
-public class Transaction {
+public class Transaction implements Serializable {
+
+    private String id;
 
     private byte[] owner;
     private byte[] recipient;
@@ -17,13 +19,18 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(byte[] owner, byte[] recipient, Object asset, Object fee, OffsetDateTime timestamp, byte[] requestSignature) {
+    public Transaction(String id, byte[] owner, byte[] recipient, Object asset, Object fee, OffsetDateTime timestamp, byte[] requestSignature) {
+        this.id = id;
         this.owner = owner;
         this.recipient = recipient;
         this.asset = asset;
         this.fee = fee;
         this.timestamp = timestamp;
         this.requestSignature = requestSignature;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public byte[] getOwner() {

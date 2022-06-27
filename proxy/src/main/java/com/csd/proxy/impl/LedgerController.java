@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -68,7 +69,8 @@ class LedgerController {
         if (balance<request.getAmount())
             return buildResponse(new Response<>(Status.NOT_AVAILABLE, "Insufficient Credit", proxySignatureSuite));
 
-        request.addProxySignature(new Signature(proxySignatureSuite,request.serializedRequestWithClientSig()));
+        request.setRequestId(UUID.randomUUID().toString());
+        request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
 
         if(request.getProxySignatures().length >= quorum) {
             Response<SendTransactionRequestBody> response = ledgerProxy.invokeOrdered(request, ConsensusRequest.Type.TRANSFER);
@@ -88,6 +90,8 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
+        request.setRequestId(UUID.randomUUID().toString());
+
         Response<LoadMoneyRequestBody> response = ledgerProxy.invokeOrdered(request, ConsensusRequest.Type.LOAD);
         response.proxySignature(proxySignatureSuite);
 
@@ -100,6 +104,8 @@ class LedgerController {
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
+
+        request.setRequestId(UUID.randomUUID().toString());
 
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.BALANCE);
         response.proxySignature(proxySignatureSuite);
@@ -114,6 +120,8 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
+        request.setRequestId(UUID.randomUUID().toString());
+
         Response<ArrayList<Resource>> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.EXTRACT);
         response.proxySignature(proxySignatureSuite);
 
@@ -127,6 +135,8 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
+        request.setRequestId(UUID.randomUUID().toString());
+
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TOTAL_VAL);
         response.proxySignature(proxySignatureSuite);
 
@@ -138,6 +148,8 @@ class LedgerController {
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.GLOBAL_VAL);
         response.proxySignature(proxySignatureSuite);
 
+        request.setRequestId(UUID.randomUUID().toString());
+
         return buildResponse(response);
     }
 
@@ -145,6 +157,8 @@ class LedgerController {
     public ResponseEntity<Response<ArrayList<Resource>>> getLedger(@RequestBody GetLedgerRequestBody request) {
         Response<ArrayList<Resource>> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.LEDGER);
         response.proxySignature(proxySignatureSuite);
+
+        request.setRequestId(UUID.randomUUID().toString());
 
         return buildResponse(response);
     }

@@ -70,9 +70,7 @@ public class LedgerProxy extends AsynchServiceProxy {
                 return new Response<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
             }
         } catch (Exception e) {
-            System.out.println("\n\n\n\n");
             e.printStackTrace();
-            System.out.println("\n\n\n\n");
             return new Response<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
