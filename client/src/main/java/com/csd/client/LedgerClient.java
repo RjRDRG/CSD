@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.item.Resource;
-import com.csd.common.item.TransactionDetails;
 import com.csd.common.item.Wallet;
 import com.csd.common.request.*;
 import com.csd.common.response.wrapper.Response;
@@ -48,6 +47,8 @@ public class LedgerClient {
 	public static String proxyPorts[] = {"8080","8081","8082","8083"};
 	static int port = 0;
 
+	static int endorsementQuorum = 3;
+
 	static Map<String, Wallet> wallets = new HashMap<>();
 
 	public static void main(String[] args) throws Exception {
@@ -75,7 +76,7 @@ public class LedgerClient {
 		port = ArrayUtils.indexOf(proxyPorts, proxy);
 	}
 
-	static void loadMoney(String walletId, String amount, IConsole console) {
+	static void loadMoney(String walletId, double amount, IConsole console) {
 		String requestString = "-----> loadMoney: " + walletId + " " + amount;
 		String resultString;
 		try {
@@ -87,7 +88,7 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite, amount
 			);
 
-			ResponseEntity<Response<TransactionDetails>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<TransactionDetails>>() {});
+			ResponseEntity<Response<LoadMoneyRequestBody>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<LoadMoneyRequestBody>>() {});
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
 			resultString = e.getMessage();
@@ -131,7 +132,16 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount
 			);
 
-			ResponseEntity<Response<TransactionDetails>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<TransactionDetails>>() {});
+			int counter = 0;
+			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
+			while (request.getProxySignatures().length < endorsementQuorum) {
+				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+				if(responseEntity.getBody().valid()) {
+					request = responseEntity.getBody().getResponse();
+				}
+				counter++;
+			}
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
