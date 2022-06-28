@@ -5,6 +5,9 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.csd.common.util.Serialization.concat;
+import static com.csd.common.util.Serialization.dataToBytesDeterministic;
+
 public class Block implements Serializable {
 
     byte[] previousBlockHash;
@@ -23,6 +26,16 @@ public class Block implements Serializable {
         this.difficultyTarget = difficultyTarget;
         this.TXIDs = TXIDs;
         this.timestamp = timestamp;
+    }
+
+    public byte[] serializedBlock() {
+        return concat(
+                dataToBytesDeterministic(timestamp),
+                previousBlockHash,
+                merkleRootHash,
+                dataToBytesDeterministic(difficultyTarget),
+                proof
+        );
     }
 
     public byte[] getPreviousBlockHash() {

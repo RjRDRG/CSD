@@ -1,6 +1,5 @@
 package com.csd.replica.consensuslayer.pow;
 
-import bftsmart.tom.ReplicaContext;
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.datastructs.MerkleTree;
 import com.csd.common.util.Serialization;
@@ -22,16 +21,20 @@ import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 public class MinerThread extends Thread {
 
     public static final int MAX_PROOF_LENGTH = 255;
-    private final ReplicaContext replicaContext;
-    private final ReplicaService replicaService;
 
+    private final int processId;
+
+    private ReplicaBroadcast replicaBroadcast;
+    private final ReplicaService replicaService;
     private final IDigestSuite transactionDigestSuite;
     private final IDigestSuite blockDigestSuite;
     private final int blockSize;
     private final int difficultyTarget;
 
-    public MinerThread(ReplicaContext replicaContext, ReplicaService replicaService, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget) {
-        this.replicaContext = replicaContext;
+    private boolean restart = false;
+
+    public MinerThread(int processId, ReplicaService replicaService, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget) {
+        this.processId = processId;
         this.replicaService = replicaService;
         this.transactionDigestSuite = transactionDigestSuite;
         this.blockDigestSuite = blockDigestSuite;
@@ -43,7 +46,13 @@ public class MinerThread extends Thread {
         while (true) {
             List<Transaction> transactions = replicaService.getTransactionBatch(blockSize);
             if (transactions.size() == blockSize) {
-                mine(transactions);
+                Block block = mine(transactions);
+                if(block != null) {
+                    if (replicaBroadcast == null) {
+                        initBroadcastService();
+                    }
+                    replicaBroadcast.broadcast(block);
+                }
             } else {
                 try {
                     Thread.sleep(1000);
@@ -54,11 +63,20 @@ public class MinerThread extends Thread {
         }
     }
 
-    public void mine(List<Transaction> transactions) {
+    public void initBroadcastService() {
+        try {
+            replicaBroadcast = new ReplicaBroadcast(processId);
+            Thread.sleep(10000);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Block mine(List<Transaction> transactions) {
         BlockHeaderEntity previousBlock = replicaService.getLastBlock();
         byte[] previousBlockHash = null;
         if(previousBlock != null) {
-            previousBlockHash = previousBlock.getDigest(blockDigestSuite);
+            previousBlockHash = previousBlock.getHash();
         }
 
         Block block = new Block(
@@ -76,14 +94,36 @@ public class MinerThread extends Thread {
             try {
                 byte[] proof = RandomStringUtils.random((int) length, true, true).getBytes(StandardCharsets.UTF_8);
                 block.setProof(proof);
-                byte[] blockHash = blockDigestSuite.digest(dataToBytesDeterministic(block));
+                byte[] blockHash = blockDigestSuite.digest(block.serializedBlock());
                 hex = bytesToHex(blockHash);
                 length = Math.min(MAX_PROOF_LENGTH, length*1.001);
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
+
+            if(restart) {
+                restart = false;
+                return null;
+            }
         }
         while(!hex.startsWith(challenge));
 
+        return block;
+    }
+
+    public void restart() {
+        this.restart = true;
+    }
+
+    public IDigestSuite getTransactionDigestSuite() {
+        return transactionDigestSuite;
+    }
+
+    public int getDifficultyTarget() {
+        return difficultyTarget;
+    }
+
+    public IDigestSuite getBlockDigestSuite() {
+        return blockDigestSuite;
     }
 }

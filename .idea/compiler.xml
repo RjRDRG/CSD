@@ -10,9 +10,11 @@
         <module name="client" />
         <module name="common" />
         <module name="replica" />
-        <module name="miner" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="miner" target="11" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

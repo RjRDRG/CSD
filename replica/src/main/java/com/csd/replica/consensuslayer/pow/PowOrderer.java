@@ -5,7 +5,6 @@ import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import com.csd.common.cryptography.config.IniSpecification;
 import com.csd.common.cryptography.suites.digest.HashSuite;
-import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.cryptography.validator.RequestValidator;
 import com.csd.common.datastructs.MerkleTree;
 import com.csd.common.item.Resource;
@@ -29,9 +28,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
@@ -49,6 +46,8 @@ public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLa
 
     private ServiceReplica serviceReplica;
 
+    private MinerThread minerThread;
+
     public PowOrderer(ReplicaService replicaService, Environment environment) throws Exception {
         super();
         this.replicaService = replicaService;
@@ -60,6 +59,15 @@ public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLa
         replicaId = args.length > 0 ? Integer.parseInt(args[0]) : environment.getProperty("replica.id", int.class);
         log.info("The id of the replica is: " + replicaId);
         serviceReplica = new ServiceReplica(replicaId, this, this);
+        this.minerThread = new MinerThread(
+                environment.getProperty("replica.id" , int.class) + 100000,
+                replicaService,
+                new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH)),
+                new HashSuite(new IniSpecification("block_digest_suite", CRYPTO_CONFIG_PATH)),
+                environment.getProperty("replica.block.size" , int.class),
+                environment.getProperty("replica.difficulty.target" , int.class)
+        );
+        minerThread.start();
     }
 
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {
@@ -102,10 +110,71 @@ public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLa
                 Result<Resource[]> result = replicaService.getLedger(consensusRequest.extractRequest());
                 return new ConsensusResponse(result.encode(), replicaService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
+            case BLOCK: {
+                BlockProposal request = consensusRequest.extractRequest();
+                var v = validator.validate(request, replicaService.getLastTrxDate(request.getClientId()[0]), false);
+                Result<Long> result =  v.valid() ? blockProposalHandler(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), null);
+            }
             default: {
                 Result<Serializable> result = Result.error(Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
                 return new ConsensusResponse(result.encode(), replicaService.getTransactionsAfterId(consensusRequest.getLastEntryId()));
             }
+        }
+    }
+
+    public Result<Long> blockProposalHandler(BlockProposal request) {
+        try {
+            Block block = request.getBlock();
+            BlockHeaderEntity lastBlock = replicaService.getLastBlock();
+
+            if(block.getDifficultyTarget() != minerThread.getDifficultyTarget())
+                return Result.error(Status.BAD_REQUEST, "Invalid block");
+
+            if(block.getPreviousBlockHash() != lastBlock.getHash())
+                return Result.error(Status.CONFLICT, "Block already mined");
+
+            Set<String> transactionIds = new HashSet<>(block.getTXIDs());
+
+            if(transactionIds.size() != block.getTXIDs().size())
+                return Result.error(Status.BAD_REQUEST, "Invalid block");
+
+            List<Transaction> transactions = new ArrayList<>();
+            for(String txid : block.getTXIDs()) {
+                if(replicaService.transactionIsMissing(txid))
+                    return Result.error(Status.CONFLICT, "Transaction already mined");
+            }
+
+            byte[] merkleRoot =  new MerkleTree(
+                    transactions.stream().map(Serialization::dataToBytesDeterministic).collect(Collectors.toList()),
+                    minerThread.getTransactionDigestSuite()
+            ).getRoot().sig;
+
+            if(merkleRoot != block.getMerkleRootHash())
+                return Result.error(Status.BAD_REQUEST, "Invalid block");
+
+            byte[] blockHash = minerThread.getBlockDigestSuite().digest(block.serializedBlock());
+            if(!bytesToHex(blockHash).startsWith(StringUtils.repeat('0', block.getDifficultyTarget())))
+                return Result.error(Status.BAD_REQUEST, "Invalid block");
+
+            BlockHeaderEntity newBlock = new BlockHeaderEntity(
+                    block.getTimestamp(),
+                    block.getPreviousBlockHash(),
+                    block.getMerkleRootHash(),
+                    block.getDifficultyTarget(),
+                    block.getProof()
+            );
+
+            newBlock.setHash(blockHash);
+
+            replicaService.executeBlock(request.getClientId()[0], newBlock, transactions);
+
+            minerThread.restart();
+
+            return Result.ok(newBlock.getId());
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

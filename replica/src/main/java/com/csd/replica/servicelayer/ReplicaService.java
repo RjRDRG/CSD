@@ -139,6 +139,36 @@ public class ReplicaService {
         return t;
     }
 
+    public void executeBlock(byte[] proposerId, BlockHeaderEntity block, List<Transaction> transactions){
+        blockHeaderRepository.save(block);
+
+        for (Transaction t : transactions) {
+            transactionPoll.remove(t);
+            if (t.getAsset() instanceof Double) {
+                Double amount = (Double) t.getAsset();
+                Double fee = (Double) t.getFee();
+                ResourceEntity senderResource = new ResourceEntity(
+                        t.getOwner(), "-" + amount, t.getTimestamp(), t.getRequestSignature()
+                );
+                resourceRepository.save(senderResource);
+                ResourceEntity recipientResource = new ResourceEntity(
+                        t.getRecipient(), "" + amount, t.getTimestamp(), t.getRequestSignature()
+                );
+                resourceRepository.save(recipientResource);
+                if (fee > 0) {
+                    ResourceEntity feeResource = new ResourceEntity(
+                            proposerId, "" + fee, t.getTimestamp(), t.getRequestSignature()
+                    );
+                    resourceRepository.save(feeResource);
+                }
+            }
+        }
+    }
+
+    public boolean transactionIsMissing(String txid) {
+        return transactionPoll.stream().filter(t -> t.getId().equals(txid)).findAny().isEmpty();
+    }
+
     public BlockHeaderEntity getLastBlock() {
         return blockHeaderRepository.findTopByOrderByIdDesc();
     }

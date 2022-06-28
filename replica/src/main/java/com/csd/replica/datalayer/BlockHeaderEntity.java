@@ -1,7 +1,5 @@
 package com.csd.replica.datalayer;
 
-import com.csd.common.cryptography.suites.digest.IDigestSuite;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,23 +17,27 @@ public class BlockHeaderEntity implements Serializable {
     byte[] previousBlockHash;
     byte[] merkleRootHash;
     int difficultyTarget;
-    byte[] nonce;
+    byte[] proof;
+    byte[] hash;
 
     public BlockHeaderEntity() {}
 
-    public byte[] getDigest(IDigestSuite suite) {
-        try {
-            return suite.digest(concat(
-                    dataToBytesDeterministic(id),
-                    dataToBytesDeterministic(timestamp),
-                    previousBlockHash,
-                    merkleRootHash,
-                    dataToBytesDeterministic(difficultyTarget),
-                    nonce
-            ));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public BlockHeaderEntity(OffsetDateTime timestamp, byte[] previousBlockHash, byte[] merkleRootHash, int difficultyTarget, byte[] proof) {
+        this.timestamp = timestamp;
+        this.previousBlockHash = previousBlockHash;
+        this.merkleRootHash = merkleRootHash;
+        this.difficultyTarget = difficultyTarget;
+        this.proof = proof;
+    }
+
+    public byte[] serializedBlock() {
+        return concat(
+                dataToBytesDeterministic(timestamp),
+                previousBlockHash,
+                merkleRootHash,
+                dataToBytesDeterministic(difficultyTarget),
+                proof
+        );
     }
 
     public long getId() {
@@ -78,11 +80,19 @@ public class BlockHeaderEntity implements Serializable {
         this.difficultyTarget = difficultyTarget;
     }
 
-    public byte[] getNonce() {
-        return nonce;
+    public byte[] getProof() {
+        return proof;
     }
 
-    public void setNonce(byte[] nonce) {
-        this.nonce = nonce;
+    public void setProof(byte[] proof) {
+        this.proof = proof;
+    }
+
+    public byte[] getHash() {
+        return hash;
+    }
+
+    public void setHash(byte[] hash) {
+        this.hash = hash;
     }
 }

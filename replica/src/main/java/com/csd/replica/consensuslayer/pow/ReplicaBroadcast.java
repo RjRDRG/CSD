@@ -26,14 +26,13 @@ import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.dataToBytes;
 
-@Component
 public class ReplicaBroadcast extends AsynchServiceProxy {
-    
+
     private final Wallet wallet;
 
-    public ReplicaBroadcast(Environment environment) throws Exception {
-        super(environment.getProperty("replica.id", Integer.class) + 1000);
-        wallet = new Wallet(environment.getProperty("replica.id", Integer.class).toString(), UUID.randomUUID().toString());
+    public ReplicaBroadcast(int processId) throws Exception {
+        super(processId);
+        wallet = new Wallet(processId + "@miner", UUID.randomUUID().toString());
     }
 
     @SuppressWarnings("unchecked")
@@ -48,7 +47,7 @@ public class ReplicaBroadcast extends AsynchServiceProxy {
                 public void reset() {}
                 @Override
                 public void replyReceived(RequestContext requestContext, TOMMessage tomMessage) {}
-            }, TOMMessageType.UNORDERED_REQUEST);
+            }, TOMMessageType.ORDERED_REQUEST);
 
 
         } catch (Exception e) {
