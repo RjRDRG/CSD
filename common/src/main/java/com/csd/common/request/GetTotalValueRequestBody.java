@@ -14,13 +14,13 @@ public class GetTotalValueRequestBody extends Request {
     public GetTotalValueRequestBody(byte[][] clientId, SignatureSuite[] signatureSuite) {
         try {
             this.clientId = clientId;
+            this.nonce = OffsetDateTime.now();
             this.clientSignature = new Signature[signatureSuite.length];
             int count = 0;
             for (SignatureSuite suite : signatureSuite) {
                 clientSignature[count] = new Signature(suite.getPublicKey(), suite.digest(serializedRequest()));
                 count++;
             }
-            this.nonce = OffsetDateTime.now();
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

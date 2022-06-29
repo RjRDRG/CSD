@@ -14,10 +14,10 @@ public class GetExtractRequestBody extends Request {
     public GetExtractRequestBody(byte[] clientId, SignatureSuite signatureSuite) {
         try {
             this.clientId = new byte[][]{clientId};
+            this.nonce = OffsetDateTime.now();
             this.clientSignature = new Signature[]{
                     new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
             };
-            this.nonce = OffsetDateTime.now();
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

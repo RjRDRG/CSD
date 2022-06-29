@@ -134,7 +134,7 @@ public class LedgerClient {
 			);
 
 			if(store) {
-				File file = getUniqueFile("transactions", walletDestinationId + ".txt");
+				File file = getUniqueFile("transactions", walletDestinationId);
 				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 				writer.write(dataToJson(request));
 				writer.close();
@@ -255,7 +255,7 @@ public class LedgerClient {
 		String filename = searchedFilename.substring(0, searchedFilename.lastIndexOf("."));
 		File file = new File(folderName, searchedFilename);
 		while (file.exists()) {
-			searchedFilename = filename + "("+(num++)+")"+extension;
+			searchedFilename = filename + (num++) + extension;
 			file = new File(folderName, searchedFilename);
 		}
 		return file;

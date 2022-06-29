@@ -15,11 +15,11 @@ public class LoadMoneyRequestBody extends Request {
     public LoadMoneyRequestBody(byte[] clientId, SignatureSuite signatureSuite, Double amount) {
         try {
             this.clientId = new byte[][]{clientId};
+            this.nonce = OffsetDateTime.now();
+            this.amount = amount;
             this.clientSignature = new Signature[]{
                     new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
             };
-            this.nonce = OffsetDateTime.now();
-            this.amount = amount;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
