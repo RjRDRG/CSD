@@ -17,6 +17,7 @@ import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,10 +31,11 @@ import static com.csd.common.util.Serialization.bytesToString;
 import static com.csd.proxy.exceptions.ResponseEntityBuilder.buildResponse;
 
 @RestController
+@ConditionalOnProperty("proxy.blockmess")
 class LedgerBlockmessController {
     private static final Logger log = LoggerFactory.getLogger(LedgerBlockmessController.class);
 
-    private final BlockmessProxyOrderer ledgerProxy;
+    private final BlockmessProxyOrderer orderer;
     private final RequestValidator validator;
 
     private final ResourceRepository ledger;
@@ -41,9 +43,9 @@ class LedgerBlockmessController {
 
     private final int quorum;
 
-    LedgerBlockmessController(BlockmessProxyOrderer ledgerProxy, Environment environment) throws Exception {
-        this.ledgerProxy = ledgerProxy;
-        this.ledger = ledgerProxy.resourceRepository;
+    LedgerBlockmessController(BlockmessProxyOrderer orderer, Environment environment) throws Exception {
+        this.orderer = orderer;
+        this.ledger = orderer.resourceRepository;
         this.quorum = environment.getProperty("proxy.quorum.size" , int.class);
         this.validator = new RequestValidator(quorum);
         this.proxySignatureSuite = new SignatureSuite(new SuiteConfiguration(
@@ -54,7 +56,7 @@ class LedgerBlockmessController {
 
     @PostMapping("/transfer")
     public ResponseEntity<Response<SendTransactionRequestBody>> sendTransaction(@RequestBody SendTransactionRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastResourceDate(request.getClientId()[request.getClientId().length-1]), false);
+        var v = validator.validate(request, orderer.getLastResourceDate(request.getClientId()[request.getClientId().length-1]), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -75,7 +77,7 @@ class LedgerBlockmessController {
         request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
 
         if(request.getProxySignatures().length >= quorum) {
-            Response<SendTransactionRequestBody> response = ledgerProxy.invoke(request, ConsensusRequest.Type.TRANSFER);
+            Response<SendTransactionRequestBody> response = orderer.invoke(request, ConsensusRequest.Type.TRANSFER);
             response.proxySignature(proxySignatureSuite);
             return buildResponse(response);
         } else {
@@ -87,12 +89,12 @@ class LedgerBlockmessController {
 
     @PostMapping("/load")
     public ResponseEntity<Response<LoadMoneyRequestBody>> loadMoney(@RequestBody LoadMoneyRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastResourceDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, orderer.getLastResourceDate(request.getClientId()[0]), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        Response<LoadMoneyRequestBody> response = ledgerProxy.invoke(request, ConsensusRequest.Type.LOAD);
+        Response<LoadMoneyRequestBody> response = orderer.invoke(request, ConsensusRequest.Type.LOAD);
         response.proxySignature(proxySignatureSuite);
 
         return buildResponse(response);
