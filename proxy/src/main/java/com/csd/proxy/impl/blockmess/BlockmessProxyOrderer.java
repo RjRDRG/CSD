@@ -80,29 +80,28 @@ public class BlockmessProxyOrderer extends ApplicationInterface implements ICons
     }
 
     public Result<SendTransactionRequestBody> sendTransaction(SendTransactionRequestBody request) {
-            Double amount = request.getAmount();
-            Double fee = request.getFee();
+        try{
+            double amount = request.getAmount();
 
             if(request.getClientId() != null) {
                 ResourceEntity senderResource = new ResourceEntity(
-                        block.getId(), t.getOwner(), Resource.Type.VALUE.name(), amount.toString(), true, t.getTimestamp(), t.getRequestSignature()
+                        -1, request.getClientId()[0], Resource.Type.VALUE.name(), Double.toString(amount), true, request.getNonce(), request.getClientSignature()[0].getSignature()
                 );
                 resourceRepository.save(senderResource);
             }
 
-            if(t.getRecipient() != null) {
+            if(request.getRecipient() != null) {
                 ResourceEntity recipientResource = new ResourceEntity(
-                        block.getId(), t.getRecipient(), Resource.Type.VALUE.name(), amount.toString(), false, t.getTimestamp(), t.getRequestSignature()
+                        -1, request.getRecipient(), Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature()[0].getSignature()
                 );
                 resourceRepository.save(recipientResource);
             }
 
-            if (fee > 0) {
-                ResourceEntity feeResource = new ResourceEntity(
-                        block.getId(), proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
-                );
-                resourceRepository.save(feeResource);
-            }
+            return Result.ok(request);
+        } catch (Exception e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+        }
     }
 
     @Override
