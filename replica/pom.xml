@@ -65,6 +65,11 @@
 			<version>a59ee88</version>
 		</dependency>
 		<dependency>
+			<groupId>com.csd</groupId>
+			<artifactId>blockmess</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.60</version>

@@ -26,6 +26,6 @@ public class ExperimentalKeyRegistry implements IPubKeyRegistry {
     }
 
     public EncodedPublicKey getProxyKey(int id){
-        return null; //TODO
+        return null; //TODO a dsa
     }
 }

@@ -1,6 +1,6 @@
 package com.csd.replica;
 
-import com.csd.replica.consensuslayer.IConsensusLayer;
+import com.csd.common.traits.IConsensusLayer;
 import com.csd.replica.consensuslayer.pow.PowOrderer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,6 +27,10 @@ public class ReplicaApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		consensusLayer.start(args);
+		try {
+			consensusLayer.start(args);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

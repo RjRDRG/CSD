@@ -3,13 +3,12 @@
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/impl/LedgerReplyListener.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ExceptionAdvice.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ServerErrorException.java
-/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/db/TransactionRepository.java
+/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/ledger/ResourceRepository.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/BadRequestException.java
+/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/ledger/ResourceEntity.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/JacksonConfig.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/ProxyApplication.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/NotFoundException.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ResponseEntityBuilder.java
-/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/db/TransactionEntity.java
-/home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/impl/DefaultKeyLoader.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/impl/LedgerController.java
 /home/rodrigo/IdeaProjects/CSD/proxy/src/main/java/com/csd/proxy/exceptions/ForbiddenException.java

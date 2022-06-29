@@ -56,7 +56,7 @@ public class LedgerClient {
 	public static String proxyPorts[] = {"8080","8081","8082","8083"};
 	static int port = 0;
 
-	static int endorsementQuorum = 3;
+	static int endorsementQuorum = (proxyPorts.length/2)+1;
 
 	static Map<String, Wallet> wallets = new HashMap<>();
 	static Set<String> storedTransactions;
