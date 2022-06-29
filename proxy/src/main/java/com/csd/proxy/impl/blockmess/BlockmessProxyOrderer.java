@@ -9,9 +9,6 @@ import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
-import com.csd.common.traits.IConsensusLayer;
-import com.csd.proxy.impl.LedgerProxy;
-import com.csd.proxy.impl.pow.PowReplyListener;
 import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
 import org.slf4j.Logger;
@@ -26,12 +23,11 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.*;
 
 @Component
-public class BlockmessProxyOrderer extends ApplicationInterface implements IConsensusLayer, LedgerProxy {
+public class BlockmessProxyOrderer extends ApplicationInterface {
 
     private static final Logger log = LoggerFactory.getLogger(BlockmessProxyOrderer.class);
 
@@ -48,9 +44,33 @@ public class BlockmessProxyOrderer extends ApplicationInterface implements ICons
         this.resourceRepository = resourceRepository;
     }
 
-    @Override
-    public void start(String[] args) throws Exception {
+    public  <R extends Request, T extends Serializable> Response<T> invoke(R request, ConsensusRequest.Type t0) {
+        try {
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, 0);
 
+            CountDownLatch latch = new CountDownLatch(1);
+            BlockmessReplyListener listener = new BlockmessReplyListener(latch, quorum);
+            super.invokeAsyncOperation(dataToBytes(consensusRequest), listener);
+            latch.await(TIMEOUT_PERIOD, TimeUnit.MILLISECONDS);
+
+            ConsensusResponse consensusResponse = listener.getResponse();
+            if(consensusResponse != null) {
+                Result<T> result = consensusResponse.extractResult();
+                Response<T> response = null;
+                if(result.valid())
+                    response = new Response<>(result.value());
+                else
+                    response = new Response<>(result);
+                response.replicaResponses(Collections.emptyList());
+                return response;
+            }
+            else {
+                return new Response<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Response<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+        }
     }
 
     @Override
@@ -75,7 +95,7 @@ public class BlockmessProxyOrderer extends ApplicationInterface implements ICons
             case LOAD: {
                 LoadMoneyRequestBody request = consensusRequest.extractRequest();
                 var v = validator.validate(request, getLastResourceDate(request.getClientId()[0]), true);
-                Result<LoadMoneyRequestBody> result =  v.valid() ? sendTransaction(request) : Result.error(v);
+                Result<LoadMoneyRequestBody> result =  v.valid() ? loadMoney(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
             default: {
@@ -110,44 +130,21 @@ public class BlockmessProxyOrderer extends ApplicationInterface implements ICons
         }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request, ConsensusRequest.Type t0) {
-        return invoke(request, t0);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <R extends Request, T extends Serializable> Response<T> invokeOrdered(R request, ConsensusRequest.Type t0) {
-        return invoke(request, t0);
-    }
-
-    private <R extends Request, T extends Serializable> Response<T> invoke(R request, ConsensusRequest.Type t0) {
+    public Result<LoadMoneyRequestBody> loadMoney(LoadMoneyRequestBody request) {
         try {
-            ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, 0);
+            double amount = request.getAmount();
 
-            CountDownLatch latch = new CountDownLatch(1);
-            BlockmessReplyListener listener = new BlockmessReplyListener(latch, quorum);
-            super.invokeAsyncOperation(dataToBytes(consensusRequest), listener);
-            latch.await(TIMEOUT_PERIOD, TimeUnit.MILLISECONDS);
+            if(request.getClientId() != null) {
+                ResourceEntity senderResource = new ResourceEntity(
+                        -1, request.getClientId()[0], Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature()[0].getSignature()
+                );
+                resourceRepository.save(senderResource);
+            }
 
-            ConsensusResponse consensusResponse = listener.getResponse();
-            if(consensusResponse != null) {
-                Result<T> result = consensusResponse.extractResult();
-                Response<T> response = null;
-                if(result.valid())
-                    response = new Response<>(result.value());
-                else
-                    response = new Response<>(result);
-                response.replicaResponses(Collections.emptyList());
-                return response;
-            }
-            else {
-                return new Response<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
-            }
+            return Result.ok(request);
         } catch (Exception e) {
-            e.printStackTrace();
-            return new Response<>(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
+            log.error(Arrays.toString(e.getStackTrace()));
+            return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
 

@@ -72,11 +72,10 @@ class LedgerBlockmessController {
         if (balance<request.getAmount())
             return buildResponse(new Response<>(Status.NOT_AVAILABLE, "Insufficient Credit", proxySignatureSuite));
 
-
         request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
 
         if(request.getProxySignatures().length >= quorum) {
-            Response<SendTransactionRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
+            Response<SendTransactionRequestBody> response = ledgerProxy.invoke(request, ConsensusRequest.Type.TRANSFER);
             response.proxySignature(proxySignatureSuite);
             return buildResponse(response);
         } else {
@@ -93,7 +92,7 @@ class LedgerBlockmessController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        Response<LoadMoneyRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.LOAD);
+        Response<LoadMoneyRequestBody> response = ledgerProxy.invoke(request, ConsensusRequest.Type.LOAD);
         response.proxySignature(proxySignatureSuite);
 
         return buildResponse(response);
@@ -101,15 +100,7 @@ class LedgerBlockmessController {
 
     @PostMapping("/balance")
     public ResponseEntity<Response<Double>> getBalance(@RequestBody GetBalanceRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastResourceDate(request.getClientId()[0]), false);
-        if(!v.valid()) {
-            return buildResponse(new Response<>(v, proxySignatureSuite));
-        }
-
-        Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.BALANCE);
-        response.proxySignature(proxySignatureSuite);
-
-        return buildResponse(response);
+        return buildResponse(new Response<>(Status.NOT_IMPLEMENTED,""));
     }
 
     @PostMapping("/decrypt")

@@ -1,6 +1,5 @@
 package com.csd.replica;
 
-import com.csd.common.traits.IConsensusLayer;
 import com.csd.replica.consensuslayer.pow.PowOrderer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +14,7 @@ public class ReplicaApplication implements CommandLineRunner {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 
-	private final IConsensusLayer consensusLayer;
+	private final PowOrderer consensusLayer;
 
 	public ReplicaApplication(PowOrderer orderer) {
 		this.consensusLayer = orderer;

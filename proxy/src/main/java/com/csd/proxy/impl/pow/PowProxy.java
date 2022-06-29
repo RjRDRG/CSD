@@ -8,7 +8,6 @@ import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
-import com.csd.proxy.impl.LedgerProxy;
 import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
 import org.springframework.core.env.Environment;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 import static com.csd.common.util.Serialization.*;
 
 @Component
-public class PowProxy extends AsynchServiceProxy implements LedgerProxy {
+public class PowProxy extends AsynchServiceProxy {
 
     private static final int TIMEOUT_PERIOD = 5000;
     public final ResourceRepository resourceRepository;
@@ -36,13 +35,11 @@ public class PowProxy extends AsynchServiceProxy implements LedgerProxy {
         this.resourceRepository = resourceRepository;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
     public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request, ConsensusRequest.Type t0) {
         return invoke(request, t0, TOMMessageType.UNORDERED_REQUEST);
     }
 
-    @Override
     @SuppressWarnings("unchecked")
     public <R extends Request, T extends Serializable> Response<T> invokeOrdered(R request, ConsensusRequest.Type t0) {
         return invoke(request, t0, TOMMessageType.ORDERED_REQUEST);

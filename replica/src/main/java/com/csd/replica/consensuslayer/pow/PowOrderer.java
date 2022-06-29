@@ -14,7 +14,6 @@ import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Serialization;
 import com.csd.common.util.Status;
-import com.csd.common.traits.IConsensusLayer;
 import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.BlockHeaderEntity;
 import com.csd.replica.datalayer.Transaction;
@@ -33,7 +32,7 @@ import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.*;
 
 @Component
-public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLayer {
+public class PowOrderer extends DefaultSingleRecoverable {
 
     private static final Logger log = LoggerFactory.getLogger(PowOrderer.class);
     private int replicaId;
