@@ -13,7 +13,9 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Wallet {
     static final String SECURITY_CONF = "security.conf";
@@ -21,8 +23,6 @@ public class Wallet {
     public final byte[] clientId;
     public final SignatureSuite signatureSuite;
     public final PaillierKey pk;
-
-    public final List<ValueToken> tokens;
 
     public Wallet(String email, String seed) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -38,8 +38,6 @@ public class Wallet {
         );
 
         this.pk = HomoAdd.generateKey();
-
-        this.tokens = new ArrayList<>();
 
         byte[] provenance = ArrayUtils.addAll(
                 email.getBytes(StandardCharsets.UTF_8),

@@ -6,7 +6,6 @@ import com.csd.common.item.PrivateValueAsset;
 import com.csd.common.item.Resource;
 import com.csd.common.item.ValueToken;
 import com.csd.common.request.*;
-import com.csd.common.response.wrapper.ReplicaResponse;
 import com.csd.common.traits.Result;
 import com.csd.common.traits.Signature;
 import com.csd.common.util.Serialization;

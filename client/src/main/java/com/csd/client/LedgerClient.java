@@ -35,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.*;
@@ -60,6 +61,8 @@ public class LedgerClient {
 	static Map<String, Wallet> wallets = new HashMap<>();
 	static Set<String> storedTransactions;
 
+	static Map<String, ValueToken> tokens;
+
 	public static void main(String[] args) throws Exception {
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
@@ -67,6 +70,8 @@ public class LedgerClient {
 		createWallet("default@csd.com", UUID.randomUUID().toString(), null);
 
 		storedTransactions = getFileNames("transactions");
+
+		tokens = new HashMap<>();
 
 		FlatDarculaLaf.setup();
 		new LedgerSwingGUI();
@@ -117,6 +122,50 @@ public class LedgerClient {
 
 			GetBalanceRequestBody request = new GetBalanceRequestBody(
 					wallet.clientId, wallet.signatureSuite
+			);
+
+			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
+
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+		} catch (Exception e) {
+			resultString = e.getMessage();
+		}
+		console.printOperation(requestString,resultString);
+	}
+
+	static void getEncryptedBalance(String walletId, IConsole console) {
+		String requestString = "-----> Get Encrypted Balance: " + walletId;
+		String resultString;
+		try{
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/balance/encrypted";
+
+			Wallet wallet = wallets.get(walletId);
+
+			GetEncryptedBalanceRequestBody request = new GetEncryptedBalanceRequestBody(
+					wallet.pk.getNsquare().toByteArray(), wallet.clientId, wallet.signatureSuite
+			);
+
+			ResponseEntity<Response<byte[]>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<byte[]>>() {});
+
+			BigInteger balance = HomoAdd.decrypt(new BigInteger(responseEntity.getBody().getResponse()),wallet.pk);
+
+			resultString = balance.toString();
+		} catch (Exception e) {
+			resultString = e.getMessage();
+		}
+		console.printOperation(requestString,resultString);
+	}
+
+	static void decryptValueAsset(String walletId, String asset, double fee, IConsole console) {
+		String requestString = "-----> Decrypt Value Asset: " + walletId;
+		String resultString;
+		try{
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/decrypt";
+
+			Wallet wallet = wallets.get(walletId);
+
+			DecryptValueAssetRequestBody request = new DecryptValueAssetRequestBody(
+					wallet.clientId, wallet.signatureSuite, tokens.get(asset), fee
 			);
 
 			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
@@ -189,7 +238,7 @@ public class LedgerClient {
 		return filename;
 	}
 
-	static void sendStoredTransaction(String walletId, String transaction, boolean isPrivate, IConsole console) {
+	static String sendStoredTransaction(String walletId, String transaction, boolean isPrivate, IConsole console) {
 		String requestString = "-----> Send Stored Transaction: " + walletId + " " + transaction;
 		String resultString;
 		try {
@@ -215,6 +264,8 @@ public class LedgerClient {
 				counter++;
 			}
 
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+
 			if(responseEntity.getStatusCode().equals(HttpStatus.OK) && isPrivate) {
 				Response<SendTransactionRequestBody> response = responseEntity.getBody();
 				ValueToken token = new ValueToken(
@@ -223,15 +274,16 @@ public class LedgerClient {
 						response.getResponse().getAmount(),
 						response.getReplicaResponses()
 				);
-				wallet.tokens.add(token);
+				tokens.put(token.getPrivateValueAsset().getAsset(),token);
+				return token.getPrivateValueAsset().getAsset();
 			}
-
-			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 
 		} catch (Exception e) {
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
+
+		return null;
 	}
 
 
