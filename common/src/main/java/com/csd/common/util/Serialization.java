@@ -10,6 +10,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.bouncycastle.util.encoders.Hex;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -80,6 +81,24 @@ public class Serialization {
 	}
 
 	public static <T> T jsonToData(String s, Class<T> type) {
+		try {
+			return jsonMapper.readValue(s, type);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static <T> void dataToJsonFile(File file, T data) {
+		try {
+			jsonMapper.writeValue(file, data);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static <T> T jsonFileToData(File s, Class<T> type) {
 		try {
 			return jsonMapper.readValue(s, type);
 		} catch (IOException e) {

@@ -4,6 +4,8 @@ import com.csd.common.cryptography.config.ISuiteConfiguration;
 import com.csd.common.cryptography.config.IniSpecification;
 import com.csd.common.cryptography.config.StoredSecrets;
 import com.csd.common.cryptography.config.SuiteConfiguration;
+import com.csd.common.cryptography.hlib.HomoAdd;
+import com.csd.common.cryptography.hlib.PaillierKey;
 import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
@@ -16,6 +18,7 @@ public class Wallet {
 
     public final byte[] clientId;
     public final SignatureSuite signatureSuite;
+    public final PaillierKey pk;
 
     public Wallet(String email, String seed) throws Exception {
         ISuiteConfiguration clientIdSuiteConfiguration =
@@ -29,6 +32,8 @@ public class Wallet {
                 new IniSpecification("client_signature_suite", SECURITY_CONF),
                 new IniSpecification("client_signature_keygen_suite", SECURITY_CONF)
         );
+
+        this.pk = HomoAdd.generateKey();
 
         byte[] provenance = ArrayUtils.addAll(
                 email.getBytes(StandardCharsets.UTF_8),

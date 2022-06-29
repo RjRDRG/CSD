@@ -62,11 +62,25 @@ public class LedgerSwingGUI extends JFrame{
         JLabel getBalanceLabel = new JLabel("Get Balance");
         JButton getBalanceExec = new JButton("Execute");
 
-        JToggleButton sendTransactionStore = new JToggleButton("Store");
         JLabel sendTransactionLabel = new JLabel("Send Transaction");
         JComboBox<String> sendTransactionDestination = new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
         JPromptTextField sendTransactionAmount = new JPromptTextField("Amount");
+
+        JPromptTextField sendTransactionFee = new JPromptTextField("Fee");
         JButton sendTransactionExec = new JButton("Execute");
+
+        JLabel storeTransactionLabel = new JLabel("Store Transaction");
+        JComboBox<String> storeTransactionDestination = new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
+        JPromptTextField storeTransactionAmount = new JPromptTextField("Amount");
+
+        JPromptTextField storeTransactionFee = new JPromptTextField("Fee");
+        JButton storeTransactionExec = new JButton("Execute");
+
+        JLabel sendStoredTransactionLabel = new JLabel("Send Transaction");
+        JComboBox<String> sendStoredTransactionDestination = new JComboBox<>(LedgerClient.storedTransactions.toArray(new String[0]));
+
+        JCheckBox sendStoredTransactionIsPrivate = new JCheckBox("Is Private");
+        JButton sendStoredTransactionExec = new JButton("Execute");
 
         JLabel getGlobalValueLabel = new JLabel("Get Global Value");
         JButton getGlobalValueExec = new JButton("Execute");
@@ -119,7 +133,7 @@ public class LedgerSwingGUI extends JFrame{
             gp1.load(0,0,loadMoneyLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
             loadMoneyAmount.setToolTipText("Amount");
             gp1.load(2,0,loadMoneyAmount).removeScaleY().add();
-            gp1.load(3,0,loadMoneyExec).removeScaleX().removeScaleY().add();
+            gp1.load(4,0,loadMoneyExec).removeScaleX().removeScaleY().add();
             loadMoneyExec.addActionListener(e -> {
                 try {
                     LedgerClient.loadMoney((String) wallets.getSelectedItem(), Double.parseDouble(loadMoneyAmount.getText()), result);
@@ -129,15 +143,15 @@ public class LedgerSwingGUI extends JFrame{
             });
 
             gp1.load(0,1,getBalanceLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(3,1,getBalanceExec).removeScaleX().removeScaleY().add();
+            gp1.load(4,1,getBalanceExec).removeScaleX().removeScaleY().add();
             getBalanceExec.addActionListener(e ->
                 LedgerClient.getBalance((String) wallets.getSelectedItem(), result)
             );
 
             gp1.load(0,2,sendTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(1,2,sendTransactionStore).setLeftPad(10).removeScaleY().setWeight(0.20f,1f).add();
-            gp1.load(2,2,sendTransactionDestination).removeScaleY().setWeight(0.75f,1f).add();
-            gp1.load(3,2,sendTransactionAmount).removeScaleY().setWeight(0.05f,1f).add();
+            gp1.load(1,2,sendTransactionDestination).setLeftPad(10).removeScaleY().setWeight(0.95f,1f).add();
+            gp1.load(2,2,sendTransactionAmount).removeScaleY().add();
+            gp1.load(3,2,sendTransactionFee).removeScaleY().add();
             gp1.load(4,2,sendTransactionExec).removeScaleX().removeScaleY().add();
             sendTransactionExec.addActionListener(e -> {
                 try {
@@ -145,7 +159,7 @@ public class LedgerSwingGUI extends JFrame{
                             (String) wallets.getSelectedItem(),
                             (String) sendTransactionDestination.getSelectedItem(),
                             Double.parseDouble(sendTransactionAmount.getText()),
-                            sendTransactionStore.isSelected(),
+                            Double.parseDouble(sendTransactionFee.getText()),
                             result
                     );
                 } catch (Exception exception) {
@@ -153,20 +167,58 @@ public class LedgerSwingGUI extends JFrame{
                 }
             });
 
-            gp1.load(0,3,getGlobalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(3,3,getGlobalValueExec).removeScaleX().removeScaleY().add();
+            gp1.load(0,3,storeTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(1,3,storeTransactionDestination).setLeftPad(10).removeScaleY().setWeight(0.95f,1f).add();
+            gp1.load(2,3,storeTransactionAmount).removeScaleY().add();
+            gp1.load(3,3,storeTransactionFee).removeScaleY().add();
+            gp1.load(4,3,storeTransactionExec).removeScaleX().removeScaleY().add();
+            storeTransactionExec.addActionListener(e -> {
+                try {
+                    String fileName = LedgerClient.storeTransaction(
+                            (String) wallets.getSelectedItem(),
+                            (String) storeTransactionDestination.getSelectedItem(),
+                            Double.parseDouble(storeTransactionAmount.getText()),
+                            Double.parseDouble(storeTransactionFee.getText()),
+                            result
+                    );
+                    sendStoredTransactionDestination.addItem(fileName);
+                    sendStoredTransactionDestination.setSelectedItem(fileName);
+                } catch (Exception exception) {
+                    result.append(Result.error(Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                }
+            });
+
+            gp1.load(0,4,sendStoredTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(1,4,sendStoredTransactionDestination).setLeftPad(10).removeScaleY().setWeight(0.95f,1f).add();
+            gp1.load(2,4,sendStoredTransactionIsPrivate).setAnchorRight().removeScaleY().add();
+            gp1.load(4,4,sendStoredTransactionExec).removeScaleX().removeScaleY().add();
+            sendStoredTransactionExec.addActionListener(e -> {
+                try {
+                    LedgerClient.sendStoredTransaction(
+                            (String) wallets.getSelectedItem(),
+                            (String) sendStoredTransactionDestination.getSelectedItem(),
+                            sendStoredTransactionIsPrivate.isSelected(),
+                            result
+                    );
+                } catch (Exception exception) {
+                    result.append(Result.error(Status.BAD_REQUEST, exception.getClass().getSimpleName() + ": " + exception.getMessage()) + "\n\n\n");
+                }
+            });
+
+            gp1.load(0,5,getGlobalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(4,5,getGlobalValueExec).removeScaleX().removeScaleY().add();
             getGlobalValueExec.addActionListener(e -> LedgerClient.getGlobalValue(result));
 
-            gp1.load(0,4,getExtractLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(3,4,getExtractExec).removeScaleX().removeScaleY().add();
+            gp1.load(0,6,getExtractLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(4,6,getExtractExec).removeScaleX().removeScaleY().add();
             getExtractExec.addActionListener(e -> LedgerClient.getExtract((String) wallets.getSelectedItem(), result));
 
-            gp1.load(0,5,getLedgerLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(3,5,getLedgerExec).removeScaleX().removeScaleY().add();
+            gp1.load(0,7,getLedgerLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(4,7,getLedgerExec).removeScaleX().removeScaleY().add();
             getLedgerExec.addActionListener(e -> LedgerClient.getLedger(result));
 
-            gp1.load(0,6,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(3,6,getTotalValueExec).removeScaleX().removeScaleY().add();
+            gp1.load(0,8,getTotalValueLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
+            gp1.load(4,8,getTotalValueExec).removeScaleX().removeScaleY().add();
             getTotalValueExec.addActionListener(e -> new SelectorPopUp("Wallet Selector", new ArrayList<>(LedgerClient.wallets.keySet()), result));
 
             border.add(gp1, BorderLayout.CENTER);

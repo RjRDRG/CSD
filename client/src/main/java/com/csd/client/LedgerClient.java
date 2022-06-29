@@ -2,6 +2,7 @@ package com.csd.client;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.csd.common.cryptography.hlib.HomoAdd;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.item.Resource;
 import com.csd.common.item.Wallet;
@@ -32,11 +33,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.csd.common.util.Serialization.dataToJson;
+import static com.csd.common.util.Conversion.doubleToBigInteger;
+import static com.csd.common.util.Serialization.*;
 
 @ActiveProfiles("ssl")
 public class LedgerClient {
@@ -53,12 +58,15 @@ public class LedgerClient {
 	static int endorsementQuorum = 3;
 
 	static Map<String, Wallet> wallets = new HashMap<>();
+	static Set<String> storedTransactions;
 
 	public static void main(String[] args) throws Exception {
 		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.toLevel("error"));
 
 		createWallet("default@csd.com", UUID.randomUUID().toString(), null);
+
+		storedTransactions = getFileNames("transactions");
 
 		FlatDarculaLaf.setup();
 		new LedgerSwingGUI();
@@ -121,7 +129,7 @@ public class LedgerClient {
 	}
 
 
-	static void sendTransaction(String walletId, String walletDestinationId, double amount, boolean store, IConsole console) {
+	static void sendTransaction(String walletId, String walletDestinationId, double amount, double fee, IConsole console) {
 		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
 		String resultString;
 		try {
@@ -130,37 +138,91 @@ public class LedgerClient {
 			Wallet walletDestination = wallets.get(walletDestinationId);
 
 			SendTransactionRequestBody request = new SendTransactionRequestBody(
-					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount
+					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount, fee
 			);
 
-			if(store) {
-				File file = getUniqueFile("transactions", walletDestinationId);
-				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-				writer.write(dataToJson(request));
-				writer.close();
-
-				resultString = file.getPath();
-			}
-			else {
-				int counter = 0;
-				ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-				String uri;
-				while (request.getProxySignatures().length < endorsementQuorum) {
-					uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
-					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
-					if (responseEntity.getBody().valid()) {
-						request = responseEntity.getBody().getResponse();
-					}
-					counter++;
+			int counter = 0;
+			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
+			String uri;
+			while (request.getProxySignatures().length < endorsementQuorum) {
+				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+				if (responseEntity.getBody().valid()) {
+					request = responseEntity.getBody().getResponse();
 				}
-
-				resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+				counter++;
 			}
+
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+
 		} catch (Exception e) {
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
+
+	static String storeTransaction(String walletId, String walletDestinationId, double amount, double fee, IConsole console) {
+		String requestString = "-----> Store Transaction: " + walletId + " " + walletDestinationId + " " + amount;
+		String resultString;
+		String filename = "";
+		try {
+			Wallet wallet = wallets.get(walletId);
+
+			Wallet walletDestination = wallets.get(walletDestinationId);
+
+			SendTransactionRequestBody request = new SendTransactionRequestBody(
+					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount, fee
+			);
+
+			File file = getUniqueFile("transactions", walletDestinationId.split("\\.")[0]);
+			dataToJsonFile(file, request);
+
+			filename = file.getName();
+
+			storedTransactions.add(filename);
+
+			resultString = file.getPath();
+		} catch (Exception e) {
+			resultString = Format.exception(e);
+		}
+		console.printOperation(requestString,resultString);
+		return filename;
+	}
+
+	static void sendStoredTransaction(String walletId, String transaction, boolean isPrivate, IConsole console) {
+		String requestString = "-----> Send Stored Transaction: " + walletId + " " + transaction;
+		String resultString;
+		try {
+			Wallet wallet = wallets.get(walletId);
+
+
+			SendTransactionRequestBody request = jsonFileToData(new File("transactions/"+transaction), SendTransactionRequestBody.class);
+
+			if(isPrivate) {
+				byte[] encryptedAmount = HomoAdd.encrypt(doubleToBigInteger(request.getAmount()),wallet.pk).toByteArray();
+				request.encrypt(wallet.clientId, wallet.signatureSuite, encryptedAmount);
+			}
+
+			int counter = 0;
+			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
+			String uri;
+			while (request.getProxySignatures().length < endorsementQuorum) {
+				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+				if (responseEntity.getBody().valid()) {
+					request = responseEntity.getBody().getResponse();
+				}
+				counter++;
+			}
+
+			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+
+		} catch (Exception e) {
+			resultString = Format.exception(e);
+		}
+		console.printOperation(requestString,resultString);
+	}
+
 
 	static void getGlobalValue(IConsole console) {
 		String requestString = "-----> Get Global Value";
@@ -251,14 +313,18 @@ public class LedgerClient {
 
 	static File getUniqueFile(String folderName, String searchedFilename) {
 		int num = 1;
-		String extension = searchedFilename.substring(searchedFilename.lastIndexOf("."));;
-		String filename = searchedFilename.substring(0, searchedFilename.lastIndexOf("."));
 		File file = new File(folderName, searchedFilename);
 		while (file.exists()) {
-			searchedFilename = filename + (num++) + extension;
-			file = new File(folderName, searchedFilename);
+			String fileName = searchedFilename + "(" +(num++) + ")";
+			file = new File(folderName, fileName);
 		}
 		return file;
+	}
+
+	static Set<String> getFileNames(String folderName) {
+		File folder = new File(folderName);
+		File[] listOfFiles = folder.listFiles();
+		return Arrays.stream(folder.listFiles()).filter(File::isFile).map(File::getName).collect(Collectors.toSet());
 	}
 
 	static @NonNull RestTemplate restTemplate() {
