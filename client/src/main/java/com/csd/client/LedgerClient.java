@@ -59,15 +59,9 @@ public class LedgerClient {
 	static int endorsementQuorum = (proxyPorts.length/2)+1;
 
 	static Map<String, Wallet> wallets = new HashMap<>();
-	static Set<String> storedTransactions;
+	static Set<String> storedTransactions = getFileNames("transactions");;
 
-	static Map<String, ValueToken> tokens;
-
-	static void init() {
-		createWallet("default@csd.com", UUID.randomUUID().toString(), null);
-		storedTransactions = getFileNames("transactions");
-		tokens = new HashMap<>();
-	}
+	static Map<String, ValueToken> tokens = new HashMap<>();;
 
 	static void createWallet(String id, String seed, IConsole console) {
 		try {
