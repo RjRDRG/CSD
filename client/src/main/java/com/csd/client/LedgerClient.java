@@ -7,6 +7,7 @@ import com.csd.common.item.Resource;
 import com.csd.common.item.Wallet;
 import com.csd.common.request.*;
 import com.csd.common.response.wrapper.Response;
+import com.csd.common.util.Format;
 import com.csd.common.util.Serialization;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,6 +35,8 @@ import java.io.*;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.*;
+
+import static com.csd.common.util.Serialization.dataToJson;
 
 @ActiveProfiles("ssl")
 public class LedgerClient {
@@ -118,12 +121,10 @@ public class LedgerClient {
 	}
 
 
-	static void sendTransaction(String walletId, String walletDestinationId, double amount, IConsole console) {
+	static void sendTransaction(String walletId, String walletDestinationId, double amount, boolean store, IConsole console) {
 		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
 		String resultString;
 		try {
-			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/transfer";
-
 			Wallet wallet = wallets.get(walletId);
 
 			Wallet walletDestination = wallets.get(walletDestinationId);
@@ -132,20 +133,31 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount
 			);
 
-			int counter = 0;
-			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-			while (request.getProxySignatures().length < endorsementQuorum) {
-				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
-				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
-				if(responseEntity.getBody().valid()) {
-					request = responseEntity.getBody().getResponse();
-				}
-				counter++;
-			}
+			if(store) {
+				File file = getUniqueFile("transactions", walletDestinationId + ".txt");
+				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+				writer.write(dataToJson(request));
+				writer.close();
 
-			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+				resultString = file.getPath();
+			}
+			else {
+				int counter = 0;
+				ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
+				String uri;
+				while (request.getProxySignatures().length < endorsementQuorum) {
+					uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+					if (responseEntity.getBody().valid()) {
+						request = responseEntity.getBody().getResponse();
+					}
+					counter++;
+				}
+
+				resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+			}
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -161,7 +173,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -177,7 +189,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -198,7 +210,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -225,7 +237,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
-			resultString = e.getMessage();
+			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
 	}
@@ -235,6 +247,18 @@ public class LedgerClient {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setObjectMapper(Serialization.jsonMapper);
 		return converter;
+	}
+
+	static File getUniqueFile(String folderName, String searchedFilename) {
+		int num = 1;
+		String extension = searchedFilename.substring(searchedFilename.lastIndexOf("."));;
+		String filename = searchedFilename.substring(0, searchedFilename.lastIndexOf("."));
+		File file = new File(folderName, searchedFilename);
+		while (file.exists()) {
+			searchedFilename = filename + "("+(num++)+")"+extension;
+			file = new File(folderName, searchedFilename);
+		}
+		return file;
 	}
 
 	static @NonNull RestTemplate restTemplate() {

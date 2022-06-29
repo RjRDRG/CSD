@@ -62,6 +62,7 @@ public class LedgerSwingGUI extends JFrame{
         JLabel getBalanceLabel = new JLabel("Get Balance");
         JButton getBalanceExec = new JButton("Execute");
 
+        JToggleButton sendTransactionStore = new JToggleButton("Store");
         JLabel sendTransactionLabel = new JLabel("Send Transaction");
         JComboBox<String> sendTransactionDestination = new JComboBox<>(LedgerClient.wallets.keySet().toArray(new String[0]));
         JPromptTextField sendTransactionAmount = new JPromptTextField("Amount");
@@ -134,15 +135,17 @@ public class LedgerSwingGUI extends JFrame{
             );
 
             gp1.load(0,2,sendTransactionLabel).removeScaleX().removeScaleY().setAnchorLeft().setRightPad(5).add();
-            gp1.load(1,2,sendTransactionDestination).setLeftPad(10).removeScaleY().setWeight(0.95f,1f).add();
-            gp1.load(2,2,sendTransactionAmount).removeScaleY().setWeight(0.05f,1f).add();
-            gp1.load(3,2,sendTransactionExec).removeScaleX().removeScaleY().add();
+            gp1.load(1,2,sendTransactionStore).setLeftPad(10).removeScaleY().setWeight(0.20f,1f).add();
+            gp1.load(2,2,sendTransactionDestination).removeScaleY().setWeight(0.75f,1f).add();
+            gp1.load(3,2,sendTransactionAmount).removeScaleY().setWeight(0.05f,1f).add();
+            gp1.load(4,2,sendTransactionExec).removeScaleX().removeScaleY().add();
             sendTransactionExec.addActionListener(e -> {
                 try {
                     LedgerClient.sendTransaction(
                             (String) wallets.getSelectedItem(),
                             (String) sendTransactionDestination.getSelectedItem(),
                             Double.parseDouble(sendTransactionAmount.getText()),
+                            sendTransactionStore.isSelected(),
                             result
                     );
                 } catch (Exception exception) {

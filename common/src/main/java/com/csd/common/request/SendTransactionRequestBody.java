@@ -16,13 +16,14 @@ public class SendTransactionRequestBody extends Request {
     public SendTransactionRequestBody(byte[] clientId, SignatureSuite signatureSuite, byte[] recipient, double amount) {
         try {
             this.clientId = new byte[][]{clientId};
-            this.clientSignature = new Signature[]{
-                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
-            };
             this.nonce = OffsetDateTime.now();
             this.recipient = recipient;
             this.amount = amount;
+            this.clientSignature = new Signature[]{
+                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
+            };
         }catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
