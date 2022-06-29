@@ -6,6 +6,8 @@ import com.csd.common.util.Serialization;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.UUID;
 
 import static com.csd.common.util.Serialization.*;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -20,6 +22,7 @@ public class SendTransactionRequestBody extends Request {
 
     public SendTransactionRequestBody(byte[] clientId, SignatureSuite signatureSuite, byte[] recipient, double amount, double fee) {
         try {
+            this.requestId = UUID.randomUUID().toString();
             this.clientId = new byte[][]{clientId};
             this.nonce = OffsetDateTime.now();
             this.recipient = recipient;
@@ -87,7 +90,23 @@ public class SendTransactionRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(dataToBytesDeterministic(nonce), recipient, dataToBytesDeterministic(amount), dataToBytesDeterministic(fee));
+        return concat(dataToBytesDeterministic(requestId), dataToBytesDeterministic(nonce), recipient, dataToBytesDeterministic(amount), dataToBytesDeterministic(fee));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SendTransactionRequestBody that = (SendTransactionRequestBody) o;
+        return Double.compare(that.amount, amount) == 0 && Double.compare(that.fee, fee) == 0 && Arrays.equals(recipient, that.recipient) && Arrays.equals(encryptedAmount, that.encryptedAmount);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(amount, fee);
+        result = 31 * result + Arrays.hashCode(recipient);
+        result = 31 * result + Arrays.hashCode(encryptedAmount);
+        return result;
     }
 
     @Override

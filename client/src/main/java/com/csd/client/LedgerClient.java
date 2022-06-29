@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import com.csd.common.cryptography.hlib.HomoAdd;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.item.Resource;
+import com.csd.common.item.ValueToken;
 import com.csd.common.item.Wallet;
 import com.csd.common.request.*;
 import com.csd.common.response.wrapper.Response;
@@ -25,6 +26,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -33,8 +35,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.*;
@@ -213,6 +213,17 @@ public class LedgerClient {
 					request = responseEntity.getBody().getResponse();
 				}
 				counter++;
+			}
+
+			if(responseEntity.getStatusCode().equals(HttpStatus.OK) && isPrivate) {
+				Response<SendTransactionRequestBody> response = responseEntity.getBody();
+				ValueToken token = new ValueToken(
+						response.getResponse().getRequestId(),
+						response.getResponse().getEncryptedAmount(),
+						response.getResponse().getAmount(),
+						response.getReplicaResponses()
+				);
+				wallet.tokens.add(token);
 			}
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();

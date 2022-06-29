@@ -52,16 +52,17 @@ class LedgerController {
 
     @PostMapping("/transfer")
     public ResponseEntity<Response<SendTransactionRequestBody>> sendTransaction(@RequestBody SendTransactionRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[request.getClientId().length-1]), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        if (request.getAmount()<0)
+        if (request.getAmount()<0 || request.getFee() < 0)
             return buildResponse(new Response<>(Status.BAD_REQUEST, "Transaction amount must be positive", proxySignatureSuite));
 
         double balance = 0;
         balance += ledger.findByOwner(bytesToString(request.getClientId()[0])).stream()
+                .filter(t -> t.getType().equals(Resource.Type.VALUE.name()))
                 .map(ResourceEntity::getAsset)
                 .map(Double::valueOf)
                 .reduce(0.0, Double::sum);
@@ -69,11 +70,11 @@ class LedgerController {
         if (balance<request.getAmount())
             return buildResponse(new Response<>(Status.NOT_AVAILABLE, "Insufficient Credit", proxySignatureSuite));
 
-        request.setRequestId(UUID.randomUUID().toString());
+
         request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
 
         if(request.getProxySignatures().length >= quorum) {
-            Response<SendTransactionRequestBody> response = ledgerProxy.invokeOrdered(request, ConsensusRequest.Type.TRANSFER);
+            Response<SendTransactionRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
             response.proxySignature(proxySignatureSuite);
             return buildResponse(response);
         } else {
@@ -90,9 +91,20 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        request.setRequestId(UUID.randomUUID().toString());
+        Response<LoadMoneyRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.LOAD);
+        response.proxySignature(proxySignatureSuite);
 
-        Response<LoadMoneyRequestBody> response = ledgerProxy.invokeOrdered(request, ConsensusRequest.Type.LOAD);
+        return buildResponse(response);
+    }
+
+    @PostMapping("/decrypt")
+    public ResponseEntity<Response<Double>> decryptValueAsset(@RequestBody DecryptValueAssetRequestBody request) {
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        if(!v.valid()) {
+            return buildResponse(new Response<>(v, proxySignatureSuite));
+        }
+
+        Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.DECRYPT);
         response.proxySignature(proxySignatureSuite);
 
         return buildResponse(response);
@@ -105,9 +117,20 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        request.setRequestId(UUID.randomUUID().toString());
-
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.BALANCE);
+        response.proxySignature(proxySignatureSuite);
+
+        return buildResponse(response);
+    }
+
+    @PostMapping("/balance/encrypted")
+    public ResponseEntity<Response<byte[]>> getEncryptedBalance(@RequestBody GetEncryptedBalanceRequestBody request) {
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        if(!v.valid()) {
+            return buildResponse(new Response<>(v, proxySignatureSuite));
+        }
+
+        Response<byte[]> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.HIDDEN);
         response.proxySignature(proxySignatureSuite);
 
         return buildResponse(response);
@@ -119,8 +142,6 @@ class LedgerController {
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
-
-        request.setRequestId(UUID.randomUUID().toString());
 
         Response<ArrayList<Resource>> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.EXTRACT);
         response.proxySignature(proxySignatureSuite);
@@ -135,8 +156,6 @@ class LedgerController {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
-        request.setRequestId(UUID.randomUUID().toString());
-
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TOTAL_VAL);
         response.proxySignature(proxySignatureSuite);
 
@@ -148,8 +167,6 @@ class LedgerController {
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.GLOBAL_VAL);
         response.proxySignature(proxySignatureSuite);
 
-        request.setRequestId(UUID.randomUUID().toString());
-
         return buildResponse(response);
     }
 
@@ -157,8 +174,6 @@ class LedgerController {
     public ResponseEntity<Response<ArrayList<Resource>>> getLedger(@RequestBody GetLedgerRequestBody request) {
         Response<ArrayList<Resource>> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.LEDGER);
         response.proxySignature(proxySignatureSuite);
-
-        request.setRequestId(UUID.randomUUID().toString());
 
         return buildResponse(response);
     }

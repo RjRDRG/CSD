@@ -5,6 +5,7 @@ import com.csd.common.traits.Signature;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -13,6 +14,7 @@ public class GetTotalValueRequestBody extends Request {
 
     public GetTotalValueRequestBody(byte[][] clientId, SignatureSuite[] signatureSuite) {
         try {
+            this.requestId = UUID.randomUUID().toString();
             this.clientId = clientId;
             this.nonce = OffsetDateTime.now();
             this.clientSignature = new Signature[signatureSuite.length];
@@ -31,7 +33,7 @@ public class GetTotalValueRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(concat(clientId),dataToBytesDeterministic(nonce));
+        return concat(dataToBytesDeterministic(requestId), concat(clientId),dataToBytesDeterministic(nonce));
     }
 
     @Override

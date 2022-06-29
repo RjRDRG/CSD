@@ -10,9 +10,12 @@ import java.util.UUID;
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
-public class GetBalanceRequestBody extends Request {
+public class GetEncryptedBalanceRequestBody extends Request {
 
-    public GetBalanceRequestBody(byte[] clientId, SignatureSuite signatureSuite) {
+    private byte[] nSquare;
+
+    public GetEncryptedBalanceRequestBody(byte[] nSquare, byte[] clientId, SignatureSuite signatureSuite) {
+        this.nSquare = nSquare;
         try {
             this.requestId = UUID.randomUUID().toString();
             this.clientId = new byte[][]{clientId};
@@ -25,12 +28,20 @@ public class GetBalanceRequestBody extends Request {
         }
     }
 
-    public GetBalanceRequestBody() {
+    public GetEncryptedBalanceRequestBody() {
     }
 
     @Override
     public byte[] serializedRequest() {
-        return concat(dataToBytesDeterministic(requestId), clientId[0], dataToBytesDeterministic(nonce));
+        return concat(dataToBytesDeterministic(requestId), clientId[0], dataToBytesDeterministic(nonce), nSquare);
+    }
+
+    public byte[] getnSquare() {
+        return nSquare;
+    }
+
+    public void setnSquare(byte[] nSquare) {
+        this.nSquare = nSquare;
     }
 
     @Override

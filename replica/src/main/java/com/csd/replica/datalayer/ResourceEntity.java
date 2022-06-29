@@ -15,7 +15,7 @@ import static com.csd.common.util.Serialization.stringToBytes;
 public class ResourceEntity implements Serializable {
 
     private @Id @GeneratedValue long id;
-    private Long block;
+    private long block;
     private String owner;
     private String type;
     private String asset;
@@ -25,7 +25,8 @@ public class ResourceEntity implements Serializable {
 
     public ResourceEntity() {}
 
-    public ResourceEntity(byte[] owner, String type, String asset, Boolean spent, OffsetDateTime timestamp, byte[] requestSignature) {
+    public ResourceEntity(long block, byte[] owner, String type, String asset, Boolean spent, OffsetDateTime timestamp, byte[] requestSignature) {
+        this.block = block;
         this.owner = bytesToString(owner);
         this.type = type;
         this.asset = asset;

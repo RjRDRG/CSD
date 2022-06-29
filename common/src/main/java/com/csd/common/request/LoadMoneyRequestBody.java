@@ -5,6 +5,7 @@ import com.csd.common.traits.Signature;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -14,6 +15,7 @@ public class LoadMoneyRequestBody extends Request {
 
     public LoadMoneyRequestBody(byte[] clientId, SignatureSuite signatureSuite, Double amount) {
         try {
+            this.requestId = UUID.randomUUID().toString();
             this.clientId = new byte[][]{clientId};
             this.nonce = OffsetDateTime.now();
             this.amount = amount;
@@ -38,7 +40,7 @@ public class LoadMoneyRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(amount));
+        return concat(dataToBytesDeterministic(requestId), clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(amount));
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.csd.common.traits.Signature;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -13,6 +14,7 @@ public class GetExtractRequestBody extends Request {
 
     public GetExtractRequestBody(byte[] clientId, SignatureSuite signatureSuite) {
         try {
+            this.requestId = UUID.randomUUID().toString();
             this.clientId = new byte[][]{clientId};
             this.nonce = OffsetDateTime.now();
             this.clientSignature = new Signature[]{
@@ -28,7 +30,7 @@ public class GetExtractRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(clientId[0], dataToBytesDeterministic(nonce));
+        return concat(dataToBytesDeterministic(requestId), clientId[0], dataToBytesDeterministic(nonce));
     }
 
     @Override
