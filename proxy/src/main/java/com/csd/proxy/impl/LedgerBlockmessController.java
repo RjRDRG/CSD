@@ -13,7 +13,6 @@ import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Signature;
 import com.csd.common.util.Status;
 import com.csd.proxy.impl.blockmess.BlockmessProxyOrderer;
-import com.csd.proxy.impl.pow.PowProxy;
 import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
 import org.slf4j.Logger;

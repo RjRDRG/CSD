@@ -63,18 +63,10 @@ public class LedgerClient {
 
 	static Map<String, ValueToken> tokens;
 
-	public static void main(String[] args) throws Exception {
-		Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		logger.setLevel(Level.toLevel("error"));
-
+	static void init() {
 		createWallet("default@csd.com", UUID.randomUUID().toString(), null);
-
 		storedTransactions = getFileNames("transactions");
-
 		tokens = new HashMap<>();
-
-		FlatDarculaLaf.setup();
-		new LedgerSwingGUI();
 	}
 
 	static void createWallet(String id, String seed, IConsole console) {

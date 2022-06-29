@@ -72,6 +72,12 @@ public class BlockmessProxyOrderer extends ApplicationInterface implements ICons
                 Result<SendTransactionRequestBody> result =  v.valid() ? sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
+            case LOAD: {
+                LoadMoneyRequestBody request = consensusRequest.extractRequest();
+                var v = validator.validate(request, getLastResourceDate(request.getClientId()[0]), true);
+                Result<LoadMoneyRequestBody> result =  v.valid() ? sendTransaction(request) : Result.error(v);
+                return new ConsensusResponse(result.encode(), null);
+            }
             default: {
                 Result<Serializable> result = Result.error(Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
                 return new ConsensusResponse(result.encode(), null);

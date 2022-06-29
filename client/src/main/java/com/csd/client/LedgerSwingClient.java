@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
-public class LedgerSwingGUI extends JFrame{
+public class LedgerSwingClient extends JFrame{
 
-    public LedgerSwingGUI() throws InterruptedException {
+    public LedgerSwingClient() throws InterruptedException {
         JPanel mainPanel = new MainPanel();
 
         setTitle("Wallet");
