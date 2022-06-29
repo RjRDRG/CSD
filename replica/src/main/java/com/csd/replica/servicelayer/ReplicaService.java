@@ -6,6 +6,7 @@ import com.csd.common.item.PrivateValueAsset;
 import com.csd.common.item.Resource;
 import com.csd.common.item.ValueToken;
 import com.csd.common.request.*;
+import com.csd.common.response.wrapper.ReplicaResponse;
 import com.csd.common.traits.Result;
 import com.csd.common.traits.Signature;
 import com.csd.common.util.Serialization;
@@ -140,6 +141,9 @@ public class ReplicaService {
             if(resourceEntity.size() > 1)
                 return Result.error(Status.CONFLICT, "Resource already spent");
 
+            if(!resourceEntity.get(0).getOwner().equals(bytesToString(request.getClientId()[0])))
+                return Result.error(Status.FORBIDDEN, "The asset belongs to someone else");
+
             if(!validateTokenAmountAndSignatures(request.getToken()))
                 return Result.error(Status.FORBIDDEN, "Invalid token");
 
@@ -164,15 +168,25 @@ public class ReplicaService {
 
     public boolean validateTokenAmountAndSignatures(ValueToken token){
 
-        /*
-        Map<SendTransactionRequestBody, Integer> m = new HashMap<>();
+/*
+        Map<Double,Integer> tokenAmountEndorsements = new HashMap<>();
+        for (ReplicaResponse response : token.getReplicaResponsesAndSignatures()) {
 
-        for (ReplicaResponse response : request.getToken().getReplicaResponses()) {
-            SendTransactionRequestBody s = response.getSerializedMessage() ??
+            if(!response.getSignature().verify(replicaSignatureSuite,response.getSerializedMessage(),true))
+                continue;
+
+            SendTransactionRequestBody s = response.getSerializedMessage();
+            TODO: Can't deserialize this message
+
+            tokenAmountEndorsements.merge(s.getAmount(), 1, Integer::sum);
         }
-        */
 
-        //Cant extract the token amount form bft serialized response
+        Map.Entry<Double,Integer> endorsedAmount = tokenAmountEndorsements.entrySet().stream().min(Map.Entry.comparingByValue());
+        Double tokenAmount = token.getPrivateValueAsset.getAmount();
+
+        if(endorsedAmount.getKey() != tokenAmount || tokenAmount.getValue()<quorum)
+            return false;
+*/
 
         return true;
     }

@@ -9,11 +9,11 @@ public class ValueToken implements Serializable {
 
     private PrivateValueAsset privateValueAsset;
 
-    List<ReplicaResponse> replicaResponses;
+    List<ReplicaResponse> replicaResponsesAndSignatures;
 
-    public ValueToken(String id, byte[] encryptedAmount, double amount, List<ReplicaResponse> replicaResponses) {
+    public ValueToken(String id, byte[] encryptedAmount, double amount, List<ReplicaResponse> replicaResponsesAndSignatures) {
         this.privateValueAsset = new PrivateValueAsset(id,encryptedAmount,amount);
-        this.replicaResponses = replicaResponses;
+        this.replicaResponsesAndSignatures = replicaResponsesAndSignatures;
     }
 
     public ValueToken() {
@@ -27,19 +27,19 @@ public class ValueToken implements Serializable {
         this.privateValueAsset = privateValueAsset;
     }
 
-    public List<ReplicaResponse> getReplicaResponses() {
-        return replicaResponses;
+    public List<ReplicaResponse> getReplicaResponsesAndSignatures() {
+        return replicaResponsesAndSignatures;
     }
 
-    public void setReplicaResponses(List<ReplicaResponse> replicaResponses) {
-        this.replicaResponses = replicaResponses;
+    public void setReplicaResponsesAndSignatures(List<ReplicaResponse> replicaResponsesAndSignatures) {
+        this.replicaResponsesAndSignatures = replicaResponsesAndSignatures;
     }
 
     @Override
     public String toString() {
         return "ValueToken{" +
                 "privateValueAsset=" + privateValueAsset +
-                ", replicaResponses=" + replicaResponses +
+                ", replicaResponses=" + replicaResponsesAndSignatures +
                 '}';
     }
 }
