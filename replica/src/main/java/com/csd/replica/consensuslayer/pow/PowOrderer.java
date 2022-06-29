@@ -19,7 +19,6 @@ import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.BlockHeaderEntity;
 import com.csd.replica.datalayer.Transaction;
 import com.csd.replica.servicelayer.ReplicaService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,7 +63,8 @@ public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLa
                 new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH)),
                 new HashSuite(new IniSpecification("block_digest_suite", CRYPTO_CONFIG_PATH)),
                 environment.getProperty("replica.block.size" , int.class),
-                environment.getProperty("replica.difficulty.target" , int.class)
+                environment.getProperty("replica.difficulty.target" , int.class),
+                environment.getProperty("replica.block.reward" , Double.class)
         );
         minerThread.start();
     }
@@ -137,13 +136,20 @@ public class PowOrderer extends DefaultSingleRecoverable implements IConsensusLa
             Set<String> transactionIds = new HashSet<>(block.getTXIDs());
 
             if(transactionIds.size() != block.getTXIDs().size())
-                return Result.error(Status.BAD_REQUEST, "Invalid block");
+                return Result.error(Status.BAD_REQUEST, "Duplicated transactions in block");
 
             List<Transaction> transactions = new ArrayList<>();
             for(String txid : block.getTXIDs()) {
-                if(replicaService.transactionIsMissing(txid))
+                Transaction t = replicaService.getTransaction(txid);
+                if(t == null && !txid.equals(request.getCoinbase().getId()))
                     return Result.error(Status.CONFLICT, "Transaction already mined");
+                transactions.add(t);
             }
+
+            if(!(request.getCoinbase().getAsset() instanceof Double) || request.getCoinbase().getAsset() != minerThread.getBlockReward())
+                return Result.error(Status.BAD_REQUEST, "Invalid block");
+
+            transactions.add(request.getCoinbase());
 
             byte[] merkleRoot =  new MerkleTree(
                     transactions.stream().map(Serialization::dataToBytesDeterministic).collect(Collectors.toList()),

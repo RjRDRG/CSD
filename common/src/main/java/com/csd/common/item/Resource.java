@@ -7,20 +7,32 @@ import static com.csd.common.util.Serialization.dataToJson;
 
 public class Resource implements Serializable {
 
+    public enum Type {VALUE, CRYPT}
+
     private long id;
     private Long block;
     private byte[] owner;
-    private String amount;
+
+    private Type type;
+    private String asset;
+
+    private boolean spent;
+
     private OffsetDateTime timestamp;
     private byte[] requestSignature;
 
-    public Resource(long id, Long block, byte[] owner, String amount, OffsetDateTime timestamp, byte[] requestSignature) {
+    public Resource(long id, Long block, byte[] owner, Type type, String asset, boolean spent, OffsetDateTime timestamp, byte[] requestSignature) {
         this.id = id;
         this.block = block;
         this.owner = owner;
-        this.amount = amount;
+        this.type = type;
+        this.asset = asset;
+        this.spent = spent;
         this.timestamp = timestamp;
         this.requestSignature = requestSignature;
+    }
+
+    public Resource() {
     }
 
     public long getId() {
@@ -47,12 +59,28 @@ public class Resource implements Serializable {
         this.owner = owner;
     }
 
-    public String getAmount() {
-        return amount;
+    public Type getType() {
+        return type;
     }
 
-    public void setAmount(String amount) {
-        this.amount = amount;
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public String getAsset() {
+        return asset;
+    }
+
+    public void setAsset(String asset) {
+        this.asset = asset;
+    }
+
+    public boolean isSpent() {
+        return spent;
+    }
+
+    public void setSpent(boolean spent) {
+        this.spent = spent;
     }
 
     public OffsetDateTime getTimestamp() {
@@ -73,6 +101,6 @@ public class Resource implements Serializable {
 
     @Override
     public String toString() {
-        return "\nTransaction " + dataToJson(this);
+        return "\nResource " + dataToJson(this);
     }
 }

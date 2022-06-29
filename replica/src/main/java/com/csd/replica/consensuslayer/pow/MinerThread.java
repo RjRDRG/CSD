@@ -2,6 +2,7 @@ package com.csd.replica.consensuslayer.pow;
 
 import com.csd.common.cryptography.suites.digest.IDigestSuite;
 import com.csd.common.datastructs.MerkleTree;
+import com.csd.common.item.Wallet;
 import com.csd.common.util.Serialization;
 import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.BlockHeaderEntity;
@@ -13,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.bytesToHex;
@@ -24,34 +26,55 @@ public class MinerThread extends Thread {
 
     private final int processId;
 
+    private final Wallet wallet;
+
     private ReplicaBroadcast replicaBroadcast;
     private final ReplicaService replicaService;
     private final IDigestSuite transactionDigestSuite;
     private final IDigestSuite blockDigestSuite;
     private final int blockSize;
     private final int difficultyTarget;
+    private final Double blockReward;
 
     private boolean restart = false;
 
-    public MinerThread(int processId, ReplicaService replicaService, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget) {
+    public MinerThread(int processId, ReplicaService replicaService, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget, Double blockReward) {
         this.processId = processId;
+        try {
+            this.wallet = new Wallet(processId + "@miner", UUID.randomUUID().toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         this.replicaService = replicaService;
         this.transactionDigestSuite = transactionDigestSuite;
         this.blockDigestSuite = blockDigestSuite;
         this.blockSize = blockSize;
         this.difficultyTarget = difficultyTarget;
+        this.blockReward = blockReward;
     }
 
     public void run(){
         while (true) {
-            List<Transaction> transactions = replicaService.getTransactionBatch(blockSize);
-            if (transactions.size() == blockSize) {
+            List<Transaction> transactions = replicaService.getTransactionBatch(blockSize-1);
+            if (transactions.size() == blockSize-1) {
+                Transaction coinbase = new Transaction(
+                        UUID.randomUUID().toString(),
+                        null,
+                        wallet.clientId,
+                        blockReward,
+                        null,
+                        OffsetDateTime.now(),
+                        null
+                );
+                transactions.add(coinbase);
+
                 Block block = mine(transactions);
                 if(block != null) {
+                    BlockProposal blockProposal = new BlockProposal(wallet.clientId, wallet.signatureSuite, block, coinbase);
                     if (replicaBroadcast == null) {
                         initBroadcastService();
                     }
-                    replicaBroadcast.broadcast(block);
+                    replicaBroadcast.broadcast(blockProposal);
                 }
             } else {
                 try {
@@ -125,5 +148,9 @@ public class MinerThread extends Thread {
 
     public IDigestSuite getBlockDigestSuite() {
         return blockDigestSuite;
+    }
+
+    public Double getBlockReward() {
+        return blockReward;
     }
 }

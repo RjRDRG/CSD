@@ -4,6 +4,7 @@ import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.request.Request;
 import com.csd.common.traits.Signature;
 import com.csd.replica.datalayer.Block;
+import com.csd.replica.datalayer.Transaction;
 
 import java.time.OffsetDateTime;
 
@@ -13,8 +14,10 @@ import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 public class BlockProposal extends Request {
 
     private Block block;
+    private Transaction coinbase;
 
-    public BlockProposal(byte[] clientId, SignatureSuite signatureSuite, Block block) {
+    public BlockProposal(byte[] clientId, SignatureSuite signatureSuite, Block block, Transaction coinbase) {
+        this.coinbase = coinbase;
         try {
             this.clientId = new byte[][]{clientId};
             this.clientSignature = new Signature[]{
@@ -38,15 +41,24 @@ public class BlockProposal extends Request {
         this.block = block;
     }
 
+    public Transaction getCoinbase() {
+        return coinbase;
+    }
+
+    public void setCoinbase(Transaction coinbase) {
+        this.coinbase = coinbase;
+    }
+
     @Override
     public byte[] serializedRequest() {
-        return concat(clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(block));
+        return concat(clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(block), dataToBytesDeterministic(coinbase));
     }
 
     @Override
     public String toString() {
         return "BlockProposal{" +
                 "block=" + block +
+                ", coinbase=" + coinbase +
                 '}';
     }
 }

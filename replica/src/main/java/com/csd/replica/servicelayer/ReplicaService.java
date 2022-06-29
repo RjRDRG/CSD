@@ -62,6 +62,7 @@ public class ReplicaService {
 
             String clientId = bytesToString(request.getClientId()[0]);
             acm += resourceRepository.findByOwner(clientId).stream()
+                    .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
                     .map(ResourceEntity::getAsset)
                     .map(Double::valueOf)
                     .reduce(0.0, Double::sum);
@@ -91,6 +92,7 @@ public class ReplicaService {
             for(byte[] c : request.getClientId()) {
                 String clientId = bytesToString(c);
                 acm += resourceRepository.findByOwner(clientId).stream()
+                        .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
                         .map(ResourceEntity::getAsset)
                         .map(Double::valueOf)
                         .reduce(0.0, Double::sum);
@@ -116,6 +118,7 @@ public class ReplicaService {
             double acm = 0;
 
             acm += resourceRepository.findAll().stream()
+                    .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
                     .map(ResourceEntity::getAsset)
                     .map(Double::valueOf)
                     .reduce(0.0, Double::sum);
@@ -147,17 +150,24 @@ public class ReplicaService {
             if (t.getAsset() instanceof Double) {
                 Double amount = (Double) t.getAsset();
                 Double fee = (Double) t.getFee();
-                ResourceEntity senderResource = new ResourceEntity(
-                        t.getOwner(), "-" + amount, t.getTimestamp(), t.getRequestSignature()
-                );
-                resourceRepository.save(senderResource);
-                ResourceEntity recipientResource = new ResourceEntity(
-                        t.getRecipient(), "" + amount, t.getTimestamp(), t.getRequestSignature()
-                );
-                resourceRepository.save(recipientResource);
+
+                if(t.getOwner() != null) {
+                    ResourceEntity senderResource = new ResourceEntity(
+                            t.getOwner(), Resource.Type.VALUE.name(), amount.toString(), true, t.getTimestamp(), t.getRequestSignature()
+                    );
+                    resourceRepository.save(senderResource);
+                }
+
+                if(t.getRecipient() != null) {
+                    ResourceEntity recipientResource = new ResourceEntity(
+                            t.getRecipient(), Resource.Type.VALUE.name(), amount.toString(), false, t.getTimestamp(), t.getRequestSignature()
+                    );
+                    resourceRepository.save(recipientResource);
+                }
+
                 if (fee > 0) {
                     ResourceEntity feeResource = new ResourceEntity(
-                            proposerId, "" + fee, t.getTimestamp(), t.getRequestSignature()
+                            proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
                     );
                     resourceRepository.save(feeResource);
                 }
@@ -165,8 +175,8 @@ public class ReplicaService {
         }
     }
 
-    public boolean transactionIsMissing(String txid) {
-        return transactionPoll.stream().filter(t -> t.getId().equals(txid)).findAny().isEmpty();
+    public Transaction getTransaction(String txid) {
+        return transactionPoll.stream().filter(t -> t.getId().equals(txid)).findAny().orElse(null);
     }
 
     public BlockHeaderEntity getLastBlock() {

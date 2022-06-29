@@ -17,15 +17,19 @@ public class ResourceEntity implements Serializable {
     private @Id @GeneratedValue long id;
     private Long block;
     private String owner;
+    private String type;
     private String asset;
+    private boolean spent;
     private OffsetDateTime timestamp;
     private String requestSignature;
 
     public ResourceEntity() {}
 
-    public ResourceEntity(byte[] owner, String asset, OffsetDateTime timestamp, byte[] requestSignature) {
+    public ResourceEntity(byte[] owner, String type, String asset, Boolean spent, OffsetDateTime timestamp, byte[] requestSignature) {
         this.owner = bytesToString(owner);
+        this.type = type;
         this.asset = asset;
+        this.spent = spent;
         this.timestamp = timestamp;
         this.requestSignature = bytesToString(requestSignature);
     }
@@ -34,7 +38,9 @@ public class ResourceEntity implements Serializable {
         this.id = resource.getId();
         this.block = resource.getBlock();
         this.owner = bytesToString(resource.getOwner());
-        this.asset = resource.getAmount();
+        this.type = resource.getType().name();
+        this.asset = resource.getAsset();
+        this.spent = resource.isSpent();
         this.timestamp = resource.getTimestamp();
         this.requestSignature = bytesToString(resource.getRequestSignature());
     }
@@ -44,7 +50,9 @@ public class ResourceEntity implements Serializable {
                 id,
                 block,
                 stringToBytes(owner),
+                Resource.Type.valueOf(type),
                 asset,
+                spent,
                 timestamp,
                 stringToBytes(requestSignature)
         );
@@ -74,12 +82,28 @@ public class ResourceEntity implements Serializable {
         this.owner = owner;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getAsset() {
         return asset;
     }
 
     public void setAsset(String asset) {
         this.asset = asset;
+    }
+
+    public boolean isSpent() {
+        return spent;
+    }
+
+    public void setSpent(boolean spent) {
+        this.spent = spent;
     }
 
     public OffsetDateTime getTimestamp() {
@@ -104,7 +128,9 @@ public class ResourceEntity implements Serializable {
                 "id=" + id +
                 ", block=" + block +
                 ", owner='" + owner + '\'' +
-                ", asset=" + asset +
+                ", type='" + type + '\'' +
+                ", asset='" + asset + '\'' +
+                ", spent=" + spent +
                 ", timestamp=" + timestamp +
                 ", requestSignature='" + requestSignature + '\'' +
                 '}';

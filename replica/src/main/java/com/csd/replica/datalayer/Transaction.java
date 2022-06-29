@@ -8,7 +8,6 @@ import static com.csd.common.util.Serialization.bytesToHex;
 public class Transaction implements Serializable {
 
     private String id;
-
     private byte[] owner;
     private byte[] recipient;
     private Object asset;
