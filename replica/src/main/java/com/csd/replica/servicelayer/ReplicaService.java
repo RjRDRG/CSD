@@ -362,7 +362,10 @@ public class ReplicaService {
     }
 
     public Resource[] getResourcesAfterId(long id) {
-        return resourceRepository.findByIdGreaterThan(id).stream().map(ResourceEntity::toItem).toArray(Resource[]::new);
+        if(id < 0)
+            return new Resource[0];
+        else
+            return resourceRepository.findByIdGreaterThan(id).stream().map(ResourceEntity::toItem).toArray(Resource[]::new);
     }
 
     public OffsetDateTime getLastResourceDate(byte[] owner) {

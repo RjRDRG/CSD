@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -41,7 +40,7 @@ class LedgerController {
 
     LedgerController(LedgerProxy ledgerProxy, Environment environment) throws Exception {
         this.ledgerProxy = ledgerProxy;
-        this.ledger = ledgerProxy.transactionsRepository;
+        this.ledger = ledgerProxy.resourceRepository;
         this.quorum = environment.getProperty("proxy.quorum.size" , int.class);
         this.validator = new RequestValidator(quorum);
         this.proxySignatureSuite = new SignatureSuite(new SuiteConfiguration(

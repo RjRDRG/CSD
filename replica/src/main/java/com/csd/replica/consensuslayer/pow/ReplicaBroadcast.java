@@ -22,7 +22,7 @@ public class ReplicaBroadcast extends AsynchServiceProxy {
     @SuppressWarnings("unchecked")
     public void broadcast(BlockProposal blockProposal) {
         try {
-            ConsensusRequest consensusRequest = new ConsensusRequest(blockProposal, ConsensusRequest.Type.BLOCK, 0); //TODO
+            ConsensusRequest consensusRequest = new ConsensusRequest(blockProposal, ConsensusRequest.Type.BLOCK, -1);
 
             super.invokeAsynchRequest(dataToBytes(consensusRequest), new ReplyListener() {
                 @Override

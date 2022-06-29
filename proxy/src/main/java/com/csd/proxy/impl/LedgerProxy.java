@@ -27,12 +27,12 @@ import static com.csd.common.util.Serialization.*;
 public class LedgerProxy extends AsynchServiceProxy {
 
     private static final int TIMEOUT_PERIOD = 5000;
-    public final ResourceRepository transactionsRepository;
+    public final ResourceRepository resourceRepository;
 
-    public LedgerProxy(Environment environment, ResourceRepository transactionsRepository) {
+    public LedgerProxy(Environment environment, ResourceRepository resourceRepository) {
         super(environment.getProperty("proxy.id", Integer.class));
         //super(environment.getProperty("proxy.id", Integer.class), (String)null, new DefaultKeyLoader());
-        this.transactionsRepository = transactionsRepository;
+        this.resourceRepository = resourceRepository;
     }
 
     @SuppressWarnings("unchecked")
@@ -47,7 +47,7 @@ public class LedgerProxy extends AsynchServiceProxy {
 
     private <R extends Request, T extends Serializable> Response<T> invoke(R request, ConsensusRequest.Type t0, TOMMessageType t1) {
         try {
-            ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, 0); //TODO lastEntryId
+            ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, resourceRepository.findTopByOrderByIdDesc().getId());
 
             CountDownLatch latch = new CountDownLatch(1);
             LedgerReplyListener listener = new LedgerReplyListener(this, latch);
@@ -56,7 +56,7 @@ public class LedgerProxy extends AsynchServiceProxy {
 
             ConsensusResponse consensusResponse = listener.getResponse();
             if(consensusResponse != null) {
-                transactionsRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(ResourceEntity::new).collect(Collectors.toList()));
+                resourceRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(ResourceEntity::new).collect(Collectors.toList()));
                 Result<T> result = consensusResponse.extractResult();
                 Response<T> response = null;
                 if(result.valid())
@@ -76,7 +76,7 @@ public class LedgerProxy extends AsynchServiceProxy {
     }
 
     public OffsetDateTime getLastTrxDate(byte[] owner) {
-        return Optional.ofNullable(transactionsRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(ResourceEntity::getTimestamp).orElse(OffsetDateTime.MIN);
+        return Optional.ofNullable(resourceRepository.findFirstByOwnerOrderByTimestampAsc(bytesToString(owner))).map(ResourceEntity::getTimestamp).orElse(OffsetDateTime.MIN);
     }
 }
 
