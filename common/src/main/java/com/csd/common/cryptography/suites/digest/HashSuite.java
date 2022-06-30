@@ -5,36 +5,47 @@ import com.csd.common.cryptography.config.ISuiteSpecification;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.Signature;
 import java.util.Arrays;
 
 public class HashSuite implements IDigestSuite{
 
 	private final MessageDigest suite;
+
+	private final String alg;
+	private final String provider;
 	
 	public HashSuite(ISuiteConfiguration config) throws Exception {
-		String alg = config.getString("alg");
-		String provider = config.getString("provider");
-		if(provider != null)
-			this.suite = MessageDigest.getInstance(alg, provider);
-		else
-			this.suite = MessageDigest.getInstance(alg);
+		alg = config.getString("alg");
+		provider = config.getString("provider");
+		suite = getInstance();
 	}
 
 	public HashSuite(ISuiteSpecification spec) throws Exception {
-		String alg = spec.getString("alg");
-		String provider = spec.getString("provider");
-		if(provider != null)
-			this.suite = MessageDigest.getInstance(alg, provider);
-		else
-			this.suite = MessageDigest.getInstance(alg);
+		alg = spec.getString("alg");
+		provider = spec.getString("provider");
+		suite = getInstance();
+	}
+
+	private MessageDigest getInstance() {
+		try {
+			if (provider != null)
+				return MessageDigest.getInstance(alg, provider);
+			else
+				return MessageDigest.getInstance(alg);
+		} catch (Exception e) {
+			throw new RuntimeException();
+		}
 	}
 	
 	@Override
 	public byte[] digest(byte[] input) {
+		MessageDigest suite = getInstance();
 		return suite.digest(input);
 	}
 
 	public String digest(String input) {
+		MessageDigest suite = getInstance();
 		return new String(digest(input.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
 	}
 

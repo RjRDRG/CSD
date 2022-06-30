@@ -5,10 +5,7 @@ import com.csd.common.cryptography.generators.AsymmetricKeyPairGenerator;
 import com.csd.common.cryptography.key.EncodedPublicKey;
 import com.csd.common.cryptography.key.KeyInfo;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
+import java.security.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,16 +15,16 @@ public class SignatureSuite implements IDigestSuite {
 	}
 
 	private Signature suite;
+
+	private final String alg;
+	private final String provider;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
 
 	public SignatureSuite(ISuiteConfiguration config, Mode mode) throws Exception {
-		String alg = config.getString("alg");
-		String provider = config.getString("provider");
-		if(provider != null)
-			this.suite = Signature.getInstance(alg, provider);
-		else
-			this.suite = Signature.getInstance(alg);
+		alg = config.getString("alg");
+		provider = config.getString("provider");
+		suite = getInstance();
 		
 		String keyAlias = config.getString("keyAlias");
 		switch (mode) {
@@ -46,25 +43,17 @@ public class SignatureSuite implements IDigestSuite {
 	}
 	
 	public SignatureSuite(ISuiteSpecification spec) throws Exception {
-		String alg = spec.getString("alg");
-		String provider = spec.getString("provider");
-		if(provider != null)
-			this.suite = Signature.getInstance(alg, provider);
-		else
-			this.suite = Signature.getInstance(alg);
-
+		alg = spec.getString("alg");
+		provider = spec.getString("provider");
+		suite = getInstance();
 		privateKey = null;
 		publicKey = null;
 	}
 
 	public SignatureSuite(ISuiteSpecification spec, ISuiteSpecification keyGenspec) throws Exception {
-		String alg = spec.getString("alg");
-		String provider = spec.getString("provider");
-		if(provider != null)
-			this.suite = Signature.getInstance(alg, provider);
-		else
-			this.suite = Signature.getInstance(alg);
-
+		alg = spec.getString("alg");
+		provider = spec.getString("provider");
+		suite = getInstance();
 		AsymmetricKeyPairGenerator keyGen = new AsymmetricKeyPairGenerator(keyGenspec);
 		KeyPair keyPair = keyGen.generateKeyPair();
 		privateKey = keyPair.getPrivate();
@@ -72,19 +61,23 @@ public class SignatureSuite implements IDigestSuite {
 	}
 	
 	public SignatureSuite(ISuiteSpecification spec, PublicKey pubKey) throws Exception {
-		String alg = spec.getString("alg");
-		String provider = spec.getString("provider");
-		if(provider != null)
-			this.suite = Signature.getInstance(alg, provider);
-		else
-			this.suite = Signature.getInstance(alg);
-		
+		alg = spec.getString("alg");
+		provider = spec.getString("provider");
+		suite = getInstance();
 		publicKey = pubKey;
 		privateKey = null;
 	}
 
+	private Signature getInstance() throws Exception {
+		if(provider != null)
+			return Signature.getInstance(alg, provider);
+		else
+			return Signature.getInstance(alg);
+	}
+
 	@Override
 	public byte[] digest(byte[] plainText) throws Exception {
+		Signature suite = getInstance();
 		suite.initSign(privateKey);
 		suite.update(plainText);
 		return suite.sign();
@@ -92,12 +85,14 @@ public class SignatureSuite implements IDigestSuite {
 
 	@Override
 	public boolean verify(byte[] data, byte[] signature) throws Exception {
+		Signature suite = getInstance();
 		suite.initVerify(publicKey);
 		suite.update(data);
 		return suite.verify(signature);
 	}
 
 	public boolean verify(byte[] data, byte[] signature, PublicKey publicKey) throws Exception {
+		Signature suite = getInstance();
 		suite.initVerify(publicKey);
 		suite.update(data);
 		return suite.verify(signature);

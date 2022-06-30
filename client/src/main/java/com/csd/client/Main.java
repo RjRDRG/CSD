@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class Main {
 
+    /*
     public static void main(String[] args) throws Exception {
         Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.toLevel("error"));
@@ -17,6 +18,6 @@ public class Main {
 
         FlatDarculaLaf.setup();
         new LedgerSwingClient();
-    }
+    }*/
 
 }
