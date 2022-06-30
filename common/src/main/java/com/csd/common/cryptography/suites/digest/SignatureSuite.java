@@ -107,6 +107,10 @@ public class SignatureSuite implements IDigestSuite {
 		this.publicKey = key.toPublicKey();
 	}
 
+	public void setPrivateKey(PrivateKey key) {
+		this.privateKey = key;
+	}
+
 	public EncodedPublicKey getPublicKey() {
 		return new EncodedPublicKey(publicKey);
 	}

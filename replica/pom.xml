@@ -52,13 +52,6 @@
 			<artifactId>common</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>com.github.bft-smart</groupId>
-			<artifactId>library</artifactId>
-			<version>1.2</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>com.github.RjRDRG</groupId>
 			<artifactId>bft-smart</artifactId>
@@ -71,13 +64,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>1.45</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.60</version>
+			<version>1.68</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.60</version>
+			<version>1.68</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>

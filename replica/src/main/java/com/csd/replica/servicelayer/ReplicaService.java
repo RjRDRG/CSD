@@ -42,7 +42,7 @@ public class ReplicaService {
 
     public Result<LoadMoneyRequestBody> loadMoney(LoadMoneyRequestBody request) {
         try {
-            Transaction t = new Transaction(request.getRequestId(), null, request.getClientId()[0], request.getAmount(), 0.0, request.getNonce(), request.getClientSignature()[0].getSignature());
+            Transaction t = new Transaction(request.getRequestId(), null, request.getClientId().get(0), request.getAmount(), 0.0, request.getNonce(), request.getClientSignature().get(0).getSignature());
             transactionPoll.add(t);
 
             return Result.ok(request);
@@ -59,24 +59,24 @@ public class ReplicaService {
             if(request.getEncryptedAmount() != null) {
                 t = new Transaction(
                         request.getRequestId(),
-                        request.getClientId()[0],
+                        request.getClientId().get(0),
                         request.getRecipient(),
                         new PrivateValueAsset(request.getRequestId(), request.getEncryptedAmount(), request.getAmount()),
                         request.getFee(),
                         request.getNonce(),
-                        Arrays.stream(request.getClientSignature()).map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
+                        request.getClientSignature().values().stream().map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
                 );
                 transactionPoll.add(t);
                 return Result.ok(request);
             } else {
                 t = new Transaction(
                         request.getRequestId(),
-                        request.getClientId()[0],
+                        request.getClientId().get(0),
                         request.getRecipient(),
                         request.getAmount(),
                         request.getFee(),
                         request.getNonce(),
-                        Arrays.stream(request.getClientSignature()).map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
+                        request.getClientSignature().values().stream().map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
                 );
                 transactionPoll.add(t);
                 return Result.ok(request);
@@ -91,7 +91,7 @@ public class ReplicaService {
         try {
             double acm = 0;
 
-            String clientId = bytesToString(request.getClientId()[0]);
+            String clientId = bytesToString(request.getClientId().get(0));
             acm += resourceRepository.findByOwner(clientId).stream()
                     .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
                     .map(ResourceEntity::getAsset)
@@ -107,7 +107,7 @@ public class ReplicaService {
 
     public Result<byte[]> getEncryptedBalance(GetEncryptedBalanceRequestBody request) {
         try {
-            String clientId = bytesToString(request.getClientId()[0]);
+            String clientId = bytesToString(request.getClientId().get(0));
 
             BigInteger nSquare = new BigInteger(request.getnSquare());
 
@@ -141,7 +141,7 @@ public class ReplicaService {
             if(resourceEntity.size() > 1)
                 return Result.error(Status.CONFLICT, "Resource already spent");
 
-            if(!resourceEntity.get(0).getOwner().equals(bytesToString(request.getClientId()[0])))
+            if(!resourceEntity.get(0).getOwner().equals(bytesToString(request.getClientId().get(0))))
                 return Result.error(Status.FORBIDDEN, "The asset belongs to someone else");
 
             if(!validateTokenAmountAndSignatures(request.getToken()))
@@ -149,12 +149,12 @@ public class ReplicaService {
 
             Transaction t = new Transaction(
                     request.getRequestId(),
-                    request.getClientId()[0],
-                    request.getClientId()[0],
+                    request.getClientId().get(0),
+                    request.getClientId().get(0),
                     request.getToken(),
                     request.getFee(),
                     request.getNonce(),
-                    Arrays.stream(request.getClientSignature()).map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
+                    request.getClientSignature().values().stream().map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
             );
 
             transactionPoll.add(t);
@@ -193,7 +193,7 @@ public class ReplicaService {
 
     public Result<Resource[]> getExtract(GetExtractRequestBody request) {
         try {
-            String clientId = bytesToString(request.getClientId()[0]);
+            String clientId = bytesToString(request.getClientId().get(0));
 
             return Result.ok(resourceRepository.findByOwner(clientId).stream()
                     .map(ResourceEntity::toItem).toArray(Resource[]::new));
@@ -206,7 +206,7 @@ public class ReplicaService {
     public Result<Double> getTotalValue(GetTotalValueRequestBody request) {
         try {
             double acm = 0;
-            for(byte[] c : request.getClientId()) {
+            for(byte[] c : request.getClientId().values()) {
                 String clientId = bytesToString(c);
                 acm += resourceRepository.findByOwner(clientId).stream()
                         .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))

@@ -18,7 +18,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.csd.common.util.Serialization.bytesToHex;
-import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 
 public class MinerThread extends Thread {
 

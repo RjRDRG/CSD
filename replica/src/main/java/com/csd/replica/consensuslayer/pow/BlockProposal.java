@@ -7,6 +7,7 @@ import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.Transaction;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -19,10 +20,10 @@ public class BlockProposal extends Request {
     public BlockProposal(byte[] clientId, SignatureSuite signatureSuite, Block block, Transaction coinbase) {
         this.coinbase = coinbase;
         try {
-            this.clientId = new byte[][]{clientId};
-            this.clientSignature = new Signature[]{
-                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
-            };
+            this.clientId = new HashMap<>();
+            this.clientId.put(0,clientId);
+            this.clientSignature = new HashMap<>();
+            this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
             this.nonce = OffsetDateTime.now();
             this.block = block;
         }catch (Exception e) {
@@ -51,7 +52,7 @@ public class BlockProposal extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(block), dataToBytesDeterministic(coinbase));
+        return concat(clientId.get(0), dataToBytesDeterministic(nonce), dataToBytesDeterministic(block), dataToBytesDeterministic(coinbase));
     }
 
     @Override

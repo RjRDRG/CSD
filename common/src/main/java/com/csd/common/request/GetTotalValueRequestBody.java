@@ -5,6 +5,7 @@ import com.csd.common.traits.Signature;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static com.csd.common.util.Serialization.concat;
@@ -15,14 +16,14 @@ public class GetTotalValueRequestBody extends Request {
     public GetTotalValueRequestBody(byte[][] clientId, SignatureSuite[] signatureSuite) {
         try {
             this.requestId = UUID.randomUUID().toString();
-            this.clientId = clientId;
-            this.nonce = OffsetDateTime.now();
-            this.clientSignature = new Signature[signatureSuite.length];
-            int count = 0;
-            for (SignatureSuite suite : signatureSuite) {
-                clientSignature[count] = new Signature(suite.getPublicKey(), suite.digest(serializedRequest()));
-                count++;
+            this.clientId = new HashMap<>();
+            this.clientSignature = new HashMap<>();
+            for (int i=0; i<clientId.length; i++) {
+                this.clientId.put(i,clientId[i]);
+                SignatureSuite suite = signatureSuite[i];
+                this.clientSignature.put(i,new Signature(suite.getPublicKey(), suite.digest(serializedRequest())));
             }
+            this.nonce = OffsetDateTime.now();
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -33,14 +34,15 @@ public class GetTotalValueRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(dataToBytesDeterministic(requestId), concat(clientId),dataToBytesDeterministic(nonce));
+        return concat(dataToBytesDeterministic(requestId), dataToBytesDeterministic(clientId), dataToBytesDeterministic(nonce));
     }
 
     @Override
     public String toString() {
         return "GetTotalValueRequestBody{" +
-                "clientId=" + Arrays.toString(clientId) +
-                ", clientSignature=" + Arrays.toString(clientSignature) +
+                "requestId='" + requestId + '\'' +
+                ", clientId=" + clientId +
+                ", clientSignature=" + clientSignature +
                 ", proxySignatures=" + Arrays.toString(proxySignatures) +
                 ", nonce=" + nonce +
                 '}';

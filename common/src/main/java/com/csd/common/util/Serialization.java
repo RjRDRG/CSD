@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.lang3.SerializationUtils;
-import org.bouncycastle.util.encoders.Hex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -117,11 +116,13 @@ public class Serialization {
 	}
 
 	public static byte[] concat(byte[]... a) {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
-			for (byte[] b : a)
-				outputStream.write(b);
+			for (int i=0; i<a.length; i++)
+				outputStream.write(a[i]);
+			outputStream.close();
 		} catch (IOException e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 		return outputStream.toByteArray();

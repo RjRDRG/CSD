@@ -4,7 +4,7 @@ import bftsmart.communication.client.ReplyListener;
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
-import com.csd.common.cryptography.key.IPubKeyRegistry;
+import com.csd.common.cryptography.key.IKeyRegistry;
 import com.csd.common.cryptography.key.ExperimentalKeyRegistry;
 import com.csd.common.response.wrapper.ConsensusResponse;
 import com.csd.common.response.wrapper.ReplicaResponse;
@@ -19,7 +19,7 @@ import static com.csd.common.util.Serialization.*;
 public class PowReplyListener implements ReplyListener {
     private final AsynchServiceProxy serviceProxy;
 
-    private final IPubKeyRegistry pubKeyRegistry;
+    private final IKeyRegistry pubKeyRegistry;
 
     private final CountDownLatch latch;
     private double q;

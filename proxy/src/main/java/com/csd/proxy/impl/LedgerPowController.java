@@ -1,9 +1,8 @@
 package com.csd.proxy.impl;
 
 import com.csd.common.cryptography.config.IniSpecification;
-import com.csd.common.cryptography.config.StoredSecrets;
-import com.csd.common.cryptography.config.SuiteConfiguration;
-import com.csd.common.cryptography.key.KeyStoresInfo;
+import com.csd.common.cryptography.key.ExperimentalKeyRegistry;
+import com.csd.common.cryptography.key.IKeyRegistry;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
 import com.csd.common.cryptography.validator.RequestValidator;
 import com.csd.common.item.*;
@@ -12,12 +11,9 @@ import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.common.response.wrapper.Response;
 import com.csd.common.traits.Signature;
 import com.csd.common.util.Status;
-import com.csd.proxy.impl.blockmess.BlockmessProxyOrderer;
 import com.csd.proxy.impl.pow.PowProxy;
 import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +25,9 @@ import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
 import static com.csd.proxy.exceptions.ResponseEntityBuilder.buildResponse;
 
-@RestController
-@ConditionalOnProperty("proxy.pow")
+//@RestController
+//@ConditionalOnProperty("proxy.pow")
 class LedgerPowController {
-    private static final Logger log = LoggerFactory.getLogger(LedgerPowController.class);
-
     private final PowProxy ledgerProxy;
     private final RequestValidator validator;
 
@@ -46,16 +40,16 @@ class LedgerPowController {
         this.ledgerProxy = ledgerProxy;
         this.ledger = ledgerProxy.resourceRepository;
         this.quorum = environment.getProperty("proxy.quorum.size" , int.class);
-        this.validator = new RequestValidator(quorum);
-        this.proxySignatureSuite = new SignatureSuite(new SuiteConfiguration(
-                new IniSpecification("proxy_signature_suite", CRYPTO_CONFIG_PATH),
-                new StoredSecrets(new KeyStoresInfo("stores", CRYPTO_CONFIG_PATH))
-        ), SignatureSuite.Mode.Both);
+        this.validator = new RequestValidator(quorum, environment.getProperty("proxy.number" , int.class));
+        this.proxySignatureSuite = new SignatureSuite(new IniSpecification("proxy_signature_suite", CRYPTO_CONFIG_PATH));
+        IKeyRegistry keyRegistry = new ExperimentalKeyRegistry();
+        this.proxySignatureSuite.setPublicKey(keyRegistry.getProxyKey(environment.getProperty("proxy.id" , int.class)));
+        this.proxySignatureSuite.setPrivateKey(keyRegistry.getProxyPrivateKey(environment.getProperty("proxy.id" , int.class)));
     }
 
     @PostMapping("/transfer")
     public ResponseEntity<Response<SendTransactionRequestBody>> sendTransaction(@RequestBody SendTransactionRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[request.getClientId().length-1]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -64,7 +58,7 @@ class LedgerPowController {
             return buildResponse(new Response<>(Status.BAD_REQUEST, "Transaction amount must be positive", proxySignatureSuite));
 
         double balance = 0;
-        balance += ledger.findByOwner(bytesToString(request.getClientId()[0])).stream()
+        balance += ledger.findByOwner(bytesToString(request.getClientId().get(0))).stream()
                 .filter(t -> t.getType().equals(Resource.Type.VALUE.name()))
                 .map(ResourceEntity::getAsset)
                 .map(Double::valueOf)
@@ -89,7 +83,7 @@ class LedgerPowController {
 
     @PostMapping("/load")
     public ResponseEntity<Response<LoadMoneyRequestBody>> loadMoney(@RequestBody LoadMoneyRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -102,7 +96,7 @@ class LedgerPowController {
 
     @PostMapping("/decrypt")
     public ResponseEntity<Response<Double>> decryptValueAsset(@RequestBody DecryptValueAssetRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -115,7 +109,7 @@ class LedgerPowController {
 
     @PostMapping("/balance")
     public ResponseEntity<Response<Double>> getBalance(@RequestBody GetBalanceRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -128,7 +122,7 @@ class LedgerPowController {
 
     @PostMapping("/balance/encrypted")
     public ResponseEntity<Response<byte[]>> getEncryptedBalance(@RequestBody GetEncryptedBalanceRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -141,7 +135,7 @@ class LedgerPowController {
 
     @PostMapping("/extract")
     public ResponseEntity<Response<ArrayList<Resource>>> getExtract(@RequestBody GetExtractRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
@@ -154,7 +148,7 @@ class LedgerPowController {
 
     @PostMapping("/total")
     public ResponseEntity<Response<Double>> getTotalValue(@RequestBody GetTotalValueRequestBody request) {
-        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId()[0]), false);
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }

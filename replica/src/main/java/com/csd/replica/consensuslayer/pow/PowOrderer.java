@@ -49,7 +49,7 @@ public class PowOrderer extends DefaultSingleRecoverable {
         super();
         this.replicaService = replicaService;
         this.environment = environment;
-        this.validator = new RequestValidator(environment.getProperty("proxy.quorum.size" , int.class));
+        this.validator = new RequestValidator(environment.getProperty("proxy.quorum.size" , int.class), environment.getProperty("proxy.number" , int.class));
     }
 
     public void start(String[] args) throws Exception {
@@ -72,44 +72,44 @@ public class PowOrderer extends DefaultSingleRecoverable {
         switch (consensusRequest.getType()) {
             case BALANCE: {
                 GetBalanceRequestBody request =  consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Double> result =  v.valid() ? replicaService.getBalance(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case HIDDEN: {
                 GetEncryptedBalanceRequestBody request =  consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<byte[]> result =  v.valid() ? replicaService.getEncryptedBalance(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case DECRYPT: {
                 DecryptValueAssetRequestBody request =  consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Double> result =  v.valid() ? replicaService.decryptValueAsset(request) : Result.error(v);
 
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case LOAD: {
                 LoadMoneyRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<LoadMoneyRequestBody> result =  v.valid() ? replicaService.loadMoney(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case TRANSFER: {
                 SendTransactionRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), true);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), true);
                 Result<SendTransactionRequestBody> result =  v.valid() ? replicaService.sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case EXTRACT: {
                 GetExtractRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Resource[]> result = v.valid() ? replicaService.getExtract(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case TOTAL_VAL: {
                 GetTotalValueRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Double> result = v.valid() ? replicaService.getTotalValue(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
@@ -123,7 +123,7 @@ public class PowOrderer extends DefaultSingleRecoverable {
             }
             case BLOCK: {
                 BlockProposal request = consensusRequest.extractRequest();
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId()[0]), false);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Long> result =  v.valid() ? blockProposalHandler(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
@@ -185,7 +185,7 @@ public class PowOrderer extends DefaultSingleRecoverable {
 
             newBlock.setHash(blockHash);
 
-            replicaService.executeBlock(request.getClientId()[0], newBlock, transactions);
+            replicaService.executeBlock(request.getClientId().get(0), newBlock, transactions);
 
             minerThread.restart();
 

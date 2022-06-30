@@ -9,18 +9,17 @@ import com.csd.common.cryptography.hlib.PaillierKey;
 import com.csd.common.cryptography.key.KeyStoresInfo;
 import com.csd.common.cryptography.suites.digest.FlexibleDigestSuite;
 import com.csd.common.cryptography.suites.digest.SignatureSuite;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import static com.csd.common.util.Serialization.concat;
 
 public class Wallet {
     static final String SECURITY_CONF = "security.conf";
 
     public final byte[] clientId;
+
+    public final FlexibleDigestSuite clientIdDigestSuite;
     public final SignatureSuite signatureSuite;
     public final PaillierKey pk;
 
@@ -30,7 +29,7 @@ public class Wallet {
                         new IniSpecification("client_id_digest_suite", SECURITY_CONF),
                         new StoredSecrets(new KeyStoresInfo("stores", SECURITY_CONF))
                 );
-        FlexibleDigestSuite clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
+        clientIdDigestSuite = new FlexibleDigestSuite(clientIdSuiteConfiguration, SignatureSuite.Mode.Digest);
 
         this.signatureSuite = new SignatureSuite(
                 new IniSpecification("client_signature_suite", SECURITY_CONF),
@@ -39,12 +38,12 @@ public class Wallet {
 
         this.pk = HomoAdd.generateKey();
 
-        byte[] provenance = ArrayUtils.addAll(
+        byte[] provenance = concat(
                 email.getBytes(StandardCharsets.UTF_8),
                 seed.getBytes(StandardCharsets.UTF_8)
         );
 
-        this.clientId = ArrayUtils.addAll(
+        this.clientId = concat(
                 clientIdDigestSuite.digest(provenance),
                 clientIdDigestSuite.digest(signatureSuite.getPublicKey().getEncoded())
         );

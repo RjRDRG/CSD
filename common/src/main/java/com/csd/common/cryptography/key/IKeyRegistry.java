@@ -1,6 +1,10 @@
 package com.csd.common.cryptography.key;
 
-public interface IPubKeyRegistry {
+import java.security.PrivateKey;
+
+public interface IKeyRegistry {
     EncodedPublicKey getReplicaKey(int id);
     EncodedPublicKey getProxyKey(int id);
+
+    PrivateKey getProxyPrivateKey(int id);
 }

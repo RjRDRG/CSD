@@ -8,5 +8,7 @@ public interface ResourceRepository extends JpaRepository<ResourceEntity, Long> 
     ResourceEntity findTopByOrderByIdDesc();
     List<ResourceEntity> findByIdGreaterThan(long id);
     List<ResourceEntity> findByOwner(String owner);
+
+    List<ResourceEntity> findByAsset(String asset);
     ResourceEntity findFirstByOwnerOrderByTimestampAsc(String owner);
 }

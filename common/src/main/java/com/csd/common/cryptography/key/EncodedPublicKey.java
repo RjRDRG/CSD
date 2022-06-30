@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static com.csd.common.util.Serialization.bytesToHex;
-import static com.csd.common.util.Serialization.bytesToString;
 
 public class EncodedPublicKey implements Serializable {
 	private static final long serialVersionUID = -1440213254532977043L;
@@ -24,8 +23,8 @@ public class EncodedPublicKey implements Serializable {
 	public PublicKey toPublicKey() throws Exception {
 		return KeyFactory.getInstance(alg).generatePublic(new X509EncodedKeySpec(encoded));
 	}
-	
-	EncodedPublicKey() {
+
+	public EncodedPublicKey() {
 	}
 
 	public String getAlg() {

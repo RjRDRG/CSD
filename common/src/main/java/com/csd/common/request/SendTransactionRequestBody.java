@@ -6,6 +6,7 @@ import com.csd.common.util.Serialization;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -23,16 +24,16 @@ public class SendTransactionRequestBody extends Request {
     public SendTransactionRequestBody(byte[] clientId, SignatureSuite signatureSuite, byte[] recipient, double amount, double fee) {
         try {
             this.requestId = UUID.randomUUID().toString();
-            this.clientId = new byte[][]{clientId};
+            this.clientId = new HashMap<>();
+            this.clientId.put(0,clientId);
             this.nonce = OffsetDateTime.now();
             this.recipient = recipient;
             this.amount = amount;
             this.fee = fee;
             this.encryptedAmount = null;
             this.proxySignatures = new Signature[0];
-            this.clientSignature = new Signature[]{
-                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
-            };
+            this.clientSignature = new HashMap<>();
+            this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
         }catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -41,12 +42,9 @@ public class SendTransactionRequestBody extends Request {
 
     public void encrypt(byte[] clientId, SignatureSuite signatureSuite, byte[] encryptedAmount) {
         try {
-            this.clientId = new byte[][]{this.clientId[0], clientId};
+            this.clientId.put(1,clientId);
             this.encryptedAmount = encryptedAmount;
-            this.clientSignature = new Signature[]{
-                    clientSignature[0],
-                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
-            };
+            this.clientSignature.put(1, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
         }catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -116,8 +114,8 @@ public class SendTransactionRequestBody extends Request {
                 "amount=" + amount +
                 "fee=" + fee +
                 "encryptedAmount=" + bytesToHex(encryptedAmount) +
-                ", clientId=" + Arrays.stream(clientId).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
-                ", clientSignature=" + Arrays.stream(clientSignature).map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
+                ", clientId=" + clientId.values().stream().map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
+                ", clientSignature=" + clientSignature.values().stream().map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
                 ", proxySignatures=" + Arrays.stream(proxySignatures).map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
                 ", nonce=" + nonce +
                 '}';

@@ -6,9 +6,7 @@ import com.csd.common.traits.Signature;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static com.csd.common.util.Serialization.concat;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -17,10 +15,13 @@ public abstract class Request implements Serializable {
 
     protected String requestId;
 
-    protected byte[][] clientId;
-    protected Signature[] clientSignature;
+    protected HashMap<Integer,byte[]> clientId;
+    protected HashMap<Integer,Signature> clientSignature;
     protected Signature[] proxySignatures;
     protected OffsetDateTime nonce;
+
+    public Request() {
+    }
 
     public String getRequestId() {
         return requestId;
@@ -30,19 +31,19 @@ public abstract class Request implements Serializable {
         this.requestId = requestId;
     }
 
-    public byte[][] getClientId() {
+    public HashMap<Integer, byte[]> getClientId() {
         return clientId;
     }
 
-    public void setClientId(byte[][] clientId) {
+    public void setClientId(HashMap<Integer, byte[]> clientId) {
         this.clientId = clientId;
     }
 
-    public Signature[] getClientSignature() {
+    public HashMap<Integer, Signature> getClientSignature() {
         return clientSignature;
     }
 
-    public void setClientSignature(Signature[] clientSignature) {
+    public void setClientSignature(HashMap<Integer, Signature> clientSignature) {
         this.clientSignature = clientSignature;
     }
 
@@ -54,12 +55,6 @@ public abstract class Request implements Serializable {
         this.proxySignatures = proxySignatures;
     }
 
-    public void addProxySignature(Signature proxySignature) {
-        List<Signature> s = new ArrayList<>(Arrays.asList(proxySignatures));
-        s.add(proxySignature);
-        proxySignatures = s.toArray(new Signature[]{});
-    }
-
     public OffsetDateTime getNonce() {
         return nonce;
     }
@@ -68,28 +63,38 @@ public abstract class Request implements Serializable {
         this.nonce = nonce;
     }
 
+    public void addProxySignature(Signature proxySignature) {
+        List<Signature> s = new ArrayList<>(Arrays.asList(proxySignatures));
+        s.add(proxySignature);
+        proxySignatures = s.toArray(new Signature[]{});
+    }
+
     public abstract byte[] serializedRequest();
+
     public byte[] serializedSignedRequest() {
         return concat(
             serializedRequest(),
-            dataToBytesDeterministic(requestId),
             dataToBytesDeterministic(clientSignature)
         );
     }
 
     public boolean verifyClientSignature(IDigestSuite digestSuite, SignatureSuite signatureSuite) {
         try {
-            int count = 0;
-            for (Signature s : clientSignature) {
-                byte[] id = clientId[count];
-                if (!digestSuite.verify(s.getPublicKey().getEncoded(), Arrays.copyOfRange(id, 32, id.length)))
+            for (int i=0; i<clientId.size(); i++) {
+                byte[] id = clientId.get(i);
+                Signature s = clientSignature.get(i);
+                if (!digestSuite.verify(s.getPublicKey().getEncoded(), Arrays.copyOfRange(id, 32, id.length))) {
+                    System.out.println("Invalid id");
                     return false;
-                if(!s.verify(signatureSuite, serializedRequest(), false))
+                }
+                if(!s.verify(signatureSuite, serializedRequest(), false)) {
+                    System.out.println("Invalid signature");
                     return false;
-                count++;
+                }
             }
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

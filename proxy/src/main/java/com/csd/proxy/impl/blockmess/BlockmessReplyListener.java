@@ -32,6 +32,7 @@ public class BlockmessReplyListener implements ReplyListener {
 
     @Override
     public void processReply(Pair<byte[], Long> pair) {
+        System.out.println("received");
         List<byte[]> l = responses.computeIfAbsent(bytesToHex(pair.getKey()), k -> new LinkedList<>());
         l.add(pair.getKey());
         if (l.size() > q && response == null) {

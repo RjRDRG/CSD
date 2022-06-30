@@ -7,7 +7,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.zip.Adler32;
 
 import static com.csd.common.util.Serialization.concat;
 

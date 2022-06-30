@@ -11,8 +11,6 @@ import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
 import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +27,7 @@ import static com.csd.common.util.Serialization.*;
 @Component
 public class BlockmessProxyOrderer extends ApplicationInterface {
 
-    private static final Logger log = LoggerFactory.getLogger(BlockmessProxyOrderer.class);
-
-    private static final int TIMEOUT_PERIOD = 5000;
+    private static final int TIMEOUT_PERIOD = 20;
     private final int quorum;
     private final RequestValidator validator;
 
@@ -40,19 +36,19 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
     public BlockmessProxyOrderer(Environment environment, ResourceRepository resourceRepository) throws Exception {
         super(new String[]{});
         this.quorum = environment.getProperty("proxy.quorum.size" , int.class);
-        this.validator = new RequestValidator(quorum);
+        this.validator = new RequestValidator(quorum, environment.getProperty("proxy.number" , int.class));
         this.resourceRepository = resourceRepository;
     }
 
     public  <R extends Request, T extends Serializable> Response<T> invoke(R request, ConsensusRequest.Type t0) {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(request, t0, 0);
-
+            System.out.println("invokeSt");
             CountDownLatch latch = new CountDownLatch(1);
             BlockmessReplyListener listener = new BlockmessReplyListener(latch, quorum);
             super.invokeAsyncOperation(dataToBytes(consensusRequest), listener);
-            latch.await(TIMEOUT_PERIOD, TimeUnit.MILLISECONDS);
-
+            latch.await(TIMEOUT_PERIOD, TimeUnit.MINUTES);
+            System.out.println("invokeEnd");
             ConsensusResponse consensusResponse = listener.getResponse();
             if(consensusResponse != null) {
                 Result<T> result = consensusResponse.extractResult();
@@ -65,6 +61,7 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
                 return response;
             }
             else {
+                System.out.println("Not available");
                 return new Response<>(Status.NOT_AVAILABLE, "Not enough correct replicas");
             }
         } catch (Exception e) {
@@ -76,9 +73,10 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
     @Override
     public byte[] processOperation(byte[] command) {
         try {
+            System.out.println("Executing");
             return dataToBytes(execute(bytesToData(command)));
         } catch (Exception e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
             Result<Serializable> result = Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
             return dataToBytes(new ConsensusResponse(result.encode(), new Resource[0]));
         }
@@ -88,13 +86,13 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
         switch (consensusRequest.getType()) {
             case TRANSFER: {
                 SendTransactionRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, getLastResourceDate(request.getClientId()[0]), true);
+                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), true);
                 Result<SendTransactionRequestBody> result =  v.valid() ? sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
             case LOAD: {
                 LoadMoneyRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, getLastResourceDate(request.getClientId()[0]), true);
+                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), true);
                 Result<LoadMoneyRequestBody> result =  v.valid() ? loadMoney(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
@@ -111,21 +109,21 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
 
             if(request.getClientId() != null) {
                 ResourceEntity senderResource = new ResourceEntity(
-                        -1, request.getClientId()[0], Resource.Type.VALUE.name(), Double.toString(amount), true, request.getNonce(), request.getClientSignature()[0].getSignature()
+                        -1, request.getClientId().get(0), Resource.Type.VALUE.name(), Double.toString(amount), true, request.getNonce(), request.getClientSignature().get(0).getSignature()
                 );
                 resourceRepository.save(senderResource);
             }
 
             if(request.getRecipient() != null) {
                 ResourceEntity recipientResource = new ResourceEntity(
-                        -1, request.getRecipient(), Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature()[0].getSignature()
+                        -1, request.getRecipient(), Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature().get(0).getSignature()
                 );
                 resourceRepository.save(recipientResource);
             }
 
             return Result.ok(request);
         } catch (Exception e) {
-            log.error(Arrays.toString(e.getStackTrace()));
+            e.printStackTrace();
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
@@ -136,14 +134,14 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
 
             if(request.getClientId() != null) {
                 ResourceEntity senderResource = new ResourceEntity(
-                        -1, request.getClientId()[0], Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature()[0].getSignature()
+                        -1, request.getClientId().get(0), Resource.Type.VALUE.name(), Double.toString(amount), false, request.getNonce(), request.getClientSignature().get(0).getSignature()
                 );
                 resourceRepository.save(senderResource);
             }
 
             return Result.ok(request);
         } catch (Exception e) {
-            log.error(Arrays.toString(e.getStackTrace()));
+            e.printStackTrace();
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }

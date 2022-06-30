@@ -6,6 +6,7 @@ import com.csd.common.traits.Signature;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static com.csd.common.util.Serialization.concat;
@@ -20,12 +21,13 @@ public class DecryptValueAssetRequestBody extends Request {
         this.fee = fee;
         try {
             this.requestId = UUID.randomUUID().toString();
-            this.clientId = new byte[][]{clientId};
+            this.clientId = new HashMap<>();
+            this.clientId.put(0,clientId);
             this.nonce = OffsetDateTime.now();
             this.token = token;
-            this.clientSignature = new Signature[]{
-                    new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest()))
-            };
+            this.clientSignature = new HashMap<>();
+            this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
+
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -52,14 +54,14 @@ public class DecryptValueAssetRequestBody extends Request {
 
     @Override
     public byte[] serializedRequest() {
-        return concat(dataToBytesDeterministic(requestId), clientId[0], dataToBytesDeterministic(nonce), dataToBytesDeterministic(token), dataToBytesDeterministic(fee));
+        return concat(dataToBytesDeterministic(requestId), clientId.get(0), dataToBytesDeterministic(nonce), dataToBytesDeterministic(token), dataToBytesDeterministic(fee));
     }
 
     @Override
     public String toString() {
         return "DecryptValueAssetRequestBody{" +
-                "clientId=" + clientId[0] +
-                ", clientSignature=" + clientSignature[0] +
+                "clientId=" + clientId.get(0) +
+                ", clientSignature=" + clientSignature.get(0) +
                 ", proxySignatures=" + Arrays.toString(proxySignatures) +
                 ", nonce=" + nonce +
                 ", token=" + token +
