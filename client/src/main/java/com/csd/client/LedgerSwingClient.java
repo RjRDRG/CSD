@@ -138,6 +138,7 @@ public class LedgerSwingClient extends JFrame{
                 wallets.addItem(n);
                 wallets.setSelectedItem(n);
                 sendTransactionDestination.addItem(n);
+                storeTransactionDestination.addItem(n);
             }));
 
 

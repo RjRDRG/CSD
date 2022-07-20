@@ -280,9 +280,13 @@ public class ReplicaService {
                 }
 
                 if (fee > 0) {
+                    ResourceEntity feeCollectionResource = new ResourceEntity(
+                            block.getId(), t.getOwner(), Resource.Type.VALUE.name(), fee.toString(), true, t.getTimestamp(), t.getRequestSignature()
+                    );
                     ResourceEntity feeResource = new ResourceEntity(
                             block.getId(), proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
                     );
+                    resourceRepository.save(feeCollectionResource);
                     resourceRepository.save(feeResource);
                 }
             }
