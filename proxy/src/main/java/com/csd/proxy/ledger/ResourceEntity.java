@@ -2,6 +2,7 @@ package com.csd.proxy.ledger;
 
 import com.csd.common.item.Resource;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,11 +18,17 @@ public class ResourceEntity implements Serializable {
     private @Id
     @GeneratedValue long id;
     private long block;
+
+    @Column(length=1000)
     private String owner;
     private String type;
+
+    @Column(length=10000)
     private String asset;
     private boolean spent;
     private OffsetDateTime timestamp;
+
+    @Column(length=1000)
     private String requestSignature;
 
     public ResourceEntity() {}

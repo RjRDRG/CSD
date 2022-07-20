@@ -112,9 +112,10 @@ public class ReplicaService {
             BigInteger nSquare = new BigInteger(request.getnSquare());
 
             List<ResourceEntity> rs = resourceRepository.findByOwner(clientId).stream()
-                    .filter(r -> r.getType().equals(Resource.Type.CRYPT.name())).collect(Collectors.toList());
+                    .filter(r -> r.getType().equals(Resource.Type.CRYPT.name()))
+                    .collect(Collectors.toList());
 
-            if(rs.size() == 0) {
+            if(rs.isEmpty()) {
                 return Result.error(Status.NOT_FOUND, "No encrypted value");
             }
 
@@ -123,6 +124,10 @@ public class ReplicaService {
                     .filter(resourceEntities -> resourceEntities.size() == 1)
                     .map(resourceEntities -> new BigInteger(extractEncryptedAmount(resourceEntities.get(0).getAsset())))
                     .collect(Collectors.toList());
+
+            if(l.isEmpty()) {
+                return Result.error(Status.NOT_FOUND, "No encrypted value");
+            }
 
             BigInteger result = l.get(0);
             for (int i = 1; i < l.size(); i++) {
@@ -280,14 +285,14 @@ public class ReplicaService {
                 }
 
                 if (fee > 0) {
-                    ResourceEntity feeCollectionResource = new ResourceEntity(
+                    ResourceEntity feeResource = new ResourceEntity(
                             block.getId(), t.getOwner(), Resource.Type.VALUE.name(), fee.toString(), true, t.getTimestamp(), t.getRequestSignature()
                     );
-                    ResourceEntity feeResource = new ResourceEntity(
+                    ResourceEntity proposerResource = new ResourceEntity(
                             block.getId(), proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
                     );
-                    resourceRepository.save(feeCollectionResource);
                     resourceRepository.save(feeResource);
+                    resourceRepository.save(proposerResource);
                 }
             }
             else if(t.getType() == Transaction.Type.PrivateValue) {
@@ -310,34 +315,39 @@ public class ReplicaService {
 
                 if (fee > 0) {
                     ResourceEntity feeResource = new ResourceEntity(
+                            block.getId(), t.getOwner(), Resource.Type.VALUE.name(), fee.toString(), true, t.getTimestamp(), t.getRequestSignature()
+                    );
+                    ResourceEntity proposerResource = new ResourceEntity(
                             block.getId(), proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
                     );
                     resourceRepository.save(feeResource);
+                    resourceRepository.save(proposerResource);
                 }
             }
             else if(t.getType() == Transaction.Type.Claim) {
                 ValueToken valueToken = (ValueToken) t.getAsset();
                 Double fee = (Double) t.getFee();
 
-                if(t.getOwner() != null) {
-                    ResourceEntity senderResource = new ResourceEntity(
+                if(t.getRecipient() != null) {
+                    ResourceEntity tokenResource = new ResourceEntity(
                             block.getId(), t.getRecipient(), Resource.Type.CRYPT.name(), valueToken.getPrivateValueAsset().getAsset(), true, t.getTimestamp(), t.getRequestSignature()
                     );
-                    resourceRepository.save(senderResource);
-                }
-
-                if(t.getRecipient() != null) {
-                    ResourceEntity recipientResource = new ResourceEntity(
-                            block.getId(), proposerId, Resource.Type.VALUE.name(), ""+valueToken.getPrivateValueAsset().getAmount(), false, t.getTimestamp(), t.getRequestSignature()
+                    ResourceEntity valueResource = new ResourceEntity(
+                            block.getId(), t.getRecipient(), Resource.Type.VALUE.name(), ""+valueToken.getPrivateValueAsset().getAmount(), false, t.getTimestamp(), t.getRequestSignature()
                     );
-                    resourceRepository.save(recipientResource);
+                    resourceRepository.save(tokenResource);
+                    resourceRepository.save(valueResource);
                 }
 
                 if (fee > 0) {
                     ResourceEntity feeResource = new ResourceEntity(
+                            block.getId(), t.getOwner(), Resource.Type.VALUE.name(), fee.toString(), true, t.getTimestamp(), t.getRequestSignature()
+                    );
+                    ResourceEntity proposerResource = new ResourceEntity(
                             block.getId(), proposerId, Resource.Type.VALUE.name(), fee.toString(), false, t.getTimestamp(), t.getRequestSignature()
                     );
                     resourceRepository.save(feeResource);
+                    resourceRepository.save(proposerResource);
                 }
             }
         }
