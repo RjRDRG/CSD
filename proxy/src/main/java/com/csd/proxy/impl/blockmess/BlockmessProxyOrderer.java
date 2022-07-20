@@ -85,14 +85,14 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
     public ConsensusResponse execute(ConsensusRequest consensusRequest) {
         switch (consensusRequest.getType()) {
             case TRANSFER: {
-                SendTransactionRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), true);
+                SendTransactionRequestBody request = consensusRequest.extractRequest(SendTransactionRequestBody.class);
+                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), false);
                 Result<SendTransactionRequestBody> result =  v.valid() ? sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
             case LOAD: {
-                LoadMoneyRequestBody request = consensusRequest.extractRequest();
-                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), true);
+                LoadMoneyRequestBody request = consensusRequest.extractRequest(LoadMoneyRequestBody.class);
+                var v = validator.validate(request, getLastResourceDate(request.getClientId().get(0)), false);
                 Result<LoadMoneyRequestBody> result =  v.valid() ? loadMoney(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), null);
             }
@@ -138,6 +138,8 @@ public class BlockmessProxyOrderer extends ApplicationInterface {
                 );
                 resourceRepository.save(senderResource);
             }
+
+            System.out.println("Saved Amount");
 
             return Result.ok(request);
         } catch (Exception e) {

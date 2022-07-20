@@ -50,7 +50,7 @@ public class GetEncryptedBalanceRequestBody extends Request {
         return "GetBalanceRequestBody{" +
                 "clientId=" + clientId.get(0) +
                 ", clientSignature=" + clientSignature.get(0) +
-                ", proxySignatures=" + Arrays.toString(proxySignatures) +
+                ", proxySignatures=" + proxySignatures +
                 ", nonce=" + nonce +
                 '}';
     }

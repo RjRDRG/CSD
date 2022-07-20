@@ -56,6 +56,7 @@ class LedgerBlockmessController {
         System.out.println("Transfer");
         var v = validator.validate(request, orderer.getLastResourceDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
+            System.out.println("Invalid Request");
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
 
@@ -70,19 +71,13 @@ class LedgerBlockmessController {
                 .reduce(0.0, Double::sum);
 
         if (balance<request.getAmount())
-            return buildResponse(new Response<>(Status.NOT_AVAILABLE, "Insufficient Credit", proxySignatureSuite));
+            return buildResponse(new Response<>(Status.FORBIDDEN, "Insufficient Credit", proxySignatureSuite));
 
         request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
 
-        if(request.getProxySignatures().length >= quorum) {
-            Response<SendTransactionRequestBody> response = orderer.invoke(request, ConsensusRequest.Type.TRANSFER);
-            response.proxySignature(proxySignatureSuite);
-            return buildResponse(response);
-        } else {
-            Response<SendTransactionRequestBody> response = new Response<>(request);
-            response.proxySignature(proxySignatureSuite);
-            return buildResponse(response);
-        }
+        Response<SendTransactionRequestBody> response = orderer.invoke(request, ConsensusRequest.Type.TRANSFER);
+        response.proxySignature(proxySignatureSuite);
+        return buildResponse(response);
     }
 
     @PostMapping("/load")

@@ -2,12 +2,16 @@ package com.csd.replica.datalayer;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import static com.csd.common.util.Serialization.bytesToHex;
 
 public class Transaction implements Serializable {
 
+    public enum Type {Value, PrivateValue, Claim}
     private String id;
+
+    private Type type;
     private byte[] owner;
     private byte[] recipient;
     private Object asset;
@@ -18,8 +22,9 @@ public class Transaction implements Serializable {
     public Transaction() {
     }
 
-    public Transaction(String id, byte[] owner, byte[] recipient, Object asset, Object fee, OffsetDateTime timestamp, byte[] requestSignature) {
+    public Transaction(String id, Type type, byte[] owner, byte[] recipient, Object asset, Object fee, OffsetDateTime timestamp, byte[] requestSignature) {
         this.id = id;
+        this.type = type;
         this.owner = owner;
         this.recipient = recipient;
         this.asset = asset;
@@ -30,6 +35,18 @@ public class Transaction implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public byte[] getOwner() {
@@ -81,8 +98,23 @@ public class Transaction implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transaction that = (Transaction) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
     public String toString() {
         return "Transaction{" +
+                "id=" + id +
+                "type=" + type.name() +
                 "owner=" + bytesToHex(owner) +
                 ", recipient=" + bytesToHex(recipient) +
                 ", asset='" + asset + '\'' +

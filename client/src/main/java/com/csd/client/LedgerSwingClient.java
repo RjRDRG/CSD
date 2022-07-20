@@ -1,21 +1,40 @@
 package com.csd.client;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import com.csd.client.ui.JGridBagPanel;
 import com.csd.client.ui.JPromptTextField;
 import com.csd.common.traits.Result;
 import com.csd.common.util.Status;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
 public class LedgerSwingClient extends JFrame{
+
+    static {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
+
+    public static void main(String[] args) throws Exception {
+        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(Level.toLevel("error"));
+
+        LedgerClient.createWallet("default@csd.com", UUID.randomUUID().toString(), null);
+
+        FlatDarculaLaf.setup();
+        new LedgerSwingClient();
+    }
 
     public LedgerSwingClient() throws InterruptedException {
         JPanel mainPanel = new MainPanel();

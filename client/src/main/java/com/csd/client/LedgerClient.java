@@ -166,6 +166,38 @@ public class LedgerClient {
 
 	static void sendTransaction(String walletId, String walletDestinationId, double amount, double fee, IConsole console) {
 		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
+		StringBuilder resultString = new StringBuilder();
+		try {
+			Wallet wallet = wallets.get(walletId);
+
+			Wallet walletDestination = wallets.get(walletDestinationId);
+
+			SendTransactionRequestBody request = new SendTransactionRequestBody(
+					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount, fee
+			);
+
+			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
+			for (int counter = 0; request.getProxySignatures().size() <= endorsementQuorum && counter<proxyPorts.length; counter++) {
+				String uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+				try {
+					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+				} catch (Exception e) {
+					resultString.append("DENY: ").append(proxyPorts[counter]).append(" ").append(e.getMessage()).append("\n");
+					continue;
+				}
+				request = responseEntity.getBody().getResponse();
+			}
+
+			if(responseEntity!=null)
+				resultString.append(responseEntity.getBody());
+		} catch (Exception e) {
+			resultString = new StringBuilder(Format.exception(e));
+		}
+		console.printOperation(requestString, resultString.toString());
+	}
+
+	static void sendTransactionOnce(String walletId, String walletDestinationId, double amount, double fee, IConsole console) {
+		String requestString = "-----> Send Transaction: " + walletId + " " + walletDestinationId + " " + amount;
 		String resultString;
 		try {
 			Wallet wallet = wallets.get(walletId);
@@ -176,21 +208,13 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount, fee
 			);
 
-			int counter = 0;
-			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-			String uri;
-			while (request.getProxySignatures().length < endorsementQuorum) {
-				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
-				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
-				if (responseEntity.getBody().valid()) {
-					request = responseEntity.getBody().getResponse();
-				}
-				counter++;
-			}
+			String uri = "https://" + proxyIp + ":" + proxyPorts[0] + "/transfer";
+			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
@@ -218,6 +242,7 @@ public class LedgerClient {
 
 			resultString = file.getPath();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
@@ -226,10 +251,10 @@ public class LedgerClient {
 
 	static String sendStoredTransaction(String walletId, String transaction, boolean isPrivate, IConsole console) {
 		String requestString = "-----> Send Stored Transaction: " + walletId + " " + transaction;
-		String resultString;
+		StringBuilder resultString = new StringBuilder();
+		ValueToken token = null;
 		try {
 			Wallet wallet = wallets.get(walletId);
-
 
 			SendTransactionRequestBody request = jsonFileToData(new File("transactions/"+transaction), SendTransactionRequestBody.class);
 
@@ -238,38 +263,41 @@ public class LedgerClient {
 				request.encrypt(wallet.clientId, wallet.signatureSuite, encryptedAmount);
 			}
 
-			int counter = 0;
 			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-			String uri;
-			while (request.getProxySignatures().length < endorsementQuorum) {
-				uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
-				responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
-				if (responseEntity.getBody().valid()) {
-					request = responseEntity.getBody().getResponse();
+			for (int counter = 0; request.getProxySignatures().size() <= endorsementQuorum && counter<proxyPorts.length; counter++) {
+				String uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
+				try {
+					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+				} catch (Exception e) {
+					resultString.append("DENY: ").append(proxyPorts[counter]).append(" ").append(e.getMessage()).append("\n");
+					continue;
 				}
-				counter++;
+				request = responseEntity.getBody().getResponse();
 			}
 
-			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
-
-			if(responseEntity.getStatusCode().equals(HttpStatus.OK) && isPrivate) {
-				Response<SendTransactionRequestBody> response = responseEntity.getBody();
-				ValueToken token = new ValueToken(
-						response.getResponse().getRequestId(),
-						response.getResponse().getEncryptedAmount(),
-						response.getResponse().getAmount(),
-						response.getReplicaResponses()
-				);
-				tokens.put(token.getPrivateValueAsset().getAsset(),token);
-				return token.getPrivateValueAsset().getAsset();
+			if(responseEntity != null) {
+				resultString.append(responseEntity.getBody());
+				if(isPrivate) {
+					Response<SendTransactionRequestBody> response = responseEntity.getBody();
+					token = new ValueToken(
+							response.getResponse().getRequestId(),
+							response.getResponse().getEncryptedAmount(),
+							response.getResponse().getAmount(),
+							response.getReplicaResponses()
+					);
+					tokens.put(token.getPrivateValueAsset().getAsset(),token);
+				}
 			}
 
 		} catch (Exception e) {
-			resultString = Format.exception(e);
+			resultString = new StringBuilder(Format.exception(e));
 		}
-		console.printOperation(requestString,resultString);
 
-		return null;
+		console.printOperation(requestString, resultString.toString());
+		if (token != null)
+			return token.getPrivateValueAsset().getAsset();
+		else
+			return null;
 	}
 
 
@@ -284,6 +312,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
@@ -300,6 +329,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
@@ -321,6 +351,7 @@ public class LedgerClient {
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);
@@ -344,10 +375,12 @@ public class LedgerClient {
 			}
 
 			GetTotalValueRequestBody request = new GetTotalValueRequestBody(clientId, signatureSuite);
+			System.out.println(dataToJson(request));
 			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = Format.exception(e);
 		}
 		console.printOperation(requestString,resultString);

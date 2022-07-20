@@ -2,13 +2,14 @@
 package com.csd.replica.servicelayer;
 
 import com.csd.common.cryptography.hlib.HomoAdd;
+import com.csd.common.datastructs.Poll;
 import com.csd.common.item.PrivateValueAsset;
 import com.csd.common.item.Resource;
 import com.csd.common.item.ValueToken;
 import com.csd.common.request.*;
-import com.csd.common.response.wrapper.ReplicaResponse;
 import com.csd.common.traits.Result;
 import com.csd.common.traits.Signature;
+import com.csd.common.util.Format;
 import com.csd.common.util.Serialization;
 import com.csd.common.util.Status;
 import com.csd.replica.datalayer.*;
@@ -32,17 +33,17 @@ public class ReplicaService {
     private final BlockHeaderRepository blockHeaderRepository;
     private final ResourceRepository resourceRepository;
 
-    private final PriorityQueue<Transaction> transactionPoll;
+    private final Poll<Transaction> transactionPoll;
 
-    public ReplicaService(ResourceRepository resourceRepository, BlockHeaderRepository blockHeaderRepository) throws Exception {
+    public ReplicaService(ResourceRepository resourceRepository, BlockHeaderRepository blockHeaderRepository) {
         this.resourceRepository = resourceRepository;
         this.blockHeaderRepository = blockHeaderRepository;
-        this.transactionPoll = new PriorityQueue<>(new TransactionComparator());
+        this.transactionPoll = new Poll<>(new TransactionComparator());
     }
 
     public Result<LoadMoneyRequestBody> loadMoney(LoadMoneyRequestBody request) {
         try {
-            Transaction t = new Transaction(request.getRequestId(), null, request.getClientId().get(0), request.getAmount(), 0.0, request.getNonce(), request.getClientSignature().get(0).getSignature());
+            Transaction t = new Transaction(request.getRequestId(), Transaction.Type.Value, null, request.getClientId().get(0), request.getAmount(), 0.0, request.getNonce(), request.getClientSignature().get(0).getSignature());
             transactionPoll.add(t);
 
             return Result.ok(request);
@@ -59,6 +60,7 @@ public class ReplicaService {
             if(request.getEncryptedAmount() != null) {
                 t = new Transaction(
                         request.getRequestId(),
+                        Transaction.Type.PrivateValue,
                         request.getClientId().get(0),
                         request.getRecipient(),
                         new PrivateValueAsset(request.getRequestId(), request.getEncryptedAmount(), request.getAmount()),
@@ -71,6 +73,7 @@ public class ReplicaService {
             } else {
                 t = new Transaction(
                         request.getRequestId(),
+                        Transaction.Type.Value,
                         request.getClientId().get(0),
                         request.getRecipient(),
                         request.getAmount(),
@@ -111,9 +114,14 @@ public class ReplicaService {
 
             BigInteger nSquare = new BigInteger(request.getnSquare());
 
-            List<BigInteger> l = resourceRepository.findByOwner(clientId).stream()
-                    .filter(r -> r.getType().equals(Resource.Type.CRYPT.name()))
-                    .collect(Collectors.groupingBy(ResourceEntity::getAsset))
+            List<ResourceEntity> rs = resourceRepository.findByOwner(clientId).stream()
+                    .filter(r -> r.getType().equals(Resource.Type.CRYPT.name())).collect(Collectors.toList());
+
+            if(rs.size() == 0) {
+                return Result.error(Status.NOT_FOUND, "No encrypted value");
+            }
+
+            List<BigInteger> l = rs.stream().collect(Collectors.groupingBy(ResourceEntity::getAsset))
                     .values().stream()
                     .filter(resourceEntities -> resourceEntities.size() == 1)
                     .map(resourceEntities -> new BigInteger(extractEncryptedAmount(resourceEntities.get(0).getAsset())))
@@ -126,7 +134,7 @@ public class ReplicaService {
 
             return Result.ok(result.toByteArray());
         } catch (Exception e) {
-            log.error(Arrays.toString(e.getStackTrace()));
+            log.error(Format.exception(e));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
         }
     }
@@ -149,6 +157,7 @@ public class ReplicaService {
 
             Transaction t = new Transaction(
                     request.getRequestId(),
+                    Transaction.Type.Claim,
                     request.getClientId().get(0),
                     request.getClientId().get(0),
                     request.getToken(),
@@ -248,23 +257,16 @@ public class ReplicaService {
     }
 
     public List<Transaction> getTransactionBatch(int size) {
-        List<Transaction> t = new ArrayList<>(size);
-        Iterator<Transaction> it = transactionPoll.iterator();
-        for(int i=0; i<size; i++) {
-            if(it.hasNext())
-                t.add(it.next());
-            else
-                return t;
-        }
-        return t;
+        return transactionPoll.getN(size);
     }
 
     public void executeBlock(byte[] proposerId, BlockHeaderEntity block, List<Transaction> transactions){
+        System.out.println("Executing block");
         blockHeaderRepository.save(block);
 
         for (Transaction t : transactions) {
             transactionPoll.remove(t);
-            if (t.getAsset() instanceof Double) {
+            if (t.getType().equals(Transaction.Type.Value)) {
                 Double amount = (Double) t.getAsset();
                 Double fee = (Double) t.getFee();
 
@@ -289,7 +291,7 @@ public class ReplicaService {
                     resourceRepository.save(feeResource);
                 }
             }
-            else if(t.getAsset() instanceof PrivateValueAsset) {
+            else if(t.getType() == Transaction.Type.PrivateValue) {
                 PrivateValueAsset privateValueAsset = (PrivateValueAsset) t.getAsset();
                 Double fee = (Double) t.getFee();
 
@@ -314,7 +316,7 @@ public class ReplicaService {
                     resourceRepository.save(feeResource);
                 }
             }
-            else if(t.getAsset() instanceof ValueToken) {
+            else if(t.getType() == Transaction.Type.Claim) {
                 ValueToken valueToken = (ValueToken) t.getAsset();
                 Double fee = (Double) t.getFee();
 
@@ -340,10 +342,11 @@ public class ReplicaService {
                 }
             }
         }
+        System.out.println("------------------------------------------xxx> " + transactionPoll.size());
     }
 
     public Transaction getTransaction(String txid) {
-        return transactionPoll.stream().filter(t -> t.getId().equals(txid)).findAny().orElse(null);
+        return transactionPoll.getElement(t -> t.getId().equals(txid));
     }
 
     public BlockHeaderEntity getLastBlock() {

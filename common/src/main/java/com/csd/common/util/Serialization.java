@@ -27,6 +27,10 @@ public class Serialization {
 		return dataToJson(data).getBytes(StandardCharsets.UTF_8);
 	}
 
+	public static <T extends Serializable> T bytesToDataDeterministic(byte[] data, Class<T> tClass) {
+		return jsonToData(new String(data,StandardCharsets.UTF_8), tClass);
+	}
+
 	public static <T extends Serializable> T bytesToData(byte[] bytes) {
 		return SerializationUtils.deserialize(bytes);
 	}
@@ -36,6 +40,8 @@ public class Serialization {
 	}
 
 	public static String bytesToString(byte[] data) {
+		if(data == null)
+			return "";
 		return Base64.getUrlEncoder().encodeToString(data);
 	}
 
@@ -50,11 +56,17 @@ public class Serialization {
 	}
 
 	public static String bytesToHex(byte[] bytes) {
-		return Hex.toHexString(bytes);
+		if(bytes == null)
+			return null;
+		else
+			return Hex.toHexString(bytes);
 	}
 
 	public static byte[] hexToBytes(String hex) {
-		return Hex.decode(hex);
+		if(hex == null)
+			return null;
+		else
+			return Hex.decode(hex);
 	}
 
 	public final static ObjectMapper jsonMapper = createObjectMapper();
@@ -67,6 +79,7 @@ public class Serialization {
 		module.addSerializer(byte[].class, new ByteSerializer());
 		module.addDeserializer(byte[].class, new ByteDeserializer());
 		om.registerModule(module);
+		om.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
 		return om;
 	}
 
@@ -118,8 +131,10 @@ public class Serialization {
 	public static byte[] concat(byte[]... a) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
-			for (int i=0; i<a.length; i++)
-				outputStream.write(a[i]);
+			for (int i=0; i<a.length; i++) {
+				if(a[i] != null)
+					outputStream.write(a[i]);
+			}
 			outputStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();

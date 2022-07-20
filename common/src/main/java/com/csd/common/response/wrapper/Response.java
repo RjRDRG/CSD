@@ -73,6 +73,22 @@ public class Response<T extends Serializable> {
     public Response() {
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public Signature getProxySignature() {
         return proxySignature;
     }
@@ -98,19 +114,7 @@ public class Response<T extends Serializable> {
     }
 
     public boolean valid() {
-        return status == Status.OK;
-    }
-
-    public T response() {
-        return response;
-    }
-
-    public Status error() {
-        return status;
-    }
-
-    public String message() {
-        return message;
+        return status.equals(Status.OK);
     }
 
     public Signature proxySignature() {

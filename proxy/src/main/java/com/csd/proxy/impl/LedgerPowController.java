@@ -23,10 +23,11 @@ import java.util.ArrayList;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
+import static com.csd.common.util.Serialization.dataToJson;
 import static com.csd.proxy.exceptions.ResponseEntityBuilder.buildResponse;
 
-//@RestController
-//@ConditionalOnProperty("proxy.pow")
+@RestController
+@ConditionalOnProperty("proxy.pow")
 class LedgerPowController {
     private final PowProxy ledgerProxy;
     private final RequestValidator validator;
@@ -65,12 +66,12 @@ class LedgerPowController {
                 .reduce(0.0, Double::sum);
 
         if (balance<request.getAmount())
-            return buildResponse(new Response<>(Status.NOT_AVAILABLE, "Insufficient Credit", proxySignatureSuite));
+            return buildResponse(new Response<>(Status.FORBIDDEN, "Insufficient Credit", proxySignatureSuite));
 
 
-        request.addProxySignature(new Signature(proxySignatureSuite,request.serializedSignedRequest()));
+        request.addProxySignature(new Signature(proxySignatureSuite, request.serializedSignedRequest()));
 
-        if(request.getProxySignatures().length >= quorum) {
+        if(request.getProxySignatures().size() >= quorum) {
             Response<SendTransactionRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
             response.proxySignature(proxySignatureSuite);
             return buildResponse(response);
@@ -148,10 +149,14 @@ class LedgerPowController {
 
     @PostMapping("/total")
     public ResponseEntity<Response<Double>> getTotalValue(@RequestBody GetTotalValueRequestBody request) {
+        System.out.println("Total");
+        System.out.println(dataToJson(request));
         var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
+
+        System.out.println("Valid");
 
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TOTAL_VAL);
         response.proxySignature(proxySignatureSuite);

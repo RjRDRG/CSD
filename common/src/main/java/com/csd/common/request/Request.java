@@ -17,7 +17,7 @@ public abstract class Request implements Serializable {
 
     protected HashMap<Integer,byte[]> clientId;
     protected HashMap<Integer,Signature> clientSignature;
-    protected Signature[] proxySignatures;
+    protected List<Signature> proxySignatures;
     protected OffsetDateTime nonce;
 
     public Request() {
@@ -47,11 +47,11 @@ public abstract class Request implements Serializable {
         this.clientSignature = clientSignature;
     }
 
-    public Signature[] getProxySignatures() {
+    public List<Signature> getProxySignatures() {
         return proxySignatures;
     }
 
-    public void setProxySignatures(Signature[] proxySignatures) {
+    public void setProxySignatures(List<Signature> proxySignatures) {
         this.proxySignatures = proxySignatures;
     }
 
@@ -64,9 +64,7 @@ public abstract class Request implements Serializable {
     }
 
     public void addProxySignature(Signature proxySignature) {
-        List<Signature> s = new ArrayList<>(Arrays.asList(proxySignatures));
-        s.add(proxySignature);
-        proxySignatures = s.toArray(new Signature[]{});
+        proxySignatures.add(proxySignature);
     }
 
     public abstract byte[] serializedRequest();
@@ -80,6 +78,7 @@ public abstract class Request implements Serializable {
 
     public boolean verifyClientSignature(IDigestSuite digestSuite, SignatureSuite signatureSuite) {
         try {
+            System.out.println(clientId.size());
             for (int i=0; i<clientId.size(); i++) {
                 byte[] id = clientId.get(i);
                 Signature s = clientSignature.get(i);
@@ -88,7 +87,7 @@ public abstract class Request implements Serializable {
                     return false;
                 }
                 if(!s.verify(signatureSuite, serializedRequest(), false)) {
-                    System.out.println("Invalid signature");
+                    System.out.println("Invalid signature 2");
                     return false;
                 }
             }
@@ -101,19 +100,17 @@ public abstract class Request implements Serializable {
 
     public boolean verifyProxySignatures(List<SignatureSuite> signatureSuites, int q) {
         try {
-            if(proxySignatures.length<q)
+            if(proxySignatures == null || proxySignatures.size()<q)
                 return false;
-
-            List<Signature> proxySignatures = new ArrayList<>(Arrays.asList(this.proxySignatures));
 
             int counter = 0;
 
             for (SignatureSuite suite : signatureSuites) {
                 for (Signature s : proxySignatures) {
-                    if(suite.getPublicKey().equals(s.getPublicKey())) {
-                        if(s.verify(suite, serializedSignedRequest(), true)) {
+                    if (suite.getPublicKey().equals(s.getPublicKey())) {
+                        if (s.verify(suite, serializedSignedRequest(), true)) {
                             counter++;
-                            proxySignatures.remove(s);
+                            break;
                         }
                     }
                 }
@@ -121,6 +118,7 @@ public abstract class Request implements Serializable {
 
             return counter >= q;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

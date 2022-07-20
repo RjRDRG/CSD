@@ -16,14 +16,16 @@ public class GetTotalValueRequestBody extends Request {
     public GetTotalValueRequestBody(byte[][] clientId, SignatureSuite[] signatureSuite) {
         try {
             this.requestId = UUID.randomUUID().toString();
+            this.nonce = OffsetDateTime.now();
             this.clientId = new HashMap<>();
             this.clientSignature = new HashMap<>();
             for (int i=0; i<clientId.length; i++) {
                 this.clientId.put(i,clientId[i]);
+            }
+            for (int i=0; i<clientId.length; i++) {
                 SignatureSuite suite = signatureSuite[i];
                 this.clientSignature.put(i,new Signature(suite.getPublicKey(), suite.digest(serializedRequest())));
             }
-            this.nonce = OffsetDateTime.now();
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +45,7 @@ public class GetTotalValueRequestBody extends Request {
                 "requestId='" + requestId + '\'' +
                 ", clientId=" + clientId +
                 ", clientSignature=" + clientSignature +
-                ", proxySignatures=" + Arrays.toString(proxySignatures) +
+                ", proxySignatures=" + proxySignatures +
                 ", nonce=" + nonce +
                 '}';
     }

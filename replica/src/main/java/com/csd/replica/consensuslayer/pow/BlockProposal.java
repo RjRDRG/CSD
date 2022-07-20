@@ -22,10 +22,10 @@ public class BlockProposal extends Request {
         try {
             this.clientId = new HashMap<>();
             this.clientId.put(0,clientId);
-            this.clientSignature = new HashMap<>();
-            this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
             this.nonce = OffsetDateTime.now();
             this.block = block;
+            this.clientSignature = new HashMap<>();
+            this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

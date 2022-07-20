@@ -5,10 +5,7 @@ import com.csd.common.traits.Signature;
 import com.csd.common.util.Serialization;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static com.csd.common.util.Serialization.*;
 import static com.csd.common.util.Serialization.dataToBytesDeterministic;
@@ -31,7 +28,7 @@ public class SendTransactionRequestBody extends Request {
             this.amount = amount;
             this.fee = fee;
             this.encryptedAmount = null;
-            this.proxySignatures = new Signature[0];
+            this.proxySignatures = new ArrayList<>();
             this.clientSignature = new HashMap<>();
             this.clientSignature.put(0, new Signature(signatureSuite.getPublicKey(), signatureSuite.digest(serializedRequest())));
         }catch (Exception e) {
@@ -116,7 +113,7 @@ public class SendTransactionRequestBody extends Request {
                 "encryptedAmount=" + bytesToHex(encryptedAmount) +
                 ", clientId=" + clientId.values().stream().map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
                 ", clientSignature=" + clientSignature.values().stream().map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
-                ", proxySignatures=" + Arrays.stream(proxySignatures).map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
+                ", proxySignatures=" + proxySignatures.stream().map(Signature::getSignature).map(Serialization::bytesToHex).reduce("" , (s1, s2) -> s1+", "+s2) +
                 ", nonce=" + nonce +
                 '}';
     }

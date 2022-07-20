@@ -24,6 +24,7 @@ public class ReplicaBroadcast extends AsynchServiceProxy {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(blockProposal, ConsensusRequest.Type.BLOCK, -1);
 
+            System.out.println("Proposing block");
             super.invokeAsynchRequest(dataToBytes(consensusRequest), new ReplyListener() {
                 @Override
                 public void reset() {}

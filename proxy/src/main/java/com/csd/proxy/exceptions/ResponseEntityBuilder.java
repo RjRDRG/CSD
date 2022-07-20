@@ -11,7 +11,7 @@ public class ResponseEntityBuilder {
     public static <T extends Serializable> ResponseEntity<Response<T>> buildResponse(Response<T> response) {
         HttpStatus httpStatus;
 
-        switch (response.error()) {
+        switch (response.getStatus()) {
             case OK:
                 httpStatus = HttpStatus.OK;
                 break;

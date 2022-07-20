@@ -51,7 +51,7 @@ public class LoadMoneyRequestBody extends Request {
                 "amount=" + amount +
                 ", clientId=" + clientId.get(0) +
                 ", clientSignature=" + clientSignature.get(0) +
-                ", proxySignatures=" + Arrays.toString(proxySignatures) +
+                ", proxySignatures=" + proxySignatures +
                 ", nonce=" + nonce +
                 '}';
     }
