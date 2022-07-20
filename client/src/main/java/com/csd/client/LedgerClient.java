@@ -177,7 +177,7 @@ public class LedgerClient {
 			);
 
 			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-			for (int counter = 0; request.getProxySignatures().size() <= endorsementQuorum && counter<proxyPorts.length; counter++) {
+			for (int counter = 0; request.getProxySignatures().size() < endorsementQuorum && counter<proxyPorts.length; counter++) {
 				String uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
 				try {
 					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
@@ -264,7 +264,7 @@ public class LedgerClient {
 			}
 
 			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = null;
-			for (int counter = 0; request.getProxySignatures().size() <= endorsementQuorum && counter<proxyPorts.length; counter++) {
+			for (int counter = 0; request.getProxySignatures().size() < endorsementQuorum && counter<proxyPorts.length; counter++) {
 				String uri = "https://" + proxyIp + ":" + proxyPorts[counter] + "/transfer";
 				try {
 					responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});

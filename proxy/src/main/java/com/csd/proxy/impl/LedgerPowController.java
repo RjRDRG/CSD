@@ -71,15 +71,14 @@ class LedgerPowController {
 
         request.addProxySignature(new Signature(proxySignatureSuite, request.serializedSignedRequest()));
 
-        if(request.getProxySignatures().size() >= quorum) {
-            Response<SendTransactionRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
-            response.proxySignature(proxySignatureSuite);
-            return buildResponse(response);
+        Response<SendTransactionRequestBody> response;
+        if(request.getProxySignatures().size() == quorum) {
+            response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
         } else {
-            Response<SendTransactionRequestBody> response = new Response<>(request);
-            response.proxySignature(proxySignatureSuite);
-            return buildResponse(response);
+            response = new Response<>(request);
         }
+        response.proxySignature(proxySignatureSuite);
+        return buildResponse(response);
     }
 
     @PostMapping("/load")

@@ -68,8 +68,6 @@ public class ReplicaService {
                         request.getNonce(),
                         request.getClientSignature().values().stream().map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
                 );
-                transactionPoll.add(t);
-                return Result.ok(request);
             } else {
                 t = new Transaction(
                         request.getRequestId(),
@@ -81,9 +79,9 @@ public class ReplicaService {
                         request.getNonce(),
                         request.getClientSignature().values().stream().map(Signature::getSignature).reduce(new byte[0], Serialization::concat)
                 );
-                transactionPoll.add(t);
-                return Result.ok(request);
             }
+            transactionPoll.add(t);
+            return Result.ok(request);
         } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
             return Result.error(Status.INTERNAL_ERROR, Arrays.toString(e.getStackTrace()));
@@ -97,8 +95,7 @@ public class ReplicaService {
             String clientId = bytesToString(request.getClientId().get(0));
             acm += resourceRepository.findByOwner(clientId).stream()
                     .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
-                    .map(ResourceEntity::getAsset)
-                    .map(Double::valueOf)
+                    .map(r -> Double.parseDouble(r.getAsset()) * (r.isSpent() ? -1 : 1) )
                     .reduce(0.0, Double::sum);
 
             return Result.ok(acm);
@@ -219,8 +216,7 @@ public class ReplicaService {
                 String clientId = bytesToString(c);
                 acm += resourceRepository.findByOwner(clientId).stream()
                         .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
-                        .map(ResourceEntity::getAsset)
-                        .map(Double::valueOf)
+                        .map(r -> Double.parseDouble(r.getAsset()) * (r.isSpent() ? -1 : 1) )
                         .reduce(0.0, Double::sum);
             }
             return Result.ok(acm);
@@ -245,8 +241,7 @@ public class ReplicaService {
 
             acm += resourceRepository.findAll().stream()
                     .filter(r -> r.getType().equals(Resource.Type.VALUE.name()))
-                    .map(ResourceEntity::getAsset)
-                    .map(Double::valueOf)
+                    .map(r -> Double.parseDouble(r.getAsset()) * (r.isSpent() ? -1 : 1) )
                     .reduce(0.0, Double::sum);
 
             return Result.ok(acm);

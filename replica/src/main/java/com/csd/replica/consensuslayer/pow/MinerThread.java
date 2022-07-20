@@ -60,6 +60,7 @@ public class MinerThread extends Thread {
     public void run(){
         while (true) {
             List<Transaction> transactions = replicaService.getTransactionBatch(blockSize-1);
+            System.out.println("bathc ----------> " + transactions.stream().map(Transaction::getId).collect(Collectors.toList()));
             if (transactions.size() == blockSize-1) {
                 System.out.println("Starting mining attempt");
                 Transaction coinbase = new Transaction(
