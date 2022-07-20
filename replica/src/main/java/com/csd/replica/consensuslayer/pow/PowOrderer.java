@@ -105,7 +105,7 @@ public class PowOrderer extends DefaultSingleRecoverable {
             }
             case TRANSFER: {
                 SendTransactionRequestBody request = consensusRequest.extractRequest(SendTransactionRequestBody.class);
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), true);
+                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<SendTransactionRequestBody> result =  v.valid() ? replicaService.sendTransaction(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }

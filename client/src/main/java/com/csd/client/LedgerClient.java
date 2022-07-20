@@ -98,6 +98,17 @@ public class LedgerClient {
 		console.printOperation(requestString,resultString);
 	}
 
+	static long getBlock() {
+		try {
+			String uri = "https://" + proxyIp + ":" + proxyPorts[port] + "/block";
+			ResponseEntity<Long> responseEntity = restTemplate().getForEntity(uri, Long.class);
+			return responseEntity.getBody();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+
 	static void getBalance(String walletId, IConsole console) {
 		String requestString = "-----> Get Balance: " + walletId;
 		String resultString;

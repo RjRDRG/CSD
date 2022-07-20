@@ -16,16 +16,20 @@ public class LedgerBenchmarkClient {
     private static final double ROUTINES = 1;
     private static final double WARMUP = 0;
     private static final double COOLDOWN = 0;
-    private static final String DEST = UUID.randomUUID().toString();
+    private static final String ORIGIN = UUID.randomUUID().toString();
 
-    public static void main8(String[] args) throws Exception {
+    public static void main1(String[] args) throws Exception {
         NullConsole console = new NullConsole();
         double nClients = MIN_CLIENTS;
 
         Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.toLevel("error"));
 
-        LedgerClient.createWallet(DEST, UUID.randomUUID().toString(), console);
+        LedgerClient.createWallet(ORIGIN, UUID.randomUUID().toString(), console);
+
+        for (int i=0; i<MAX_CLIENTS; i++) {
+            LedgerClient.loadMoney(ORIGIN, AMOUNT*ROUTINES*MAX_CLIENTS, console);
+        }
 
         while(nClients <= MAX_CLIENTS){
             CountDownLatch latch = new CountDownLatch((int) nClients);
@@ -44,13 +48,11 @@ public class LedgerBenchmarkClient {
                     String id = UUID.randomUUID().toString();
                     LedgerClient.createWallet(id, UUID.randomUUID().toString(), console);
 
-                    LedgerClient.loadMoney(id, AMOUNT*ROUTINES*2, console);
-
                     double latencyAccum = 0;
 
                     for (int j=0; j<ROUTINES; j++) {
                         start = System.currentTimeMillis();
-                        LedgerClient.sendTransactionOnce(id, DEST, AMOUNT, 0, console);
+                        LedgerClient.sendTransactionOnce(ORIGIN, id, AMOUNT, 0, console);
                         if(j <= ROUTINES-COOLDOWN && j >= WARMUP) {
                             end = System.currentTimeMillis();
                             double latency = end - start;

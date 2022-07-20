@@ -16,10 +16,12 @@ import com.csd.proxy.ledger.ResourceEntity;
 import com.csd.proxy.ledger.ResourceRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static com.csd.common.Constants.CRYPTO_CONFIG_PATH;
 import static com.csd.common.util.Serialization.bytesToString;
@@ -177,5 +179,10 @@ class LedgerPowController {
         response.proxySignature(proxySignatureSuite);
 
         return buildResponse(response);
+    }
+
+    @GetMapping("/block")
+    public ResponseEntity<Long> getBlock() {
+        return new ResponseEntity<>(Optional.ofNullable(ledger.findTopByOrderByIdDesc()).map(ResourceEntity::getBlock).orElse(0L), HttpStatus.OK);
     }
 }
