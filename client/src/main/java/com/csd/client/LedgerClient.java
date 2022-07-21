@@ -21,7 +21,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
@@ -109,7 +108,7 @@ public class LedgerClient {
 		}
 	}
 
-	static void getBalance(String walletId, IConsole console) {
+	static double getBalance(String walletId, IConsole console) {
 		String requestString = "-----> Get Balance: " + walletId;
 		String resultString;
 		try{
@@ -124,10 +123,14 @@ public class LedgerClient {
 			ResponseEntity<Response<Double>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<Double>>() {});
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
+			console.printOperation(requestString,resultString);
+			return responseEntity.getBody().getResponse();
 		} catch (Exception e) {
+			e.printStackTrace();
 			resultString = e.getMessage();
+			console.printOperation(requestString,resultString);
+			return 0;
 		}
-		console.printOperation(requestString,resultString);
 	}
 
 	static void getEncryptedBalance(String walletId, IConsole console) {

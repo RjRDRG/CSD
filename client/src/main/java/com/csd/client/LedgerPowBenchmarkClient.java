@@ -2,10 +2,8 @@ package com.csd.client;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.knowm.xchart.BitmapEncoder;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.XYChart;
+import org.knowm.xchart.*;
+import org.knowm.xchart.style.Styler;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -14,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import static com.google.common.math.Quantiles.median;
+import static com.google.common.math.Quantiles.percentiles;
 
 public class LedgerPowBenchmarkClient {
 
@@ -38,8 +37,10 @@ public class LedgerPowBenchmarkClient {
                 LedgerClient.loadMoney(ORIGIN, Double.MAX_VALUE/10, console);
             }
             Thread.sleep(20000);
-            LedgerClient.getBalance(ORIGIN, console);
-            Thread.sleep(5000);
+            double balance = 0;
+            while (balance == 0) {
+                balance = LedgerClient.getBalance(ORIGIN, console);
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -63,7 +64,6 @@ public class LedgerPowBenchmarkClient {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
                         }
                     }
                 });
@@ -111,11 +111,26 @@ public class LedgerPowBenchmarkClient {
 
     static void createGraph(Map<Integer,List<Long>> result) throws IOException {
         double[] xData = result.keySet().stream().map(i -> (double)i).mapToDouble(d->d).toArray();
-        double[] yData = result.values().stream()
+        double[] median = result.values().stream()
                 .map(c -> median().compute(c))
                 .mapToDouble(d->d).toArray();
 
-        XYChart chart = QuickChart.getChart("Latency Pow", "Clients", "ms", "median", xData, yData);
+        double[] per75 = result.values().stream()
+                .map(c -> percentiles().index(75).compute(c))
+                .mapToDouble(d->d).toArray();
+
+        double[] per25 = result.values().stream()
+                .map(c -> percentiles().index(25).compute(c))
+                .mapToDouble(d->d).toArray();
+
+
+        XYChart chart = new XYChartBuilder().title("Latency Pow").xAxisTitle("Clients").yAxisTitle("ms").build();
+
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
+
+        chart.addSeries("median", xData, median);
+        chart.addSeries("per75", xData, per75);
+        chart.addSeries("per25", xData, per25);
 
         new SwingWrapper(chart).displayChart();
 
