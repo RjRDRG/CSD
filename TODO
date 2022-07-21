@@ -43,3 +43,45 @@ Fix the lastEntry mechanism
 Findout why arent meesages from replicas being signed
 
 
+
+Starting round: 1
+New Block: 0, Latency: 801
+New Block: 1, Latency: 5434
+New Block: 2, Latency: 21096
+New Block: 3, Latency: 15564
+New Block: 4, Latency: 21468
+[ Clients = 1 ]
+Latency: 12872.6 millis
+Throughput: 0.388421919425757 requests/second
+
+Starting round: 2
+New Block: 5, Latency: 10108
+New Block: 6, Latency: 8030
+New Block: 7, Latency: 9995
+New Block: 8, Latency: 8286
+New Block: 9, Latency: 9268
+[ Clients = 2 ]
+Latency: 9137.4 millis
+Throughput: 0.5472016109615427 requests/second
+
+Starting round: 4
+New Block: 9, Latency: 862
+New Block: 10, Latency: 4546
+New Block: 11, Latency: 4011
+New Block: 12, Latency: 6040
+New Block: 13, Latency: 4524
+[ Clients = 4 ]
+Latency: 3996.6 millis
+Throughput: 1.2510634038933093 requests/second
+
+Starting round: 8
+New Block: 13, Latency: 899
+New Block: 14, Latency: 3631
+New Block: 15, Latency: 8314
+New Block: 16, Latency: 25286
+New Block: 17, Latency: 95385
+[ Clients = 8 ]
+Latency: 26703.0 millis
+Throughput: 0.18724487885256338 requests/second
+
+

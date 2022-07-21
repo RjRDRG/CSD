@@ -5,32 +5,24 @@ services:
     build:
       context: .
       dockerfile: replica.dockerfile
-    ports:
-      - "127.0.0.1:8090:8090"
   replica1:
     environment:
       - replica_id=1
     build:
       context: .
       dockerfile: replica.dockerfile
-    ports:
-      - "127.0.0.1:8091:8090"
   replica2:
     environment:
       - replica_id=2
     build:
       context: .
       dockerfile: replica.dockerfile
-    ports:
-      - "127.0.0.1:8092:8090"
   replica3:
     environment:
       - replica_id=3
     build:
       context: .
       dockerfile: replica.dockerfile
-    ports:
-      - "127.0.0.1:8093:8090"
 
   proxy0:
     command: sh -c "sleep 40; java -jar /app.jar;"
@@ -40,7 +32,7 @@ services:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "127.0.0.1:8080:8080"
+      - "192.99.168.235:30080:8080"
   proxy1:
     command: sh -c "sleep 40; java -jar /app.jar;"
     environment:
@@ -49,7 +41,7 @@ services:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "127.0.0.1:8081:8080"
+      - "192.99.168.235:30081:8080"
   proxy2:
     command: sh -c "sleep 40; java -jar /app.jar;"
     environment:
@@ -58,7 +50,7 @@ services:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "127.0.0.1:8082:8080"
+      - "192.99.168.235:30082:8080"
   proxy3:
     command: sh -c "sleep 40; java -jar /app.jar;"
     environment:
@@ -67,4 +59,4 @@ services:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "127.0.0.1:8083:8080"
+      - "192.99.168.235:30083:8080"

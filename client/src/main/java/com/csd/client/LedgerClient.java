@@ -40,6 +40,7 @@ import java.security.Security;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 import static com.csd.common.util.Conversion.doubleToBigInteger;
 import static com.csd.common.util.Serialization.*;
 
@@ -51,8 +52,8 @@ public class LedgerClient {
 		System.setProperty("https.protocols", "TLSv1.2");
 	}
 
-	static String proxyIp = "localhost";
-	public static String proxyPorts[] = {"8080","8081","8082","8083"};
+	static String proxyIp = "192.99.168.235";
+	public static String proxyPorts[] = {"30080","30081","30082","30083"};
 	static int port = 0;
 
 	static int endorsementQuorum = (proxyPorts.length/2)+1;
