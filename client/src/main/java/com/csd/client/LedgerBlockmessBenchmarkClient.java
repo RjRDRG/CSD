@@ -38,7 +38,7 @@ public class LedgerBlockmessBenchmarkClient {
         LedgerClient.loadMoney(ORIGIN, Double.MAX_VALUE, console);
 
         Map<Integer,List<Long>> rLatencies = new HashMap<>();
-        Map<Integer,List<Long>> rThourghput = new HashMap<>();
+        Map<Integer,List<Double>> rThourghput = new HashMap<>();
 
         while(nClients <= MAX_CLIENTS){
             CountDownLatch latch = new CountDownLatch((int) nClients);
@@ -71,7 +71,7 @@ public class LedgerBlockmessBenchmarkClient {
             latch.await();
 
             int finalNClients = nClients;
-            List<Long> throughputs = latencies.values().stream().map(l -> (finalNClients/l)*1000).collect(Collectors.toList());
+            List<Double> throughputs = latencies.values().stream().map(l -> ((double)finalNClients/l)*1000).collect(Collectors.toList());
 
             System.out.println("[ Clients = " + nClients + " ]");
             System.out.println("Latency: " + median().compute(latencies.values())  + " millis");
@@ -87,7 +87,7 @@ public class LedgerBlockmessBenchmarkClient {
         createGraph(rLatencies, rThourghput);
     }
 
-    static void createGraph(Map<Integer, List<Long>> rLatencies, Map<Integer, List<Long>> rThourghput) throws IOException {
+    static void createGraph(Map<Integer, List<Long>> rLatencies, Map<Integer, List<Double>> rThourghput) throws IOException {
         double[] xData = rLatencies.keySet().stream().map(i -> (double)i).mapToDouble(d->d).toArray();
 
         double[] median = rLatencies.values().stream()

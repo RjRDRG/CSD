@@ -26,7 +26,7 @@ public class LedgerSwingClient extends JFrame{
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
-    public static void main1(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.toLevel("error"));
 

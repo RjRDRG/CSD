@@ -80,6 +80,11 @@ class LedgerBlockmessController {
         return buildResponse(response);
     }
 
+    @PostMapping("/transfer/once")
+    public ResponseEntity<Response<SendTransactionRequestBody>> sendTransactionOnce(@RequestBody SendTransactionRequestBody request) {
+        return sendTransaction(request);
+    }
+
     @PostMapping("/load")
     public ResponseEntity<Response<LoadMoneyRequestBody>> loadMoney(@RequestBody LoadMoneyRequestBody request) {
         System.out.println("Load");

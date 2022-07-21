@@ -21,7 +21,7 @@ public class LedgerPowBenchmarkClient {
     private static final int NUM_BLOCKS = 5;
     private static final String ORIGIN = UUID.randomUUID().toString();
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         NullConsole console = new NullConsole();
         int nClients = MIN_CLIENTS;
 
