@@ -37,7 +37,6 @@ public class PowProxy extends AsynchServiceProxy {
 
     @SuppressWarnings("unchecked")
     public <R extends Request, T extends Serializable> Response<T> invokeUnordered(R request, ConsensusRequest.Type t0) {
-        System.out.println("invoke");
         return invoke(request, t0, TOMMessageType.UNORDERED_REQUEST);
     }
 
@@ -59,7 +58,6 @@ public class PowProxy extends AsynchServiceProxy {
             ConsensusResponse consensusResponse = listener.getResponse();
             if(consensusResponse != null) {
                 resourceRepository.saveAll(Arrays.stream(consensusResponse.getMissingEntries()).map(ResourceEntity::new).collect(Collectors.toList()));
-                System.out.println(Arrays.toString(consensusResponse.getMissingEntries()));
                 Result<T> result = consensusResponse.extractResult();
                 Response<T> response = null;
                 if(result.valid())

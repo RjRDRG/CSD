@@ -7,6 +7,7 @@ import com.csd.common.util.Format;
 import com.csd.common.util.Serialization;
 import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.BlockHeaderEntity;
+import com.csd.replica.datalayer.BlockHeaderRepository;
 import com.csd.replica.datalayer.Transaction;
 import com.csd.replica.servicelayer.ReplicaService;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -33,7 +34,7 @@ public class MinerThread extends Thread {
     private final Wallet wallet;
 
     private ReplicaBroadcast replicaBroadcast;
-    private final ReplicaService replicaService;
+    private final PowOrderer powOrderer;
     private final IDigestSuite transactionDigestSuite;
     private final IDigestSuite blockDigestSuite;
     private final int blockSize;
@@ -42,14 +43,14 @@ public class MinerThread extends Thread {
 
     private boolean restart = false;
 
-    public MinerThread(int processId, ReplicaService replicaService, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget, Double blockReward) {
+    public MinerThread(int processId, PowOrderer powOrderer, IDigestSuite transactionDigestSuite, IDigestSuite blockDigestSuite, int blockSize, int difficultyTarget, Double blockReward) {
         this.processId = processId;
         try {
             this.wallet = new Wallet(processId + "@miner", UUID.randomUUID().toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        this.replicaService = replicaService;
+        this.powOrderer = powOrderer;
         this.transactionDigestSuite = transactionDigestSuite;
         this.blockDigestSuite = blockDigestSuite;
         this.blockSize = blockSize;
@@ -59,10 +60,9 @@ public class MinerThread extends Thread {
 
     public void run(){
         while (true) {
-            List<Transaction> transactions = replicaService.getTransactionBatch(blockSize-1);
-            System.out.println("bathc ----------> " + transactions.stream().map(Transaction::getId).collect(Collectors.toList()));
+            List<Transaction> transactions = powOrderer.replicaService.getTransactionBatch(blockSize-1);
             if (transactions.size() == blockSize-1) {
-                System.out.println("Starting mining attempt");
+               log.info("Starting mining attempt: " + transactions.stream().map(Transaction::getId).collect(Collectors.toList()));
                 Transaction coinbase = new Transaction(
                         UUID.randomUUID().toString(),
                         Transaction.Type.Value,
@@ -108,7 +108,7 @@ public class MinerThread extends Thread {
     }
 
     public Block mine(List<Transaction> transactions) {
-        BlockHeaderEntity previousBlock = replicaService.getLastBlock();
+        BlockHeaderEntity previousBlock = powOrderer.blockHeaderRepository.findTopByOrderByIdDesc();
         byte[] previousBlockHash = null;
         if(previousBlock != null) {
             previousBlockHash = previousBlock.getHash();

@@ -16,6 +16,10 @@ public class Snapshot implements Serializable {
         this.resources = resources;
     }
 
+    public Snapshot(List<ResourceEntity> resources) {
+        this.resources = resources;
+    }
+
     public List<ResourceEntity> getResources() {
         return resources;
     }

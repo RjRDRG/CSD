@@ -219,8 +219,12 @@ public class LedgerClient {
 					wallet.clientId, wallet.signatureSuite, walletDestination.clientId, amount, fee
 			);
 
-			String uri = "https://" + proxyIp + ":" + proxyPorts[0] + "/transfer";
+			String uri = "https://" + proxyIp + ":" + proxyPorts[0] + "/transfer/once";
 			ResponseEntity<Response<SendTransactionRequestBody>> responseEntity = restTemplate().exchange(uri, HttpMethod.POST, new HttpEntity<>(request), new ParameterizedTypeReference<Response<SendTransactionRequestBody>>() {});
+
+			if(!responseEntity.getStatusCode().equals(HttpStatus.OK)) {
+				System.err.println(responseEntity.getStatusCode() + ": " + responseEntity.getBody());
+			}
 
 			resultString = Objects.requireNonNull(responseEntity.getBody()).toString();
 

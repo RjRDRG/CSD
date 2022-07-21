@@ -45,15 +45,18 @@ public class PowReplyListener implements ReplyListener {
 
     @Override
     public void replyReceived(RequestContext requestContext, TOMMessage tomMessage) {
-        List<TOMMessage> l = responses.computeIfAbsent(bytesToHex(tomMessage.getContent()), k -> new LinkedList<>());
+        ConsensusResponse response = bytesToData(tomMessage.getContent());
+
+        List<TOMMessage> l = responses.computeIfAbsent(dataToJson(response.getEncodedResult()), k -> new LinkedList<>());
         l.add(tomMessage);
         this.replicaResponses.add(new ReplicaResponse(
                 tomMessage.getSender(),
                 tomMessage.serializedMessage,
-                new Signature( pubKeyRegistry.getReplicaKey(tomMessage.getSender()), tomMessage.serializedMessageSignature))
+                new Signature(pubKeyRegistry.getReplicaKey(tomMessage.getSender()), tomMessage.serializedMessageSignature))
         );
+
         if (l.size() > q) {
-            this.response = bytesToData(tomMessage.getContent());
+            this.response = response;
             latch.countDown();
             serviceProxy.cleanAsynchRequest(requestContext.getOperationId());
         }

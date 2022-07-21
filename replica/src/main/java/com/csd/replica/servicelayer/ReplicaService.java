@@ -30,14 +30,12 @@ import static com.csd.common.util.Serialization.*;
 public class ReplicaService {
 
     private static final Logger log = LoggerFactory.getLogger(ReplicaService.class);
-    private final BlockHeaderRepository blockHeaderRepository;
     private final ResourceRepository resourceRepository;
 
     private final Poll<Transaction> transactionPoll;
 
-    public ReplicaService(ResourceRepository resourceRepository, BlockHeaderRepository blockHeaderRepository) {
+    public ReplicaService(ResourceRepository resourceRepository) {
         this.resourceRepository = resourceRepository;
-        this.blockHeaderRepository = blockHeaderRepository;
         this.transactionPoll = new Poll<>(new TransactionComparator());
     }
 
@@ -261,8 +259,7 @@ public class ReplicaService {
     }
 
     public void executeBlock(byte[] proposerId, BlockHeaderEntity block, List<Transaction> transactions){
-        System.out.println("Executing block");
-        blockHeaderRepository.save(block);
+        log.info("Executing block: " + block.getTimestamp());
 
         for (Transaction t : transactions) {
             transactionPoll.remove(t);
@@ -351,26 +348,19 @@ public class ReplicaService {
                 }
             }
         }
-        System.out.println("------------------------------------------xxx> " + transactionPoll.size());
     }
 
     public Transaction getTransaction(String txid) {
         return transactionPoll.getElement(t -> t.getId().equals(txid));
     }
 
-    public BlockHeaderEntity getLastBlock() {
-        return blockHeaderRepository.findTopByOrderByIdDesc();
-    }
-
     public void installSnapshot(Snapshot snapshot) {
         resourceRepository.deleteAll();
         resourceRepository.saveAll(snapshot.getResources());
-        blockHeaderRepository.deleteAll();
-        blockHeaderRepository.saveAll(snapshot.getBlocks());
     }
 
     public Snapshot getSnapshot() {
-        return new Snapshot(blockHeaderRepository.findAll(), resourceRepository.findAll());
+        return new Snapshot(resourceRepository.findAll());
     }
 
     public Resource[] getResourcesAfterId(long id) {

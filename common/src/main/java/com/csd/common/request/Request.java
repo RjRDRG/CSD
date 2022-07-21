@@ -78,16 +78,13 @@ public abstract class Request implements Serializable {
 
     public boolean verifyClientSignature(IDigestSuite digestSuite, SignatureSuite signatureSuite) {
         try {
-            System.out.println(clientId.size());
             for (int i=0; i<clientId.size(); i++) {
                 byte[] id = clientId.get(i);
                 Signature s = clientSignature.get(i);
                 if (!digestSuite.verify(s.getPublicKey().getEncoded(), Arrays.copyOfRange(id, 32, id.length))) {
-                    System.out.println("Invalid id");
                     return false;
                 }
                 if(!s.verify(signatureSuite, serializedRequest(), false)) {
-                    System.out.println("Invalid signature 2");
                     return false;
                 }
             }

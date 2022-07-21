@@ -18,8 +18,10 @@ import com.csd.common.util.Serialization;
 import com.csd.common.util.Status;
 import com.csd.replica.datalayer.Block;
 import com.csd.replica.datalayer.BlockHeaderEntity;
+import com.csd.replica.datalayer.BlockHeaderRepository;
 import com.csd.replica.datalayer.Transaction;
 import com.csd.replica.servicelayer.ReplicaService;
+import com.csd.replica.servicelayer.Snapshot;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,21 +40,23 @@ public class PowOrderer extends DefaultSingleRecoverable {
 
     private static final Logger log = LoggerFactory.getLogger(PowOrderer.class);
     private int replicaId;
-    private final ReplicaService replicaService;
+    public final ReplicaService replicaService;
     private final Environment environment;
 
     private final RequestValidator validator;
 
     private ServiceReplica serviceReplica;
 
+    public final BlockHeaderRepository blockHeaderRepository;
     private MinerThread minerThread;
     private QueuerThread queuerThread;
 
     Poll<BlockProposal> blockProposalPoll;
 
-    public PowOrderer(ReplicaService replicaService, Environment environment) throws Exception {
+    public PowOrderer(ReplicaService replicaService, BlockHeaderRepository blockHeaderRepository, Environment environment) throws Exception {
         super();
         this.replicaService = replicaService;
+        this.blockHeaderRepository = blockHeaderRepository;
         this.environment = environment;
         this.validator = new RequestValidator(environment.getProperty("proxy.quorum.size" , int.class), environment.getProperty("proxy.number" , int.class));
         this.blockProposalPoll = new Poll<>();
@@ -63,8 +67,8 @@ public class PowOrderer extends DefaultSingleRecoverable {
         log.info("The id of the replica is: " + replicaId);
         serviceReplica = new ServiceReplica(replicaId, this, this);
         this.minerThread = new MinerThread(
-                environment.getProperty("replica.id" , int.class) + 100000,
-                replicaService,
+                environment.getProperty("replica.id" , int.class) + 1000,
+                this,
                 new HashSuite(new IniSpecification("transaction_digest_suite", CRYPTO_CONFIG_PATH)),
                 new HashSuite(new IniSpecification("block_digest_suite", CRYPTO_CONFIG_PATH)),
                 environment.getProperty("replica.block.size" , int.class),
@@ -117,7 +121,6 @@ public class PowOrderer extends DefaultSingleRecoverable {
             }
             case TOTAL_VAL: {
                 GetTotalValueRequestBody request = consensusRequest.extractRequest(GetTotalValueRequestBody.class);
-                System.out.println("Validating");
                 var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
                 Result<Double> result = v.valid() ? replicaService.getTotalValue(request) : Result.error(v);
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
@@ -131,17 +134,10 @@ public class PowOrderer extends DefaultSingleRecoverable {
                 return new ConsensusResponse(result.encode(), replicaService.getResourcesAfterId(consensusRequest.getLastEntryId()));
             }
             case BLOCK: {
-                System.out.println("Received block");
+                log.info("Received block");
                 BlockProposal request = consensusRequest.extractRequest(BlockProposal.class);
-                var v = validator.validate(request, replicaService.getLastResourceDate(request.getClientId().get(0)), false);
-                if(!v.valid()) {
-                    log.error("Invalid block proposal");
-                    return new ConsensusResponse(Result.error(v).encode(), null);
-                }
-                else {
-                    blockProposalPoll.add(request);
-                    return new ConsensusResponse(Result.ok().encode(), null);
-                }
+                blockProposalPoll.add(request);
+                return new ConsensusResponse(Result.ok().encode(), null);
             }
             default: {
                 Result<Serializable> result = Result.error(Status.NOT_IMPLEMENTED, consensusRequest.getType().name());
@@ -151,16 +147,17 @@ public class PowOrderer extends DefaultSingleRecoverable {
     }
 
     public Result<Long> blockProposalValidator(BlockProposal request) {
-        System.out.println("Validating block");
+        log.info("Validating block");
         try {
             Block block = request.getBlock();
-            BlockHeaderEntity lastBlock = replicaService.getLastBlock();
+            BlockHeaderEntity lastBlock = blockHeaderRepository.findTopByOrderByIdDesc();;
 
             if(block.getDifficultyTarget() != minerThread.getDifficultyTarget())
                 return Result.error(Status.BAD_REQUEST, "Invalid block");
 
-            if(lastBlock != null && !Arrays.equals(block.getPreviousBlockHash(), lastBlock.getHash()))
+            if(lastBlock != null && !Arrays.equals(block.getPreviousBlockHash(), lastBlock.getHash())) {
                 return Result.error(Status.CONFLICT, "Block already mined");
+            }
 
             Set<String> transactionIds = new HashSet<>(block.getTXIDs());
 
@@ -194,6 +191,7 @@ public class PowOrderer extends DefaultSingleRecoverable {
                 return Result.error(Status.BAD_REQUEST, "Invalid proof");
 
             BlockHeaderEntity newBlock = new BlockHeaderEntity(
+                    blockHeaderRepository.count(),
                     block.getTimestamp(),
                     block.getPreviousBlockHash(),
                     block.getMerkleRootHash(),
@@ -202,6 +200,8 @@ public class PowOrderer extends DefaultSingleRecoverable {
             );
 
             newBlock.setHash(blockHash);
+
+            blockHeaderRepository.save(newBlock);
 
             replicaService.executeBlock(request.getClientId().get(0), newBlock, transactions);
 
@@ -238,12 +238,17 @@ public class PowOrderer extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        return dataToBytes(replicaService.getSnapshot());
+        Snapshot snapshot = replicaService.getSnapshot();
+        snapshot.setBlocks(blockHeaderRepository.findAll());
+        return dataToBytes(snapshot);
     }
 
     @Override
     public void installSnapshot(byte[] state) {
-        replicaService.installSnapshot(bytesToData(state));
+        Snapshot snapshot = bytesToData(state);
+        replicaService.installSnapshot(snapshot);
+        blockHeaderRepository.deleteAll();
+        blockHeaderRepository.saveAll(snapshot.getBlocks());
     }
 
 }

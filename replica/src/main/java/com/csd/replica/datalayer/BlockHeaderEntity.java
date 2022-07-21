@@ -1,7 +1,6 @@
 package com.csd.replica.datalayer;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -12,7 +11,7 @@ import static com.csd.common.util.Serialization.dataToBytesDeterministic;
 @Entity
 public class BlockHeaderEntity implements Serializable {
 
-    private @Id @GeneratedValue long id;
+    private @Id long id;
     private OffsetDateTime timestamp;
     byte[] previousBlockHash;
     byte[] merkleRootHash;
@@ -22,7 +21,8 @@ public class BlockHeaderEntity implements Serializable {
 
     public BlockHeaderEntity() {}
 
-    public BlockHeaderEntity(OffsetDateTime timestamp, byte[] previousBlockHash, byte[] merkleRootHash, int difficultyTarget, byte[] proof) {
+    public BlockHeaderEntity(long id, OffsetDateTime timestamp, byte[] previousBlockHash, byte[] merkleRootHash, int difficultyTarget, byte[] proof) {
+        this.id = id;
         this.timestamp = timestamp;
         this.previousBlockHash = previousBlockHash;
         this.merkleRootHash = merkleRootHash;

@@ -83,6 +83,34 @@ class LedgerPowController {
         return buildResponse(response);
     }
 
+    @PostMapping("/transfer/once")
+    public ResponseEntity<Response<SendTransactionRequestBody>> sendTransactionOnce(@RequestBody SendTransactionRequestBody request) {
+        var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
+        if(!v.valid()) {
+            return buildResponse(new Response<>(v, proxySignatureSuite));
+        }
+
+        if (request.getAmount()<0 || request.getFee() < 0)
+            return buildResponse(new Response<>(Status.BAD_REQUEST, "Transaction amount must be positive", proxySignatureSuite));
+
+        double balance = 0;
+        balance += ledger.findByOwner(bytesToString(request.getClientId().get(0))).stream()
+                .filter(t -> t.getType().equals(Resource.Type.VALUE.name()))
+                .map(ResourceEntity::getAsset)
+                .map(Double::valueOf)
+                .reduce(0.0, Double::sum);
+
+        if (balance<request.getAmount())
+            return buildResponse(new Response<>(Status.FORBIDDEN, "Insufficient Credit", proxySignatureSuite));
+
+
+        request.addProxySignature(new Signature(proxySignatureSuite, request.serializedSignedRequest()));
+
+        Response<SendTransactionRequestBody> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TRANSFER);
+        response.proxySignature(proxySignatureSuite);
+        return buildResponse(response);
+    }
+
     @PostMapping("/load")
     public ResponseEntity<Response<LoadMoneyRequestBody>> loadMoney(@RequestBody LoadMoneyRequestBody request) {
         var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
@@ -150,14 +178,10 @@ class LedgerPowController {
 
     @PostMapping("/total")
     public ResponseEntity<Response<Double>> getTotalValue(@RequestBody GetTotalValueRequestBody request) {
-        System.out.println("Total");
-        System.out.println(dataToJson(request));
         var v = validator.validate(request, ledgerProxy.getLastTrxDate(request.getClientId().get(0)), false);
         if(!v.valid()) {
             return buildResponse(new Response<>(v, proxySignatureSuite));
         }
-
-        System.out.println("Valid");
 
         Response<Double> response = ledgerProxy.invokeUnordered(request, ConsensusRequest.Type.TOTAL_VAL);
         response.proxySignature(proxySignatureSuite);

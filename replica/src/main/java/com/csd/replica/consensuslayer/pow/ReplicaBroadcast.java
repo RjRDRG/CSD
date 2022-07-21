@@ -8,12 +8,16 @@ import bftsmart.tom.core.messages.TOMMessageType;
 import com.csd.common.item.Wallet;
 import com.csd.common.request.wrapper.ConsensusRequest;
 import com.csd.replica.datalayer.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 import static com.csd.common.util.Serialization.dataToBytes;
 
 public class ReplicaBroadcast extends AsynchServiceProxy {
+
+    private static final Logger log = LoggerFactory.getLogger(ReplicaBroadcast.class);
 
     public ReplicaBroadcast(int processId) throws Exception {
         super(processId);
@@ -24,7 +28,7 @@ public class ReplicaBroadcast extends AsynchServiceProxy {
         try {
             ConsensusRequest consensusRequest = new ConsensusRequest(blockProposal, ConsensusRequest.Type.BLOCK, -1);
 
-            System.out.println("Proposing block");
+           log.info("Proposing block");
             super.invokeAsynchRequest(dataToBytes(consensusRequest), new ReplyListener() {
                 @Override
                 public void reset() {}
