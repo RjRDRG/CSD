@@ -7,4 +7,4 @@ services:
       context: .
       dockerfile: proxy.dockerfile
     ports:
-      - "127.0.0.1:8080:8080"
+      - "192.99.168.235:30080:8080"

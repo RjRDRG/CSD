@@ -17,8 +17,8 @@ import static com.google.common.math.Quantiles.percentiles;
 public class LedgerPowBenchmarkClient {
 
     private static final int MIN_CLIENTS = 1;
-    private static final int MAX_CLIENTS = 4;
-    private static final int NUM_BLOCKS = 3;
+    private static final int MAX_CLIENTS = 8;
+    private static final int NUM_BLOCKS = 5;
     private static final String ORIGIN = UUID.randomUUID().toString();
 
     public static void main(String[] args) {
@@ -33,15 +33,12 @@ public class LedgerPowBenchmarkClient {
         long initialBlock = -1;
 
         try {
-            for (int i=0; i<6; i++){
-                LedgerClient.loadMoney(ORIGIN, Double.MAX_VALUE/10, console);
-            }
-            Thread.sleep(20000);
             double balance = 0;
             while (balance == 0) {
+                LedgerClient.loadMoney(ORIGIN, Double.MAX_VALUE/100, console);
                 balance = LedgerClient.getBalance(ORIGIN, console);
             }
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -109,17 +106,20 @@ public class LedgerPowBenchmarkClient {
         }
     }
 
+    static final int block_size = 10;
+
     static void createGraph(Map<Integer,List<Long>> result) throws IOException {
         double[] xData = result.keySet().stream().map(i -> (double)i).mapToDouble(d->d).toArray();
+
         double[] median = result.values().stream()
                 .map(c -> median().compute(c))
                 .mapToDouble(d->d).toArray();
 
-        double[] per75 = result.values().stream()
+        double[] p75 = result.values().stream()
                 .map(c -> percentiles().index(75).compute(c))
                 .mapToDouble(d->d).toArray();
 
-        double[] per25 = result.values().stream()
+        double[] p25 = result.values().stream()
                 .map(c -> percentiles().index(25).compute(c))
                 .mapToDouble(d->d).toArray();
 
@@ -129,12 +129,24 @@ public class LedgerPowBenchmarkClient {
         chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
 
         chart.addSeries("median", xData, median);
-        chart.addSeries("per75", xData, per75);
-        chart.addSeries("per25", xData, per25);
+        chart.addSeries("p75", xData, p75);
+        chart.addSeries("p25", xData, p25);
 
         new SwingWrapper(chart).displayChart();
 
-        BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
+        BitmapEncoder.saveBitmap(chart, "./Latency_Chart_PoW", BitmapEncoder.BitmapFormat.PNG);
+
+        XYChart chart1 = new XYChartBuilder().title("Throughput Pow").xAxisTitle("Clients").yAxisTitle("ms").build();
+
+        chart1.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
+
+        chart1.addSeries("median", xData,  Arrays.stream(median).map(d -> block_size/d).toArray());
+        chart1.addSeries("p75", xData,  Arrays.stream(p75).map(d -> block_size/d).toArray());
+        chart1.addSeries("p25", xData,  Arrays.stream(p25).map(d -> block_size/d).toArray());
+
+        new SwingWrapper(chart1).displayChart();
+
+        BitmapEncoder.saveBitmap(chart1, "./Throughput_Chart_PoW", BitmapEncoder.BitmapFormat.PNG);
 
         //BitmapEncoder.saveBitmapWithDPI(chart, "./Sample_Chart_300_DPI", BitmapEncoder.BitmapFormat.PNG, 300);
     }
